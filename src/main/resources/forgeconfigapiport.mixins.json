@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "compatibilityLevel": "JAVA_16",
+  "package": "net.minecraftforge.mixin",
+  "mixins": [
+    "LevelResourceAccessor"
+  ],
+  "client": [
+    "client.ClientHandshakePacketListenerImplMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

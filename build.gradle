@@ -1,0 +1,224 @@
+plugins {
+	id 'fabric-loom' version '0.10-SNAPSHOT'
+	id "com.matthewprenger.cursegradle" version "1.4.0"
+	id "com.modrinth.minotaur" version "1.1.0"
+	id 'maven-publish'
+	id 'signing'
+	id 'java-library'
+}
+
+sourceCompatibility = JavaVersion.VERSION_16
+targetCompatibility = JavaVersion.VERSION_16
+println('Java: ' + System.getProperty('java.version') + ' JVM: ' + System.getProperty('java.vm.version') + '(' + System.getProperty('java.vendor') + ') Arch: ' + System.getProperty('os.arch'))
+
+ext.mcversion = "${minecraftVersion}"
+ext.modversion = "${modVersion}"
+version = "v${project.modversion}-${project.mcversion}-${project.projectLoader}"
+group = "${modGroup}"
+ext.modid = "${modId}"
+ext.modauthor = "${modAuthor}"
+ext.nextmcversion = getNextVersion("${minMinecraftVersion}")
+//ext.puzzlesversion = "${puzzlesVersion.substring(1, puzzlesVersion.indexOf("-"))}"
+ext.mainentrypoint = "${project.group}".concat(".${rootProject.name}")
+ext.cliententrypoint = "${project.group}".concat(".client.${rootProject.name}Client")
+
+repositories {
+	maven { url = "https://maven.terraformersmc.com/releases/" }
+	maven { url = "https://cursemaven.com" }
+}
+
+dependencies {
+	minecraft "com.mojang:minecraft:${project.minecraftVersion}"
+	mappings minecraft.officialMojangMappings()
+
+	modImplementation "net.fabricmc:fabric-loader:${project.fabricVersion}"
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabricApiVersion}"
+	include "net.fabricmc.fabric-api:fabric-api:${project.fabricApiVersion}", fabricApi.module("fabric-lifecycle-events-v1", project.fabricApiVersion)
+	include "net.fabricmc.fabric-api:fabric-api:${project.fabricApiVersion}", fabricApi.module("fabric-networking-api-v1", project.fabricApiVersion)
+	include "net.fabricmc.fabric-api:fabric-api:${project.fabricApiVersion}", fabricApi.module("fabric-command-api-v1", project.fabricApiVersion)
+	modImplementation "com.terraformersmc:modmenu:2.0.12"
+	implementation 'com.electronwill.night-config:core:3.6.3'
+	implementation 'com.electronwill.night-config:toml:3.6.3'
+	include 'com.electronwill.night-config:core:3.6.3'
+	include 'com.electronwill.night-config:toml:3.6.3'
+}
+
+processResources {
+	duplicatesStrategy DuplicatesStrategy.INCLUDE
+
+    // this will ensure that this task is redone when the versions change.
+    inputs.property "modId", 					project.modid
+    inputs.property "modName", 					"${modName}"
+    inputs.property "modVersion", 				project.modversion
+    inputs.property "modGroup", 				project.group
+    inputs.property "modPageUrl", 				"${modPageUrl}"
+    inputs.property "modIssueUrl", 				"${modIssueUrl}"
+	inputs.property "modSourceUrl", 			"${modSourceUrl}"
+    inputs.property "modDescription", 			"${modDescription}"
+    inputs.property "modAuthor", 				project.modauthor
+    inputs.property "minFabricVersion", 		"${minFabricVersion}"
+	inputs.property "minFabricApiVersion", 		"${minFabricApiVersion}"
+    inputs.property "minMinecraftVersion", 		"${minMinecraftVersion}"
+    inputs.property "nextMinecraftVersion", 	project.nextmcversion
+//	inputs.property "minPuzzlesVersion", 		"${minPuzzlesVersion}"
+    inputs.property "packFormat", 				"${packFormat}"
+	inputs.property "mainEntryPoint", 			project.mainentrypoint
+	inputs.property "clientEntryPoint", 		project.cliententrypoint
+
+	filesMatching ('fabric.mod.json') {
+        expand (
+                'modId':                project.modid,
+                'modName':              "${modName}",
+                'modVersion':           project.modversion,
+                'modGroup':             project.group,
+                'modPageUrl':           "${modPageUrl}",
+                'modIssueUrl':          "${modIssueUrl}",
+				'modSourceUrl':         "${modSourceUrl}",
+                'modAuthor':            project.modauthor,
+				'modDescription':       "${modDescription}",
+                'minFabricVersion':     "${minFabricVersion}",
+				'minFabricApiVersion':  "${minFabricApiVersion}",
+                'minMinecraftVersion':  "${minMinecraftVersion}",
+                "nextMinecraftVersion": project.nextmcversion,
+//				"minPuzzlesVersion":    "${minPuzzlesVersion}",
+				"mainEntryPoint": 		project.mainentrypoint,
+				"clientEntryPoint": 	project.cliententrypoint
+        )
+    }
+
+	filesMatching ('pack.mcmeta') {
+		expand (
+				'modDescription':       "${modDescription}",
+				"packFormat":           "${packFormat}"
+		)
+	}
+}
+
+tasks.withType(JavaCompile).configureEach {
+	// ensure that the encoding is set to UTF-8, no matter what the system default is
+	// this fixes some edge cases with special characters not displaying correctly
+	// see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
+	// If Javadoc is generated, this must be specified in that task too.
+	it.options.encoding = "UTF-8"
+	// Minecraft 1.17 (21w19a) upwards uses Java 16.
+	it.options.release = 16
+}
+
+javadoc {
+	options.encoding = "UTF-8"
+}
+
+java {
+	withSourcesJar()
+	withJavadocJar()
+}
+
+ext.jarAttributes = [
+		"Specification-Title"       : project.modid,
+		"Specification-Version"     : project.modversion,
+		"Specification-Vendor"      : project.modauthor.toLowerCase(),
+		"Implementation-Title"      : project.modid,
+		"Implementation-Version"    : project.modversion,
+		"Implementation-Vendor"     : project.modauthor.toLowerCase(),
+		"Implementation-Vendor-Id"  : project.group,
+		"Implementation-URL"        : "${modPageUrl}",
+		"Implementation-Timestamp"  : new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
+		"MixinConfigs"              : "META-INF/${project.modid}.mixins.json"
+]
+
+tasks.withType(Jar).configureEach {
+	it.from rootProject.file("LICENSE")
+	it.from rootProject.file("FORGE-LICENSE")
+	it.from rootProject.file("CHANGELOG.md")
+	it.manifest { attributes(project.jarAttributes) }
+	it.group 'jar'
+}
+
+publishing {
+	publications {
+		mavenJava (MavenPublication) {
+			from components.java
+		}
+	}
+}
+
+
+curseforge {
+	def changelogName = 'CHANGELOG.md'
+	def changelogFile = file(changelogName)
+	if (!changelogFile.canRead()) { throw new FileNotFoundException("Could not read file ".concat(changelogName)) }
+	apiKey = project.findProperty('curseApiToken')
+	project {
+		id = project.findProperty('curseProjectId')
+		changelogType = 'markdown'
+		changelog = changelogFile
+		releaseType = project.findProperty('curseReleaseType')
+		addGameVersion project.findProperty('projectLoader')
+		project.findProperty('curseProjectVersion').replaceAll(" ", "").split(",").each { version -> addGameVersion version }
+		mainArtifact remapJar
+		addArtifact remapSourcesJar
+//		relations {
+//			requiredDependency 'fabric-api'
+//			requiredDependency 'puzzles-lib'
+//		}
+	}
+	options {
+		// doesn't upload, only prints json to console
+        debug = true
+		javaVersionAutoDetect = false
+		forgeGradleIntegration = false
+	}
+}
+
+//task publishModrinth (type: TaskModrinthUpload){
+//	token = System.getenv("modrinthApiToken")
+//	projectId = '0'
+//	versionNumber = project.version
+//	versionName = project.archivesBaseName
+//	releaseType = 'release'
+//	uploadFile = remapJar // This is the java jar task
+//	addGameVersion("${project.minecraft_version}")
+//	addLoader('fabric')
+//}
+
+task copyJarToDir(type: Copy) {
+	onlyIf { project.hasProperty('buildJarOutputDir') && project.hasProperty('uniqueBuildNumber') }
+	if (project.findProperty('copyBuildJar').toBoolean()) {
+		from remapJar
+		into project.findProperty('buildJarOutputDir')
+		// add build number to be able to distinguish jars when testing thorough official launcher
+		// build number is stored in global gradle.properties
+		rename { fileName -> fileName.replace("v${project.modversion}", "v${project.modversion}.${uniqueBuildNumber}") }
+	}
+}
+
+task incrementBuildNumber {
+	onlyIf { project.hasProperty('uniqueBuildNumber') }
+	doLast {
+		def propertiesName = 'gradle.properties'
+		// build number is stored in global gradle.properties
+		def propertiesFile = new File(project.gradle.gradleUserHomeDir, propertiesName)
+		if (!propertiesFile.canRead()) { throw new FileNotFoundException("Could not read file ".concat(propertiesName)) }
+		def buildNumberMatcher = Pattern.compile("uniqueBuildNumber=(\\d+)").matcher(propertiesFile.getText())
+		buildNumberMatcher.find()
+		def versionCode = Integer.parseInt(buildNumberMatcher.group(1))
+		def propertiesContent = buildNumberMatcher.replaceAll("uniqueBuildNumber=" + ++versionCode)
+		propertiesFile.write(propertiesContent)
+	}
+}
+
+import groovy.json.*
+import java.util.regex.Pattern
+
+def static getNextVersion(String puzzlesVersion) {
+	def puzzlesVersionMatcher = Pattern.compile("(\\d+\\.\\d+)").matcher(puzzlesVersion)
+	puzzlesVersionMatcher.find()
+	def currentVersion = puzzlesVersionMatcher.group(1)
+	return currentVersion.substring(0, currentVersion.indexOf(".") + 1).concat(String.valueOf(Integer.parseInt(currentVersion.substring(currentVersion.indexOf(".") + 1, currentVersion.size())) + 1))
+}
+
+signing {
+	sign publishing.publications.mavenJava
+}
+
+build.finalizedBy project.copyJarToDir, project.incrementBuildNumber
