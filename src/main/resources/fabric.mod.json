@@ -8,8 +8,7 @@
   "authors": [
     "${modAuthor}",
     "LexManos",
-    "cpw",
-    "Anyone who has contributed to the Forge project on Github and supports their development"
+    "cpw"
   ],
   "contact": {
     "homepage": "${modPageUrl}",
@@ -17,7 +16,7 @@
     "sources": "${modSourceUrl}"
   },
 
-  "license": "GNU Lesser General Public License 2.1",
+  "license": "Mozilla Public License 2.0",
   "icon": "mod_logo.png",
 
   "environment": "*",
@@ -38,5 +37,13 @@
     "fabric": ">=${minFabricApiVersion}",
     "minecraft": ">=${minMinecraftVersion} <${nextMinecraftVersion}",
     "java": ">=16"
+  },
+
+  "custom": {
+    "modmenu": {
+      "badges": [
+        "library"
+      ]
+    }
   }
 }

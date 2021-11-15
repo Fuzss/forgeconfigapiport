@@ -6,8 +6,8 @@ import com.electronwill.nightconfig.core.file.FileWatcher;
 import com.electronwill.nightconfig.core.io.ParsingException;
 import com.electronwill.nightconfig.core.io.WritingMode;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraftforge.api.event.config.ModConfigEvent;
-import net.minecraftforge.fml.loading.FMLConfig;
+import net.minecraftforge.api.ConfigPaths;
+import net.minecraftforge.api.fml.event.config.ModConfigEvent;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -20,7 +20,7 @@ import java.util.function.Function;
 public class ConfigFileTypeHandler {
     private static final Logger LOGGER = LogManager.getLogger();
     static ConfigFileTypeHandler TOML = new ConfigFileTypeHandler();
-    private static final Path defaultConfigPath = FabricLoader.getInstance().getGameDir().resolve(FMLConfig.DEFAULT_CONFIG_NAME);
+    private static final Path defaultConfigPath = FabricLoader.getInstance().getGameDir().resolve(ConfigPaths.DEFAULT_CONFIGS_PATH);
 
     public Function<ModConfig, CommentedFileConfig> reader(Path configBasePath) {
         return (c) -> {

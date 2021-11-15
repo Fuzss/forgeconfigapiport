@@ -4,15 +4,14 @@ import com.electronwill.nightconfig.core.CommentedConfig;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.electronwill.nightconfig.toml.TomlFormat;
 import net.fabricmc.loader.api.ModContainer;
-import net.minecraftforge.api.event.config.ModConfigEvent;
+import net.minecraftforge.api.fml.event.config.ModConfigEvent;
 
 import java.io.ByteArrayInputStream;
 import java.nio.file.Path;
 import java.util.Locale;
 import java.util.concurrent.Callable;
 
-public class ModConfig
-{
+public class ModConfig {
     private final Type type;
     private final IConfigSpec<?> spec;
     private final String fileName;
@@ -38,6 +37,7 @@ public class ModConfig
         // config file name would be "forge-client.toml" and "forge-server.toml"
         return String.format("%s-%s.toml", modId, type.extension());
     }
+
     public Type getType() {
         return type;
     }
@@ -69,11 +69,11 @@ public class ModConfig
     }
 
     public void save() {
-        ((CommentedFileConfig)this.configData).save();
+        ((CommentedFileConfig) this.configData).save();
     }
 
     public Path getFullPath() {
-        return ((CommentedFileConfig)this.configData).getNioPath();
+        return ((CommentedFileConfig) this.configData).getNioPath();
     }
 
     public void acceptSyncedConfig(byte[] bytes) {

@@ -33,12 +33,14 @@ dependencies {
 
 	modImplementation "net.fabricmc:fabric-loader:${project.fabricVersion}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabricApiVersion}"
-	include "net.fabricmc.fabric-api:fabric-api:${project.fabricApiVersion}", fabricApi.module("fabric-lifecycle-events-v1", project.fabricApiVersion)
-	include "net.fabricmc.fabric-api:fabric-api:${project.fabricApiVersion}", fabricApi.module("fabric-networking-api-v1", project.fabricApiVersion)
-	include "net.fabricmc.fabric-api:fabric-api:${project.fabricApiVersion}", fabricApi.module("fabric-command-api-v1", project.fabricApiVersion)
 	modImplementation "com.terraformersmc:modmenu:2.0.12"
 	implementation 'com.electronwill.night-config:core:3.6.3'
 	implementation 'com.electronwill.night-config:toml:3.6.3'
+
+	include "net.fabricmc.fabric-api:fabric-api:${project.fabricApiVersion}", fabricApi.module("fabric-lifecycle-events-v1", project.fabricApiVersion)
+	include "net.fabricmc.fabric-api:fabric-api:${project.fabricApiVersion}", fabricApi.module("fabric-networking-api-v1", project.fabricApiVersion)
+	include "net.fabricmc.fabric-api:fabric-api:${project.fabricApiVersion}", fabricApi.module("fabric-command-api-v1", project.fabricApiVersion)
+	include "com.terraformersmc:modmenu:2.0.12"
 	include 'com.electronwill.night-config:core:3.6.3'
 	include 'com.electronwill.night-config:toml:3.6.3'
 }
@@ -128,7 +130,9 @@ ext.jarAttributes = [
 
 tasks.withType(Jar).configureEach {
 	it.from rootProject.file("LICENSE")
-	it.from rootProject.file("FORGE-LICENSE")
+	it.from rootProject.file("LICENSE-FORGE")
+	it.from rootProject.file("LICENSE-NIGHT-CONFIG")
+	it.from rootProject.file("LICENSING.md")
 	it.from rootProject.file("CHANGELOG.md")
 	it.manifest { attributes(project.jarAttributes) }
 	it.group 'jar'
@@ -164,7 +168,7 @@ curseforge {
 	}
 	options {
 		// doesn't upload, only prints json to console
-        debug = true
+//        debug = true
 		javaVersionAutoDetect = false
 		forgeGradleIntegration = false
 	}

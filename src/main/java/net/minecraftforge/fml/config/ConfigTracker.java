@@ -3,7 +3,8 @@ package net.minecraftforge.fml.config;
 import com.electronwill.nightconfig.core.CommentedConfig;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraftforge.api.event.config.ModConfigEvent;
+import net.minecraftforge.api.fml.config.IConfigTracker;
+import net.minecraftforge.api.fml.event.config.ModConfigEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.Marker;
@@ -13,7 +14,7 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ConfigTracker {
+public class ConfigTracker implements IConfigTracker {
     private static final Logger LOGGER = LogManager.getLogger();
     public static final Marker CONFIG = MarkerManager.getMarker("CONFIG");
     public static final ConfigTracker INSTANCE = new ConfigTracker();
@@ -91,10 +92,12 @@ public class ConfigTracker {
                 map(ModConfig::getFullPath).map(Object::toString).orElse(null);
     }
 
+    @Override
     public Map<ModConfig.Type, Set<ModConfig>> configSets() {
         return configSets;
     }
 
+    @Override
     public ConcurrentHashMap<String, ModConfig> fileMap() {
         return fileMap;
     }

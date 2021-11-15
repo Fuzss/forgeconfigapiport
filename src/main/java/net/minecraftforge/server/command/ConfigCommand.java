@@ -16,21 +16,12 @@ import java.io.File;
 
 public class ConfigCommand {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-        dispatcher.register(
-                Commands.literal("config").
-                        then(ShowFile.register())
-        );
+        dispatcher.register(Commands.literal("config").then(ShowFile.register()));
     }
 
     public static class ShowFile {
         static ArgumentBuilder<CommandSourceStack, ?> register() {
-            return Commands.literal("showfile").
-                    requires(cs->cs.hasPermission(0)).
-                    then(Commands.argument("mod", ModIdArgument.modIdArgument()).
-                            then(Commands.argument("type", EnumArgument.enumArgument(ModConfig.Type.class)).
-                                    executes(ShowFile::showFile)
-                            )
-                    );
+            return Commands.literal("showfile").requires(cs -> cs.hasPermission(0)).then(Commands.argument("mod", ModIdArgument.modIdArgument()).then(Commands.argument("type", EnumArgument.enumArgument(ModConfig.Type.class)).executes(ShowFile::showFile)));
         }
 
         private static int showFile(final CommandContext<CommandSourceStack> context) {
@@ -39,14 +30,9 @@ public class ConfigCommand {
             final String configFileName = ConfigTracker.INSTANCE.getConfigFileName(modId, type);
             if (configFileName != null) {
                 File f = new File(configFileName);
-                context.getSource().sendSuccess(new TranslatableComponent("commands.config.getwithtype",
-                        modId, type,
-                        new TextComponent(f.getName()).withStyle(ChatFormatting.UNDERLINE).
-                                withStyle((style) -> style.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, f.getAbsolutePath())))
-                ), true);
+                context.getSource().sendSuccess(new TranslatableComponent("commands.config.getwithtype", modId, type, new TextComponent(f.getName()).withStyle(ChatFormatting.UNDERLINE).withStyle((style) -> style.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, f.getAbsolutePath())))), true);
             } else {
-                context.getSource().sendSuccess(new TranslatableComponent("commands.config.noconfig", modId, type),
-                        true);
+                context.getSource().sendSuccess(new TranslatableComponent("commands.config.noconfig", modId, type), true);
             }
             return 0;
         }

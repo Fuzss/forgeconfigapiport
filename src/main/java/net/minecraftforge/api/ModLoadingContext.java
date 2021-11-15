@@ -4,7 +4,10 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraftforge.fml.config.IConfigSpec;
 import net.minecraftforge.fml.config.ModConfig;
 
-public class ModLoadingContext {
+/**
+ * class to mimic Forge's ModLoadingContext, name is misleading in this case though, as this is only used for registering configs
+ */
+public final class ModLoadingContext {
     /**
      * Register a new mod config, only difference from registering on Forge is <code>modId</code> has to be provided as there is no loading context to get that information from
      *

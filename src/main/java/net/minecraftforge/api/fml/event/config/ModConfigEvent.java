@@ -1,4 +1,4 @@
-package net.minecraftforge.api.event.config;
+package net.minecraftforge.api.fml.event.config;
 
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;

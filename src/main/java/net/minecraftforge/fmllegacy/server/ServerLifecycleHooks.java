@@ -2,6 +2,7 @@ package net.minecraftforge.fmllegacy.server;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.storage.LevelResource;
+import net.minecraftforge.api.ConfigPaths;
 import net.minecraftforge.fml.config.ConfigTracker;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.loading.FileUtils;
@@ -10,8 +11,7 @@ import net.minecraftforge.mixin.LevelResourceAccessor;
 import java.nio.file.Path;
 
 public class ServerLifecycleHooks {
-    private static final String SERVER_CONFIG_NAME = "serverconfig";
-    private static final LevelResource SERVERCONFIG = LevelResourceAccessor.create(SERVER_CONFIG_NAME);
+    private static final LevelResource SERVERCONFIG = LevelResourceAccessor.create(ConfigPaths.SERVER_CONFIG_PATH);
 
     private static Path getServerConfigPath(final MinecraftServer server) {
         final Path serverConfig = server.getWorldPath(SERVERCONFIG);

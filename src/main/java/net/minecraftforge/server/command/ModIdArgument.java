@@ -29,9 +29,7 @@ public class ModIdArgument implements ArgumentType<String> {
 
     @Override
     public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
-        return SharedSuggestionProvider.suggest(FabricLoader.getInstance().getAllMods().stream()
-                .map(container -> container.getMetadata().getId())
-                .collect(Collectors.toList()), builder);
+        return SharedSuggestionProvider.suggest(FabricLoader.getInstance().getAllMods().stream().map(container -> container.getMetadata().getId()).collect(Collectors.toList()), builder);
     }
 
     @Override
