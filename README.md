@@ -2,7 +2,7 @@
 
 A Minecraft mod. Downloads can be found on CurseForge.
 
-![](https://i.imgur.com/DCwxKZU.png)
+![](https://i.imgur.com/bUAnw7w.png)
 
 ## ABOUT THE PROJECT
 **!!! Forge Config API Port is in no way affiliated with the Forge project !!!**

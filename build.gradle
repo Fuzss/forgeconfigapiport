@@ -37,10 +37,6 @@ dependencies {
 	implementation 'com.electronwill.night-config:core:3.6.3'
 	implementation 'com.electronwill.night-config:toml:3.6.3'
 
-	include "net.fabricmc.fabric-api:fabric-api:${project.fabricApiVersion}", fabricApi.module("fabric-lifecycle-events-v1", project.fabricApiVersion)
-	include "net.fabricmc.fabric-api:fabric-api:${project.fabricApiVersion}", fabricApi.module("fabric-networking-api-v1", project.fabricApiVersion)
-	include "net.fabricmc.fabric-api:fabric-api:${project.fabricApiVersion}", fabricApi.module("fabric-command-api-v1", project.fabricApiVersion)
-	include "com.terraformersmc:modmenu:2.0.12"
 	include 'com.electronwill.night-config:core:3.6.3'
 	include 'com.electronwill.night-config:toml:3.6.3'
 }
@@ -163,11 +159,12 @@ curseforge {
 		addGameVersion project.findProperty('projectLoader')
 		project.findProperty('curseProjectVersion').replaceAll(" ", "").split(",").each { version -> addGameVersion version }
 		mainArtifact remapJar
-		addArtifact remapSourcesJar
-//		relations {
-//			requiredDependency 'fabric-api'
+		addArtifact sourcesJar
+		relations {
+			requiredDependency 'fabric-api'
+			optionalDependency 'modmenu'
 //			requiredDependency 'puzzles-lib-fabric'
-//		}
+		}
 	}
 	options {
 		// doesn't upload, only prints json to console
