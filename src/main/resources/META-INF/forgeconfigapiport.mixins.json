@@ -3,6 +3,7 @@
   "minVersion": "0.8",
   "compatibilityLevel": "JAVA_16",
   "package": "net.minecraftforge.mixin",
+  "refmap": "META-INF/forgeconfigapiport.refmap.json",
   "mixins": [
     "LevelResourceAccessor"
   ],

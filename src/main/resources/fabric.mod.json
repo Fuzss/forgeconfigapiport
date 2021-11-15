@@ -6,9 +6,9 @@
   "name": "${modName}",
   "description": "${modDescription}",
   "authors": [
-    "${modAuthor}",
     "LexManos",
-    "cpw"
+    "cpw",
+    "${modAuthor}"
   ],
   "contact": {
     "homepage": "${modPageUrl}",
@@ -29,7 +29,7 @@
     ]
   },
   "mixins": [
-    "${modId}.mixins.json"
+    "META-INF/${modId}.mixins.json"
   ],
 
   "depends": {

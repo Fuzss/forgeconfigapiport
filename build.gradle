@@ -45,6 +45,10 @@ dependencies {
 	include 'com.electronwill.night-config:toml:3.6.3'
 }
 
+minecraft {
+	refmapName "META-INF/${project.modid}.refmap.json"
+}
+
 processResources {
 	duplicatesStrategy DuplicatesStrategy.INCLUDE
 
@@ -124,8 +128,7 @@ ext.jarAttributes = [
 		"Implementation-Vendor"     : project.modauthor.toLowerCase(),
 		"Implementation-Vendor-Id"  : project.group,
 		"Implementation-URL"        : "${modPageUrl}",
-		"Implementation-Timestamp"  : new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
-		"MixinConfigs"              : "META-INF/${project.modid}.mixins.json"
+		"Implementation-Timestamp"  : new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
 ]
 
 tasks.withType(Jar).configureEach {
@@ -163,7 +166,7 @@ curseforge {
 		addArtifact remapSourcesJar
 //		relations {
 //			requiredDependency 'fabric-api'
-//			requiredDependency 'puzzles-lib'
+//			requiredDependency 'puzzles-lib-fabric'
 //		}
 	}
 	options {
