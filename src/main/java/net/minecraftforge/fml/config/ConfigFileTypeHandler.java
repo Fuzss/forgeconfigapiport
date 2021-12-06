@@ -5,6 +5,7 @@ import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.electronwill.nightconfig.core.file.FileWatcher;
 import com.electronwill.nightconfig.core.io.ParsingException;
 import com.electronwill.nightconfig.core.io.WritingMode;
+import com.electronwill.nightconfig.toml.TomlFormat;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraftforge.api.ConfigPaths;
 import net.minecraftforge.api.fml.event.config.ModConfigEvent;
@@ -25,7 +26,12 @@ public class ConfigFileTypeHandler {
     public Function<ModConfig, CommentedFileConfig> reader(Path configBasePath) {
         return (c) -> {
             final Path configPath = configBasePath.resolve(c.getFileName());
-            final CommentedFileConfig configData = CommentedFileConfig.builder(configPath).sync().
+            // force toml format which is normally auto-detected by night config from the file extension
+            // there have been reports of this failing and the auto-detection not working
+            // my guess is this is caused by the toml format not having been registered as the registration is done in a static initializer in the class itself
+            // due to the clazz not having been initialized by the classloader (see java language specification 12.2)
+            // forcing the format or calling any static method on the class will guarantee it to be initialized
+            final CommentedFileConfig configData = CommentedFileConfig.builder(configPath, TomlFormat.instance()).sync().
                     preserveInsertionOrder().
                     autosave().
                     onFileNotFound((newfile, configFormat)-> setupConfigFile(c, newfile, configFormat)).

@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog].
 
+## [v2.0.1-1.17.1] - 2021-12-06
+### Fixed
+- Hopefully fixed a bug where config loading would very rarely lead to an exception due to the toml file format not being recognized
+
 ## [v2.0.0-1.17.1] - 2021-11-15
 - Initial release
 
