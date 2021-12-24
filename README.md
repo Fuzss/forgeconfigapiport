@@ -26,7 +26,19 @@ repositories {
 }
 
 dependencies {
-    modImplementation "curse.maven:<projectName>-<projectId>:<fileId>"
+    	modImplementation "curse.maven:<projectName>-<projectId>:<fileId>"
+}
+```
+
+Since the Curse Maven isn't aware of any maven dependencies, you'll have to add those manually, too. They are only required within your workspace, in a production environment those dependencies are already included with Forge Config API Port. All this will of course no longer be necessary when a proper maven repo is setup.
+```groovy
+repositories {
+    	mavenCentral()
+}
+
+dependencies {
+	implementation 'com.electronwill.night-config:core:3.6.3'
+	implementation 'com.electronwill.night-config:toml:3.6.3'
 }
 ```
 
@@ -45,7 +57,7 @@ public static void registerConfig(String modId, ModConfig.Type type, IConfigSpec
 ```
 
 ### Config loading
-As Forge's mod loading process is split into multiple stages, configs aren't loaded immediately upon being registered. On Fabric though, no such mod loading stages exist. Therefore, **Forge Config API Port** loads all registered configs immediately.
+As Forge's mod loading process is split into multiple stages, configs aren't loaded immediately upon being registered. On Fabric though, no such mod loading stages exist. Therefore, Forge Config API Port loads all registered configs immediately.
 
 ### Listening for config loading and reloading
 Forge's `ModConfigEvent.Loading` and `ModConfigEvent.Reloading` events are both adapted for Fabric's callback event style. They can be accessed from the `net.minecraftforge.api.fml.event.config.ModConfigEvent` class.
