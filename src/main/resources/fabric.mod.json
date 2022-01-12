@@ -35,6 +35,8 @@
   "depends": {
     "fabricloader": ">=${minFabricVersion}",
     "fabric": ">=${minFabricApiVersion}",
+    "com_electronwill_night-config_core": "*",
+    "com_electronwill_night-config_toml": "*",
     "minecraft": ">=${minMinecraftVersion} <${nextMinecraftVersion}",
     "java": ">=16"
   },
