@@ -17,9 +17,10 @@ For more information regarding the licensing of this project check the [LICENSIN
 ## DEVELOPER INFORMATION
 
 ### Adding to your workspace
-This project is still in development. Implementing it in your workspace is not yet recommended. Therefore, no maven repo exists at the moment.
+This project is still in development. Implementing it in your workspace is not yet recommended. Therefore, no maven repository exists at the moment.
 
-In case you're eager to test this project, it can be included via the Curse Maven (Note: File id is found at the end of the file url). This is how it's generally done.
+#### Adding Forge Config API Port via the Curse Maven
+In case you're eager to test this project, it can be included via the Curse Maven (Note: project name is merely a descriptor, you should be able to choose it freely; project id is found in the info box of a project page, file id is found at the end of the file url). This is how adding a Curse Maven dependency is generally done:
 ```groovy
 repositories {
 	maven { url = "https://cursemaven.com" }
@@ -30,7 +31,8 @@ dependencies {
 }
 ```
 
-Since the Curse Maven isn't aware of any maven dependencies, you'll have to add those manually, too. They are only required within your workspace, in a production environment those dependencies are already included with Forge Config API Port. All this will of course no longer be necessary when a proper maven repo is setup.
+#### Manually adding Night Config dependencies via Maven
+Since the Curse Maven generally isn't aware of any maven dependencies, you might have to add those manually, too. They are only required within your workspace, in a production environment those dependencies are shipped with Forge Config API Port.
 ```groovy
 repositories {
     	mavenCentral()
@@ -42,7 +44,32 @@ dependencies {
 }
 ```
 
-### Registering configs
+#### Adding dependency overrides for Night Config mods
+There's also one more thing that might have to be done: Depending on how you have enabled Forge Config API Port in your environment, the mod might not be able to recognize the required Night Config libraries. You'll know that is the case when upon running the game instance, you'll be greeted by this message:
+```
+ net.fabricmc.loader.impl.FormattedException: net.fabricmc.loader.impl.discovery.ModResolutionException: Mod resolution encountered an incompatible mod set!
+A potential solution has been determined:
+	 - Install com_electronwill_night-config_core, any version.
+	 - Install com_electronwill_night-config_toml, any version.
+```
+To resolve this issue, what you need to do is add dependency overrides (check the [Fabric Wiki](https://fabricmc.net/wiki/tutorial:dependency_overrides) for more information on this topic) for your configuration. Do that by creating a new file at `run/config/fabric_loader_dependencies.json`, in which you put the following contents:
+```json
+{
+  "version": 1,
+  "overrides": {
+    "forgeconfigapiport": {
+      "-depends": {
+        "com_electronwill_night-config_core": "",
+        "com_electronwill_night-config_toml": ""
+      }
+    }
+  }
+}
+```
+Also don't forget to manually add this file to your VCS, since the whole `run` directory is usually ignored by default.
+
+### Working with Forge Config API Port
+#### Registering configs
 The recommended point for registering your configs is directly in your `ModInitializer::onInitialize` method.
 
 Registering your configs still works via a class called `net.minecraftforge.api.ModLoadingContext`, though the name is only for mimicking Forge, as this is really only used for registering configs.
@@ -56,10 +83,10 @@ And as on Forge there is also a version which supports a custom file name.
 public static void registerConfig(String modId, ModConfig.Type type, IConfigSpec<?> spec, String fileName)
 ```
 
-### Config loading
+#### Config loading
 As Forge's mod loading process is split into multiple stages, configs aren't loaded immediately upon being registered. On Fabric though, no such mod loading stages exist. Therefore, Forge Config API Port loads all registered configs immediately.
 
-### Listening for config loading and reloading
+#### Listening for config loading and reloading
 Forge's `ModConfigEvent.Loading` and `ModConfigEvent.Reloading` events are both adapted for Fabric's callback event style. They can be accessed from the `net.minecraftforge.api.fml.event.config.ModConfigEvent` class.
 
 As on Forge, all these events provide is the config that is loading / reloading. But unlike on Forge, when processing that config, you'll have to make sure it actually comes from your mod. This is important, as there is no mod specific event bus on Fabric, meaning all events are fired for all mods subscribed to them.
