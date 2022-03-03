@@ -1,9 +1,11 @@
 package net.minecraftforge;
 
 import com.mojang.brigadier.CommandDispatcher;
+import net.fabricmc.api.EnvType;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.synchronization.ArgumentSerializer;
 import net.minecraft.commands.synchronization.ArgumentTypes;
@@ -15,15 +17,15 @@ import net.minecraftforge.network.config.ConfigSync;
 import net.minecraftforge.server.command.ConfigCommand;
 import net.minecraftforge.server.command.EnumArgument;
 import net.minecraftforge.server.command.ModIdArgument;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.MarkerManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ForgeConfigAPIPort implements ModInitializer {
-    public static final String MODID = "forgeconfigapiport";
-    public static final String NAME = "Forge Config API Port";
-    public static final Logger LOGGER = LogManager.getLogger(NAME);
+    public static final String MOD_ID = "forgeconfigapiport";
+    public static final String MOD_NAME = "Forge Config API Port";
+    public static final Logger LOGGER = LoggerFactory.getLogger(MOD_NAME);
 
     public static final Marker CORE = MarkerManager.getMarker("CORE");
 
@@ -39,8 +41,10 @@ public class ForgeConfigAPIPort implements ModInitializer {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void registerArgumentTypes() {
-        ArgumentTypes.register(new ResourceLocation(MODID, "enum").toString(), EnumArgument.class, (ArgumentSerializer) new EnumArgument.Serializer());
-        ArgumentTypes.register(new ResourceLocation(MODID, "modid").toString(), ModIdArgument.class, new EmptyArgumentSerializer<>(ModIdArgument::modIdArgument));
+        // don't add on servers as command is useless there anyways and serializing arguments will crash connecting vanilla clients
+        if (FabricLoader.getInstance().getEnvironmentType() != EnvType.CLIENT) return;
+        ArgumentTypes.register(new ResourceLocation(MOD_ID, "enum").toString(), EnumArgument.class, (ArgumentSerializer) new EnumArgument.Serializer());
+        ArgumentTypes.register(new ResourceLocation(MOD_ID, "modid").toString(), ModIdArgument.class, new EmptyArgumentSerializer<>(ModIdArgument::modIdArgument));
     }
 
     private void registerCallbacks() {
