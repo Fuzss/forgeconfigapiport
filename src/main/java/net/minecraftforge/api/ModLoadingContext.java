@@ -16,9 +16,10 @@ public final class ModLoadingContext {
      * @param spec the built config spec
      *
      * @throws java.lang.IllegalArgumentException when no mod container is found for <code>modId</code>
+     * @return the {@link ModConfig} instance
      */
-    public static void registerConfig(String modId, ModConfig.Type type, IConfigSpec<?> spec) {
-        new ModConfig(type, spec, FabricLoader.getInstance().getModContainer(modId).orElseThrow(() -> new IllegalArgumentException(String.format("no mod with mod id %s", modId))));
+    public static ModConfig registerConfig(String modId, ModConfig.Type type, IConfigSpec<?> spec) {
+        return new ModConfig(type, spec, FabricLoader.getInstance().getModContainer(modId).orElseThrow(() -> new IllegalArgumentException(String.format("No mod with mod id %s", modId))));
     }
 
     /**
@@ -30,8 +31,9 @@ public final class ModLoadingContext {
      * @param fileName file name to use instead of default
      *
      * @throws java.lang.IllegalArgumentException when no mod container is found for <code>modId</code>
+     * @return the {@link ModConfig} instance
      */
-    public static void registerConfig(String modId, ModConfig.Type type, IConfigSpec<?> spec, String fileName) {
-        new ModConfig(type, spec, FabricLoader.getInstance().getModContainer(modId).orElseThrow(() -> new IllegalArgumentException(String.format("no mod with mod id %s", modId))), fileName);
+    public static ModConfig registerConfig(String modId, ModConfig.Type type, IConfigSpec<?> spec, String fileName) {
+        return new ModConfig(type, spec, FabricLoader.getInstance().getModContainer(modId).orElseThrow(() -> new IllegalArgumentException(String.format("No mod with mod id %s", modId))), fileName);
     }
 }

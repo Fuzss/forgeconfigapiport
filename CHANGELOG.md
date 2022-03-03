@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog].
 
+## [v3.2.0-1.18.2] - 2022-03-03
+- Compiled for Minecraft 1.18.2
+
 ## [v3.1.1-1.18.1] - 2022-01-10
 ### Fixed
 - Fixed a bug where the game would crash during start-up due to the required config library not having been loaded yet

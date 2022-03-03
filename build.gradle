@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '0.10-SNAPSHOT'
+	id 'fabric-loom' version '0.11-SNAPSHOT'
 	id "com.matthewprenger.cursegradle" version "1.4.0"
 	id "com.modrinth.minotaur" version "1.1.0"
 	id 'maven-publish'
@@ -29,20 +29,20 @@ repositories {
 
 dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraftVersion}"
-	mappings minecraft.officialMojangMappings()
+	mappings loom.officialMojangMappings()
 
 	modImplementation "net.fabricmc:fabric-loader:${project.fabricVersion}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabricApiVersion}"
-	modImplementation "com.terraformersmc:modmenu:3.0.0"
-	implementation 'com.electronwill.night-config:core:3.6.3'
-	implementation 'com.electronwill.night-config:toml:3.6.3'
-
-	include 'com.electronwill.night-config:core:3.6.3'
-	include 'com.electronwill.night-config:toml:3.6.3'
+	modImplementation "com.terraformersmc:modmenu:3.1.0"
+	// same version as used on Forge, although this will be overwritten when another mod supplies a more recent one
+	implementation(include('com.electronwill.night-config:core:3.6.3'))
+	implementation(include('com.electronwill.night-config:toml:3.6.3'))
 }
 
-minecraft {
-	refmapName "META-INF/${project.modid}.refmap.json"
+loom {
+	mixin {
+		defaultRefmapName = "META-INF/${project.modid}.refmap.json"
+	}
 }
 
 processResources {
