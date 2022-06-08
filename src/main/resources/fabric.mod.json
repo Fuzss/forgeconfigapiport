@@ -6,8 +6,6 @@
   "name": "${modName}",
   "description": "${modDescription}",
   "authors": [
-    "LexManos",
-    "cpw",
     "${modAuthor}"
   ],
   "contact": {

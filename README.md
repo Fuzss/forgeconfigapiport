@@ -17,17 +17,32 @@ For more information regarding the licensing of this project check the [LICENSIN
 ## DEVELOPER INFORMATION
 
 ### Adding to your workspace
-This project is still in development. Implementing it in your workspace is not yet recommended. Therefore, no maven repository exists at the moment.
-
-#### Adding Forge Config API Port via the Curse Maven
-In case you're eager to test this project, it can be included via the Curse Maven (Note: project name is merely a descriptor, you should be able to choose it freely; project id is found in the info box of a project page, file id is found at the end of the file url). This is how adding a Curse Maven dependency is generally done:
+#### Via Fuzs Mod Resources
 ```groovy
 repositories {
-	maven { url = "https://cursemaven.com" }
+    maven {
+        name = "Fuzs Mod Resources"
+        url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/"
+    }
 }
 
 dependencies {
-    	modImplementation "curse.maven:<projectName>-<projectId>:<fileId>"
+        modImplementation "net.minecraftforge:forgeconfigapiport-fabric:<modVersion>"   // e.g. 4.0.0 for Minecraft 1.19
+}
+```
+
+#### Via Curse Maven
+Alternatively you can use the Curse Maven to include this library in your workspace. (Note: project name is merely a descriptor, you should be able to choose it freely; project id is found in the info box of a project page, file id is found at the end of the file url) This is how adding a Curse Maven dependency is generally done:
+```groovy
+repositories {
+    maven {
+        name = 'Curse Maven'
+        url = 'https://cursemaven.com'
+    }
+}
+
+dependencies {
+    	modImplementation "curse.maven:<projectName>-<projectId>:<fileId>"  // e.g. forgeconfigapiport-547434:3671141 for mod version 3.2.0 for Minecraft 1.18.2, all required ids for this version are found here: https://www.curseforge.com/minecraft/mc-mods/forge-config-api-port-fabric/files/3671141
 }
 ```
 
@@ -99,3 +114,10 @@ ModConfigEvent.RELOADING.register((ModConfig config) -> {
     }
 });
 ```
+
+### Forge Config API Port in a multi-loader workspace
+As the sole purpose of this library is to allow for config parity on Forge and Fabric, Forge Config API Port works especially great when developing your mod using a multi-loader workspace Gradle setup such as [this one](https://github.com/jaredlll08/MultiLoader-Template), arranged by [Jaredlll08](https://github.com/jaredlll08).
+
+Configs can rather easily be dealt with in a common project using a few abstractions (mainly for `ForgeConfigSpec.Builder`), sparing you separate config setups for each supported mod loader.
+
+A complete implementation of this can be found in as part of my [Puzzles Lib](https://github.com/Fuzss/puzzleslib) library. (currently still wip in the `1.19` branch of the repository)
