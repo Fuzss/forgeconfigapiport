@@ -1,7 +1,7 @@
 plugins {
 	id 'fabric-loom' version '0.11-SNAPSHOT'
 	id "com.matthewprenger.cursegradle" version "1.4.0"
-	id "com.modrinth.minotaur" version "1.1.0"
+	id "com.modrinth.minotaur" version "2.+"
 	id 'io.github.juuxel.loom-quiltflower' version '1.7.2'
 	id 'maven-publish'
 	id 'signing'
@@ -19,7 +19,6 @@ group = "${modGroup}"
 ext.modid = "${modId}"
 ext.modauthor = "${modAuthor}"
 ext.nextmcversion = getNextVersion("${minMinecraftVersion}")
-//ext.puzzlesversion = "${puzzlesVersion.substring(1, puzzlesVersion.indexOf("-"))}"
 ext.mainentrypoint = "${project.group}".concat(".${rootProject.name}")
 ext.cliententrypoint = "${project.group}".concat(".client.${rootProject.name}Client")
 
@@ -62,7 +61,6 @@ processResources {
 	inputs.property "minFabricApiVersion", 		"${minFabricApiVersion}"
     inputs.property "minMinecraftVersion", 		"${minMinecraftVersion}"
     inputs.property "nextMinecraftVersion", 	project.nextmcversion
-//	inputs.property "minPuzzlesVersion", 		"${minPuzzlesVersion}"
     inputs.property "packFormat", 				"${packFormat}"
 	inputs.property "mainEntryPoint", 			project.mainentrypoint
 	inputs.property "clientEntryPoint", 		project.cliententrypoint
@@ -82,7 +80,6 @@ processResources {
 				'minFabricApiVersion':  "${minFabricApiVersion}",
                 'minMinecraftVersion':  "${minMinecraftVersion}",
                 "nextMinecraftVersion": project.nextmcversion,
-//				"minPuzzlesVersion":    "${minPuzzlesVersion}",
 				"mainEntryPoint": 		project.mainentrypoint,
 				"clientEntryPoint": 	project.cliententrypoint
         )
@@ -146,6 +143,8 @@ tasks.withType(GenerateModuleMetadata) {
 publishing {
 	publications {
 		mavenJava (MavenPublication) {
+			artifactId = "${modId}-fabric"
+			version = modVersion
 			from components.java
 			// exclude certain dependencies when publishing to maven
 			// from https://stackoverflow.com/a/50121790
@@ -158,47 +157,69 @@ publishing {
 			}
 		}
 	}
-}
-
-
-curseforge {
-	def changelogName = 'CHANGELOG.md'
-	def changelogFile = file(changelogName)
-	if (!changelogFile.canRead()) { throw new FileNotFoundException("Could not read file ".concat(changelogName)) }
-	apiKey = project.findProperty('curseApiToken')
-	project {
-		id = project.findProperty('curseProjectId')
-		changelogType = 'markdown'
-		changelog = changelogFile
-		releaseType = project.findProperty('curseReleaseType')
-		addGameVersion project.findProperty('projectLoader')
-		project.findProperty('curseProjectVersion').replaceAll(" ", "").split(",").each { version -> addGameVersion version }
-		mainArtifact remapJar
-		addArtifact sourcesJar
-		relations {
-			requiredDependency 'fabric-api'
-			optionalDependency 'modmenu'
-//			requiredDependency 'puzzles-lib-fabric'
+	repositories {
+		maven {
+			name = 'ModResources'
+			url "file://${project.modResources}/maven"
 		}
 	}
+}
+
+curseforge {
+	if (!file('CHANGELOG.md').canRead()) { throw new FileNotFoundException("Could not read changelog file") }
+	apiKey = project.findProperty('curseApiToken')
+	project {
+		id = projectCurseId
+		changelogType = 'markdown'
+		changelog = file('CHANGELOG.md')
+		releaseType = projectReleaseType
+		addGameVersion projectLoader
+		projectGameVersions.split(",").each {
+			addGameVersion it.trim()
+		}
+		mainArtifact(remapJar) {
+			displayName = "[${projectLoader.toUpperCase()}] [${minecraftVersion}] ${rootProject.name}-v${modVersion}"
+			relations {
+				requiredDependency 'fabric-api'
+				optionalDependency 'modmenu'
+			}
+		}
+		addArtifact sourcesJar
+	}
 	options {
-		// doesn't upload, only prints json to console
 //        debug = true
 		javaVersionAutoDetect = false
 		forgeGradleIntegration = false
 	}
 }
 
-//task publishModrinth (type: TaskModrinthUpload){
-//	token = System.getenv("modrinthApiToken")
-//	projectId = '0'
-//	versionNumber = project.version
-//	versionName = project.archivesBaseName
-//	releaseType = 'release'
-//	uploadFile = remapJar // This is the java jar task
-//	addGameVersion("${project.minecraft_version}")
-//	addLoader('fabric')
-//}
+modrinth {
+	if (!file('CHANGELOG.md').canRead()) { throw new FileNotFoundException("Could not read changelog file") }
+	token = project.findProperty('modrinthApiToken')
+	projectId = projectModrinthId
+	versionNumber = modVersion
+	versionName = "[${projectLoader.toUpperCase()}] [${minecraftVersion}] ${rootProject.name}-v${modVersion}"
+	changelog = file('CHANGELOG.md').text
+	versionType = projectReleaseType
+	uploadFile = remapJar // This is the java jar task
+	projectGameVersions.split(",").each {
+		gameVersions.add it.trim()
+	}
+	loaders.add projectLoader.toLowerCase()
+	additionalFiles.add file("${project.buildDir}/libs/${project.archivesBaseName}-${project.version}-sources.jar")
+	dependencies {
+		required.project "P7dR8mSH"		// Fabric API
+		optional.project "mOgUt4GM"		// Mod Menu
+	}
+//	debugMode = true
+}
+
+[tasks.modrinth, tasks.modrinthSyncBody].each {it.configure({
+		group = 'upload'
+	})
+}
+
+[tasks.modrinth, tasks.curseforge].each {it.dependsOn(build, remapJar)}
 
 task copyJarToDir(type: Copy) {
 	onlyIf { project.hasProperty('buildJarOutputDir') && project.hasProperty('uniqueBuildNumber') }
@@ -226,7 +247,9 @@ task incrementBuildNumber {
 	}
 }
 
+
 import groovy.json.*
+
 import java.util.regex.Pattern
 
 def static getNextVersion(String puzzlesVersion) {
@@ -241,3 +264,34 @@ signing {
 }
 
 build.finalizedBy project.copyJarToDir, project.incrementBuildNumber
+
+task cleanAndBuild(type: GradleBuild) {
+	group = '_main'
+	tasks = [
+			'clean',
+			'build'
+	]
+}
+
+task publishEverywhere(type: GradleBuild) {
+	group = '_main'
+	tasks = [
+			'clean',
+			'curseforge',
+			'modrinth'
+	]
+}
+
+task fabricClient(type: GradleBuild) {
+	group = '_main'
+	tasks = [
+			'runClient'
+	]
+}
+
+task fabricServer(type: GradleBuild) {
+	group = '_main'
+	tasks = [
+			':runServer'
+	]
+}
