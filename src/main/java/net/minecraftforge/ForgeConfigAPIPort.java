@@ -3,13 +3,14 @@ package net.minecraftforge;
 import com.mojang.brigadier.CommandDispatcher;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.command.v2.ArgumentTypeRegistry;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.synchronization.ArgumentSerializer;
-import net.minecraft.commands.synchronization.ArgumentTypes;
-import net.minecraft.commands.synchronization.EmptyArgumentSerializer;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.synchronization.SingletonArgumentInfo;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.fml.loading.FMLConfig;
 import net.minecraftforge.fmllegacy.server.ServerLifecycleHooks;
@@ -32,24 +33,22 @@ public class ForgeConfigAPIPort implements ModInitializer {
     @Override
     public void onInitialize() {
         ConfigSync.INSTANCE.init();
-        // loaded immediately on fabric as no mod loading stages exist
-//        ConfigTracker.INSTANCE.loadConfigs(ModConfig.Type.COMMON, FabricEnvironment.getConfigDir());
         FMLConfig.loadDefaultConfigPath();
-        this.registerArgumentTypes();
-        this.registerCallbacks();
+        registerArgumentTypes();
+        registerHandlers();
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private void registerArgumentTypes() {
+    private static void registerArgumentTypes() {
         // don't add on servers as command is useless there anyways and serializing arguments will crash connecting vanilla clients
         if (FabricLoader.getInstance().getEnvironmentType() != EnvType.CLIENT) return;
-        ArgumentTypes.register(new ResourceLocation(MOD_ID, "enum").toString(), EnumArgument.class, (ArgumentSerializer) new EnumArgument.Serializer());
-        ArgumentTypes.register(new ResourceLocation(MOD_ID, "modid").toString(), ModIdArgument.class, new EmptyArgumentSerializer<>(ModIdArgument::modIdArgument));
+        ArgumentTypeRegistry.registerArgumentType(new ResourceLocation(MOD_ID, "enum"), EnumArgument.class, new EnumArgument.Info());
+        ArgumentTypeRegistry.registerArgumentType(new ResourceLocation(MOD_ID, "modid"), ModIdArgument.class, SingletonArgumentInfo.contextFree(ModIdArgument::modIdArgument));
     }
 
-    private void registerCallbacks() {
-        CommandRegistrationCallback.EVENT.register((CommandDispatcher<CommandSourceStack> dispatcher, boolean dedicated) -> {
-            if (!dedicated) ConfigCommand.register(dispatcher);
+    private static void registerHandlers() {
+        CommandRegistrationCallback.EVENT.register((CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext registryAccess, Commands.CommandSelection environment) -> {
+            if (environment.includeIntegrated) ConfigCommand.register(dispatcher);
         });
         ServerLifecycleEvents.SERVER_STARTING.register(ServerLifecycleHooks::handleServerAboutToStart);
         ServerLifecycleEvents.SERVER_STOPPED.register(ServerLifecycleHooks::handleServerStopped);
