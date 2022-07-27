@@ -123,29 +123,6 @@ ext.jarAttributes = [
 		"Implementation-Timestamp"  : new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
 ]
 
-tasks.withType(Jar).configureEach {
-	from rootProject.file("LICENSE")
-	from rootProject.file("LICENSE-FORGE")
-	from rootProject.file("LICENSE-NIGHT-CONFIG")
-	from rootProject.file("LICENSING.md")
-	from rootProject.file("CHANGELOG.md")
-	// this breaks the remapping task, so we only do it for the main jar below
-//	exclude 'publishing.fabric.mod.json'
-	manifest { attributes(project.jarAttributes) }
-	group 'jar'
-}
-
-tasks.withType(GenerateModuleMetadata) {
-	// Disables Gradle's custom module metadata from being published to maven. The
-	// metadata includes mapped dependencies which are not reasonably consumable by
-	// other mod developers.
-	enabled = false
-}
-
-jar {
-	exclude 'publishing.fabric.mod.json'
-}
-
 task publishingJar(type: Jar) {
 	// needs a different identifier apparently, so use the one the remapping task renames the original jar to by default
 	classifier 'dev'
@@ -157,6 +134,25 @@ task publishingJar(type: Jar) {
 task remapPublishingJar(type: net.fabricmc.loom.task.RemapJarTask) {
 	inputFile.set publishingJar.archiveFile
 	dependsOn publishingJar
+}
+
+tasks.withType(Jar).configureEach {
+	from rootProject.file("LICENSE")
+	from rootProject.file("LICENSE-FORGE")
+	from rootProject.file("LICENSE-NIGHT-CONFIG")
+	from rootProject.file("LICENSING.md")
+	from rootProject.file("CHANGELOG.md")
+	if (it != publishingJar)
+	exclude 'publishing.fabric.mod.json'
+	manifest { attributes(project.jarAttributes) }
+	group 'jar'
+}
+
+tasks.withType(GenerateModuleMetadata) {
+	// Disables Gradle's custom module metadata from being published to maven. The
+	// metadata includes mapped dependencies which are not reasonably consumable by
+	// other mod developers.
+	enabled = false
 }
 
 publishing {
