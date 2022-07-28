@@ -32,15 +32,23 @@ dependencies {
 	mappings loom.officialMojangMappings()
 
 	modImplementation "net.fabricmc:fabric-loader:${project.fabricVersion}"
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabricApiVersion}"
-	modImplementation "com.terraformersmc:modmenu:4.0.0"
+	def fabricApiModules = [
+			"fabric-api-base",
+			"fabric-command-api-v2",
+			"fabric-networking-api-v1"
+	]
+	fabricApiModules.forEach {
+		modImplementation(include(fabricApi.module(it, fabricApiVersion)))
+	}
+
+	modImplementation "com.terraformersmc:modmenu:4.0.5"
 	implementation(include('com.electronwill.night-config:core:3.6.5'))
 	implementation(include('com.electronwill.night-config:toml:3.6.5'))
 }
 
 loom {
 	mixin {
-		defaultRefmapName = "META-INF/${project.modid}.refmap.json"
+		defaultRefmapName = "${modid}.refmap.json"
 	}
 }
 
@@ -102,8 +110,9 @@ tasks.withType(JavaCompile).configureEach {
 	it.options.release = 17
 }
 
-javadoc {
-	options.encoding = "UTF-8"
+javadoc.options {
+	encoding = "UTF-8"
+	addStringOption('Xdoclint:none', '-quiet')
 }
 
 java {
@@ -230,7 +239,7 @@ curseforge {
 		mainArtifact(remapJar) {
 			displayName = "[${projectLoader.toUpperCase()}] [${minecraftVersion}] ${rootProject.name}-v${modVersion}"
 			relations {
-				requiredDependency 'fabric-api'
+				embeddedLibrary 'fabric-api'
 				optionalDependency 'modmenu'
 			}
 		}
@@ -258,8 +267,8 @@ modrinth {
 	loaders.add projectLoader.toLowerCase()
 	additionalFiles.add file("${project.buildDir}/libs/${project.archivesBaseName}-${project.version}-sources.jar")
 	dependencies {
-		required.project "P7dR8mSH"		// Fabric API
-		optional.project "mOgUt4GM"		// Mod Menu
+		embedded.project "fabric-api"
+		optional.project "modmenu"
 	}
 //	debugMode = true
 }

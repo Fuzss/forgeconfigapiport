@@ -14,7 +14,7 @@
     "sources": "${modSourceUrl}"
   },
 
-  "license": "Mozilla Public License 2.0",
+  "license": "MPL-2",
   "icon": "mod_logo.png",
 
   "environment": "*",
@@ -24,15 +24,19 @@
     ],
     "client": [
       "${clientEntryPoint}"
+    ],
+    "modmenu": [
+      "${modGroup}.modmenu.ConfigFactoryHandler"
     ]
   },
   "mixins": [
-    "META-INF/${modId}.mixins.json"
+    "${modId}.fabric.mixins.json"
   ],
 
   "depends": {
     "fabricloader": ">=${minFabricVersion}",
-    "fabric": ">=${minFabricApiVersion}",
+    "fabric-command-api-v2": ">=${minFabricApiVersion}",
+    "fabric-networking-api-v1": ">=${minFabricApiVersion}",
     "com_electronwill_night-config_core": "*",
     "com_electronwill_night-config_toml": "*",
     "minecraft": ">=${minMinecraftVersion} <${nextMinecraftVersion}",
