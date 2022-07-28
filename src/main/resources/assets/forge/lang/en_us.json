@@ -1,5 +1,39 @@
 {
   "commands.forge.arguments.enum.invalid": "Enum constant must be one of {0}, found {1}",
   "commands.config.getwithtype": "Config for %s of type %s found at %s",
-  "commands.config.noconfig": "Config for %s of type %s not found"
+  "commands.config.noconfig": "Config for %s of type %s not found",
+
+  "forge.configgui.title.runtimeConfigs": "Edit the configs of %s",
+  "forge.configgui.title.defaultConfigs": "Edit the default configs of %s",
+  "forge.configgui.client": "Client options",
+  "forge.configgui.server": "Server or World options",
+  "forge.configgui.common": "Common options",
+  "forge.configgui.fixAdvancementLoading.tooltip": "Set this to true to fix the loading of advancements on relogin to world, after a mod has modified them.",
+  "forge.configgui.fixAdvancementLoading": "Fix Advancement Loading",
+  "forge.configgui.permissionHandler.tooltip": "Define the permission handler to use.",
+  "forge.configgui.permissionHandler": "Permission Handler",
+  "forge.configgui.useCombinedDepthStencilAttachment.toolTip": "Set this to true to use a combined depth/stencil attachment for the main framebuffer.",
+  "forge.configgui.useCombinedDepthStencilAttachment": "Use Combined Depth/Stencil Attachment",
+  "forge.configgui.compressLanIPv6Addresses.toolTip": "Set this to true to compress IPv6 addresses in the LAN.",
+  "forge.configgui.compressLanIPv6Addresses": "Compress LAN IPv6 Addresses",
+
+  "forge.configgui.entryInvalid": "The value is not valid. Please change it.",
+  "forge.configgui.requiresWorldRestartToTakeEffect": "This change requires a world restart to take effect.",
+
+  "forge.configgui.error.boolean.notTrueOrFalse": "The current value is: {0}.\nIt must be true or false.",
+  "forge.configgui.error.boolean.needsToBeText": "The value must be a text value.",
+  "forge.configgui.error.ranged.notInBounds": "The current value is: {0}.\nIt must be between {1} and {2}.",
+  "forge.configgui.error.ranged.needsToBeOfType": "The value must be of type {0}.",
+  "forge.configgui.error.enum.invalidName": "The current value is: {0}.\nIt must be one of the following:{1}",
+  "forge.configgui.error.enum.needsToBeText": "The value must be a text value.",
+  "forge.configgui.error.permissionHandler.unknownName": "The current value is: {0}.\nIt must be one of the following:{1}",
+  "forge.configgui.error.permissionHandler.needsToBeText": "The value must be a text value.",
+
+  "forge.configgui.resetToInitial": "Reset to previous value.\n(The value from before opening this screen.)",
+  "forge.configgui.resetToDefault": "Reset to default value",
+  "forge.configgui.resetGroupToInitial": "Reset all entries in this group to their previous value.\n(The value from before opening this screen.)",
+  "forge.configgui.resetGroupToDefault": "Reset all entries in this group to their default value",
+  "forge.configgui.resetAllToInitial": "Reset all entries to their previous value.\n(The value from before opening this screen.)",
+  "forge.configgui.resetAllToDefault": "Reset all entries to their default value",
+  "forge.configgui.search": "Search"
 }

@@ -77,7 +77,14 @@ public class ModConfig {
     }
 
     public void acceptSyncedConfig(byte[] bytes) {
-        this.setConfigData(TomlFormat.instance().createParser().parse(new ByteArrayInputStream(bytes)));
+        if (bytes != null)
+        {
+            setConfigData(TomlFormat.instance().createParser().parse(new ByteArrayInputStream(bytes)));
+        }
+        else
+        {
+            setConfigData(null);
+        }
         ModConfigEvent.RELOADING.invoker().onModConfigReloading(this);
     }
 

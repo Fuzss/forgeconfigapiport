@@ -59,7 +59,7 @@ public class ConfigSync {
     }
 
     private List<Pair<String, FriendlyByteBuf>> syncConfigs() {
-        final Map<String, byte[]> configData = this.tracker.configSets().get(ModConfig.Type.SERVER).stream().collect(Collectors.toMap(ModConfig::getFileName, config -> {
+        final Map<String, byte[]> configData = tracker.configSets().get(ModConfig.Type.SERVER).stream().collect(Collectors.toMap(ModConfig::getFileName, config -> {
             try {
                 return Files.readAllBytes(config.getFullPath());
             } catch (IOException e) {
@@ -72,5 +72,9 @@ public class ConfigSync {
             buf.writeByteArray(e.getValue());
             return Pair.of("Config " + e.getKey(), buf);
         }).collect(Collectors.toList());
+    }
+
+    public void unloadSyncedConfig() {
+        tracker.configSets().get(ModConfig.Type.SERVER).forEach(config -> config.acceptSyncedConfig(null));
     }
 }
