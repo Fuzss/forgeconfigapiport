@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog].
 
+## [v4.0.2-1.19] - 2022-07-28
+### Fixed
+- Fixed Mod Menu being required as a Maven dependency when it's actually just optional
+
 ## [v4.0.1-1.19] - 2022-07-27
 ### Changed
 - Maven publication no longer depends on Night Config as a Fabric mod
