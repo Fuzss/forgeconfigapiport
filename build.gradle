@@ -218,7 +218,7 @@ publishing {
 	}
 	repositories {
 		maven {
-			name = 'ModResources'
+			name = 'FuzsModResources'
 			url "file://${project.modResources}/maven"
 		}
 	}

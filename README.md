@@ -129,4 +129,6 @@ The only thing where you'll actually have to use mod loader specific code is whe
 A complete implementation of this can be found e.g. [here](https://github.com/thexaero/open-parties-and-claims).
 
 ### In-game configuration using Forge Config API Port
-In-game configursation has not yet been implemented, as it is not available on Forge itself. A PR adding such a simple system to Forge is currently pending, once approved it will be ported to Forge Config API Port as soon as possible. Config screens will then be accessible using [Mod Menu](https://github.com/TerraformersMC/ModMenu)
+In-game configuration has been ported from Forge for Minecraft 1.19.1. Config screens are generated automatically for every mod using Forge Config API port, to use them in-game [Mod Menu](https://github.com/TerraformersMC/ModMenu) needs to be installed. Adding Mod Menu to your development environment is not a requirement, but highly recommended.
+
+As Forge's config screens are just extremely basic, I'm also working on porting my own [Config Menus for Forge](https://github.com/Fuzss/configmenusforge) mod to Fabric, to provide more usable config screens.
