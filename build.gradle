@@ -1,11 +1,14 @@
 plugins {
 	id 'fabric-loom' version '0.11-SNAPSHOT'
 	id "com.matthewprenger.cursegradle" version "1.4.0"
-	id "com.modrinth.minotaur" version "1.1.0"
+	id "com.modrinth.minotaur" version "2.+"
+	id 'io.github.juuxel.loom-quiltflower' version '1.7.2'
 	id 'maven-publish'
 	id 'signing'
 	id 'java-library'
 }
+
+apply from: './gradle/tasks.gradle'
 
 sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
@@ -18,7 +21,6 @@ group = "${modGroup}"
 ext.modid = "${modId}"
 ext.modauthor = "${modAuthor}"
 ext.nextmcversion = getNextVersion("${minMinecraftVersion}")
-//ext.puzzlesversion = "${puzzlesVersion.substring(1, puzzlesVersion.indexOf("-"))}"
 ext.mainentrypoint = "${project.group}".concat(".${rootProject.name}")
 ext.cliententrypoint = "${project.group}".concat(".client.${rootProject.name}Client")
 
@@ -32,16 +34,24 @@ dependencies {
 	mappings loom.officialMojangMappings()
 
 	modImplementation "net.fabricmc:fabric-loader:${project.fabricVersion}"
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabricApiVersion}"
+	def fabricApiModules = [
+			"fabric-api-base",
+			"fabric-lifecycle-events-v1",
+			"fabric-command-api-v1",
+			"fabric-networking-api-v1"
+	]
+	fabricApiModules.forEach {
+		modImplementation(include(fabricApi.module(it, fabricApiVersion)))
+	}
+
 	modImplementation "com.terraformersmc:modmenu:3.1.0"
-	// same version as used on Forge, although this will be overwritten when another mod supplies a more recent one
-	implementation(include('com.electronwill.night-config:core:3.6.3'))
-	implementation(include('com.electronwill.night-config:toml:3.6.3'))
+	implementation(include('com.electronwill.night-config:core:3.6.5'))
+	implementation(include('com.electronwill.night-config:toml:3.6.5'))
 }
 
 loom {
 	mixin {
-		defaultRefmapName = "META-INF/${project.modid}.refmap.json"
+		defaultRefmapName = "${modid}.refmap.json"
 	}
 }
 
@@ -62,12 +72,11 @@ processResources {
 	inputs.property "minFabricApiVersion", 		"${minFabricApiVersion}"
     inputs.property "minMinecraftVersion", 		"${minMinecraftVersion}"
     inputs.property "nextMinecraftVersion", 	project.nextmcversion
-//	inputs.property "minPuzzlesVersion", 		"${minPuzzlesVersion}"
     inputs.property "packFormat", 				"${packFormat}"
 	inputs.property "mainEntryPoint", 			project.mainentrypoint
 	inputs.property "clientEntryPoint", 		project.cliententrypoint
 
-	filesMatching ('fabric.mod.json') {
+	filesMatching (['fabric.mod.json', 'publishing.fabric.mod.json']) {
         expand (
                 'modId':                project.modid,
                 'modName':              "${modName}",
@@ -82,7 +91,6 @@ processResources {
 				'minFabricApiVersion':  "${minFabricApiVersion}",
                 'minMinecraftVersion':  "${minMinecraftVersion}",
                 "nextMinecraftVersion": project.nextmcversion,
-//				"minPuzzlesVersion":    "${minPuzzlesVersion}",
 				"mainEntryPoint": 		project.mainentrypoint,
 				"clientEntryPoint": 	project.cliententrypoint
         )
@@ -105,8 +113,9 @@ tasks.withType(JavaCompile).configureEach {
 	it.options.release = 17
 }
 
-javadoc {
-	options.encoding = "UTF-8"
+javadoc.options {
+	encoding = "UTF-8"
+	addStringOption('Xdoclint:none', '-quiet')
 }
 
 java {
@@ -126,14 +135,29 @@ ext.jarAttributes = [
 		"Implementation-Timestamp"  : new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
 ]
 
+task publishingJar(type: Jar) {
+	// needs a different identifier apparently, so use the one the remapping task renames the original jar to by default
+	classifier 'dev'
+	from sourceSets.main.output
+	exclude 'fabric.mod.json'
+	rename 'publishing.fabric.mod.json', 'fabric.mod.json'
+}
+
+task remapPublishingJar(type: net.fabricmc.loom.task.RemapJarTask) {
+	inputFile.set publishingJar.archiveFile
+	dependsOn publishingJar
+}
+
 tasks.withType(Jar).configureEach {
-	it.from rootProject.file("LICENSE")
-	it.from rootProject.file("LICENSE-FORGE")
-	it.from rootProject.file("LICENSE-NIGHT-CONFIG")
-	it.from rootProject.file("LICENSING.md")
-	it.from rootProject.file("CHANGELOG.md")
-	it.manifest { attributes(project.jarAttributes) }
-	it.group 'jar'
+	from rootProject.file("LICENSE")
+	from rootProject.file("LICENSE-FORGE")
+	from rootProject.file("LICENSE-NIGHT-CONFIG")
+	from rootProject.file("LICENSING.md")
+	from rootProject.file("CHANGELOG.md")
+	if (it != publishingJar)
+	exclude 'publishing.fabric.mod.json'
+	manifest { attributes(project.jarAttributes) }
+	group 'jar'
 }
 
 tasks.withType(GenerateModuleMetadata) {
@@ -146,59 +170,118 @@ tasks.withType(GenerateModuleMetadata) {
 publishing {
 	publications {
 		mavenJava (MavenPublication) {
-			from components.java
-			// exclude certain dependencies when publishing to maven
-			// from https://stackoverflow.com/a/50121790
-			pom.withXml {
-				asNode().dependencies.dependency.each { dep ->
-					if (dep.artifactId.last().value().last() in ["modmenu"]) {
-						assert dep.parent().remove(dep)
+			artifactId = "${modId}-${projectLoader.toLowerCase()}"
+			version = modVersion
+			// don't use this, it has the default jar, not sure how we could remove it
+			// maybe as is done here for the sources jar: https://docs.gradle.org/current/userguide/publishing_customization.html
+//			from components.java
+			artifact remapPublishingJar
+			artifact sourcesJar
+			artifact javadocJar
+			pom {
+				name = "${modName} [${projectLoader.toUpperCase()}]"
+				description = "${modDescription}"
+				url = "${modSourceUrl}"
+				scm {
+					url = "${modSourceUrl}"
+					connection = "${modSourceUrl}".replace("https", "scm:git:git").concat(".git")
+					developerConnection = "${modSourceUrl}".replace("https://github.com/", "scm:git:git@github.com:").concat(".git")
+				}
+				issueManagement {
+					system = 'github'
+					url = "${modIssueUrl}"
+				}
+				licenses {
+					license {
+						name = 'MPL-2'
+						url = 'https://www.mozilla.org/en-US/MPL/2.0/'
+					}
+				}
+				developers {
+					developer {
+						id = "${modAuthor}".toLowerCase()
+						name = "${modAuthor}"
+					}
+				}
+			}
+			// this is necessary when not using 'from components.java', otherwise dependencies block will still be empty at this point
+			afterEvaluate {
+				// exclude certain dependencies when publishing to maven
+				// from https://stackoverflow.com/a/50121790
+				pom.withXml {
+					asNode().dependencies.dependency.each { dep ->
+						// use this approach to make excluding dependencies from Curse Maven more convenient
+						if (["com.terraformersmc:modmenu"].stream().anyMatch(mod -> "${dep.groupId.last().value()}:${dep.artifactId.last().value()}".startsWith(mod))) {
+							assert dep.parent().remove(dep)
+						}
 					}
 				}
 			}
 		}
 	}
-}
-
-
-curseforge {
-	def changelogName = 'CHANGELOG.md'
-	def changelogFile = file(changelogName)
-	if (!changelogFile.canRead()) { throw new FileNotFoundException("Could not read file ".concat(changelogName)) }
-	apiKey = project.findProperty('curseApiToken')
-	project {
-		id = project.findProperty('curseProjectId')
-		changelogType = 'markdown'
-		changelog = changelogFile
-		releaseType = project.findProperty('curseReleaseType')
-		addGameVersion project.findProperty('projectLoader')
-		project.findProperty('curseProjectVersion').replaceAll(" ", "").split(",").each { version -> addGameVersion version }
-		mainArtifact remapJar
-		addArtifact sourcesJar
-		relations {
-			requiredDependency 'fabric-api'
-			optionalDependency 'modmenu'
-//			requiredDependency 'puzzles-lib-fabric'
+	repositories {
+		maven {
+			name = 'FuzsModResources'
+			url "file://${project.modResources}/maven"
 		}
 	}
+}
+
+curseforge {
+	if (!file('CHANGELOG.md').canRead()) { throw new FileNotFoundException("Could not read changelog file") }
+	apiKey = project.findProperty('curseApiToken')
+	project {
+		id = projectCurseId
+		changelogType = 'markdown'
+		changelog = file('CHANGELOG.md')
+		releaseType = projectReleaseType
+		addGameVersion projectLoader
+		projectGameVersions.split(",").each {
+			addGameVersion it.trim()
+		}
+		mainArtifact(remapJar) {
+			displayName = "[${projectLoader.toUpperCase()}] [${minecraftVersion}] ${rootProject.name}-v${modVersion}"
+			relations {
+				embeddedLibrary 'fabric-api'
+				optionalDependency 'modmenu'
+			}
+		}
+		addArtifact sourcesJar
+	}
 	options {
-		// doesn't upload, only prints json to console
 //        debug = true
 		javaVersionAutoDetect = false
 		forgeGradleIntegration = false
 	}
 }
 
-//task publishModrinth (type: TaskModrinthUpload){
-//	token = System.getenv("modrinthApiToken")
-//	projectId = '0'
-//	versionNumber = project.version
-//	versionName = project.archivesBaseName
-//	releaseType = 'release'
-//	uploadFile = remapJar // This is the java jar task
-//	addGameVersion("${project.minecraft_version}")
-//	addLoader('fabric')
-//}
+modrinth {
+	if (!file('CHANGELOG.md').canRead()) { throw new FileNotFoundException("Could not read changelog file") }
+	token = project.findProperty('modrinthApiToken')
+	projectId = projectModrinthId
+	versionNumber = modVersion
+	versionName = "[${projectLoader.toUpperCase()}] [${minecraftVersion}] ${rootProject.name}-v${modVersion}"
+	changelog = file('CHANGELOG.md').text
+	versionType = projectReleaseType
+	uploadFile = remapJar // This is the java jar task
+	projectGameVersions.split(",").each {
+		gameVersions.add it.trim()
+	}
+	loaders.add projectLoader.toLowerCase()
+	additionalFiles.add file("${project.buildDir}/libs/${project.archivesBaseName}-${project.version}-sources.jar")
+	dependencies {
+		embedded.project "fabric-api"
+		optional.project "modmenu"
+	}
+//	debugMode = true
+}
+
+[tasks.modrinth, tasks.modrinthSyncBody].each {it.configure({
+		group = 'upload'
+	})
+}
+
+[tasks.modrinth, tasks.curseforge].each {it.dependsOn(build, remapJar)}
 
 task copyJarToDir(type: Copy) {
 	onlyIf { project.hasProperty('buildJarOutputDir') && project.hasProperty('uniqueBuildNumber') }
@@ -226,7 +309,9 @@ task incrementBuildNumber {
 	}
 }
 
+
 import groovy.json.*
+
 import java.util.regex.Pattern
 
 def static getNextVersion(String puzzlesVersion) {

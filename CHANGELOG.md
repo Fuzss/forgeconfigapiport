@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog].
 
+## [v3.2.1-1.18.2] - 2022-07-31
+- Bundled Fabric API, it's no longer an external dependency
+- Publish latest 1.18.2 build to Maven and Modrinth
+
 ## [v3.2.0-1.18.2] - 2022-03-03
 - Compiled for Minecraft 1.18.2
 
