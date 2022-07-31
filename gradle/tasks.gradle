@@ -1,0 +1,68 @@
+task fabricClean(type: GradleBuild) {
+    group = '_main'
+    tasks = [
+            'clean'
+    ]
+}
+
+task fabricBuild(type: GradleBuild) {
+    group = '_main'
+    tasks = [
+            'clean',
+            'build'
+    ]
+}
+
+task fabricPublish(type: GradleBuild) {
+    group = '_main'
+    tasks = [
+            'clean',
+            'publishMavenJavaPublicationToFuzsModResourcesRepository'
+    ]
+}
+
+task fabricUploadCurseForge(type: GradleBuild) {
+    group = '_main'
+    tasks = [
+            'clean',
+            'curseforge'
+    ]
+}
+
+task fabricUploadModrinth(type: GradleBuild) {
+    group = '_main'
+    tasks = [
+            'clean',
+            'modrinth'
+    ]
+}
+
+task fabricUploadEverywhere(type: GradleBuild) {
+    group = '_main'
+    tasks = [
+            'clean',
+            'curseforge',
+            'modrinth'
+    ]
+}
+
+task fabricGenSources(type: GradleBuild) {
+    group = '_main'
+    tasks = [
+            'genSourcesWithQuiltflower'
+    ]
+}
+
+task fabricClient(type: GradleBuild) {
+    group = '_main'
+    tasks = [
+            'runClient'
+    ]
+}
+
+task fabricServer(type: GradleBuild) {
+    group = '_main'
+    tasks = [
+            'runServer'
+    ]
+}

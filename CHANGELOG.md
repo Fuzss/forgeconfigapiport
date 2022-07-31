@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog].
 
+## [v4.1.3-1.19.1] - 2022-07-31
+- Include Fabric Lifecycle Events which is also required
+
 ## [v4.1.2-1.19.1] - 2022-07-28
 - Now requires Minecraft 1.19.1 or newer
 ### Fixed

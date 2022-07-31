@@ -8,6 +8,8 @@ plugins {
 	id 'java-library'
 }
 
+apply from: './gradle/tasks.gradle'
+
 sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
 println('Java: ' + System.getProperty('java.version') + ' JVM: ' + System.getProperty('java.vm.version') + '(' + System.getProperty('java.vendor') + ') Arch: ' + System.getProperty('os.arch'))
@@ -34,6 +36,7 @@ dependencies {
 	modImplementation "net.fabricmc:fabric-loader:${project.fabricVersion}"
 	def fabricApiModules = [
 			"fabric-api-base",
+			"fabric-lifecycle-events-v1",
 			"fabric-command-api-v2",
 			"fabric-networking-api-v1"
 	]
@@ -323,34 +326,3 @@ signing {
 }
 
 build.finalizedBy project.copyJarToDir, project.incrementBuildNumber
-
-task cleanAndBuild(type: GradleBuild) {
-	group = '_main'
-	tasks = [
-			'clean',
-			'build'
-	]
-}
-
-task publishEverywhere(type: GradleBuild) {
-	group = '_main'
-	tasks = [
-			'clean',
-			'curseforge',
-			'modrinth'
-	]
-}
-
-task fabricClient(type: GradleBuild) {
-	group = '_main'
-	tasks = [
-			'runClient'
-	]
-}
-
-task fabricServer(type: GradleBuild) {
-	group = '_main'
-	tasks = [
-			':runServer'
-	]
-}
