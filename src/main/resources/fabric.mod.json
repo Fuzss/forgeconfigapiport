@@ -38,7 +38,7 @@
     "com_electronwill_night-config_core": "*",
     "com_electronwill_night-config_toml": "*",
     "minecraft": ">=${minMinecraftVersion} <${nextMinecraftVersion}",
-    "java": ">=16"
+    "java": ">=8"
   },
 
   "custom": {
