@@ -39,7 +39,7 @@
     "fabric-command-api-v1": ">=${minFabricApiVersion}",
     "fabric-networking-api-v1": ">=${minFabricApiVersion}",
     "minecraft": ">=${minMinecraftVersion} <${nextMinecraftVersion}",
-    "java": ">=17"
+    "java": ">=8"
   },
 
   "custom": {
