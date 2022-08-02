@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog].
 
+## [v3.2.3-1.18.2] - 2022-08-02
+### Fixed
+- Fixed required version of Fabric Api
+
 ## [v3.2.2-1.18.2] - 2022-08-01
 ### Fixed
 - Fixed start-up crash due to wrong dependency
