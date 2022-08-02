@@ -24,6 +24,9 @@
     ],
     "client": [
       "${clientEntryPoint}"
+    ],
+    "modmenu": [
+      "${modGroup}.modmenu.ConfigFactoryHandler"
     ]
   },
   "mixins": [
@@ -35,10 +38,8 @@
     "fabric-lifecycle-events-v1": ">=${minFabricApiVersion}",
     "fabric-command-api-v1": ">=${minFabricApiVersion}",
     "fabric-networking-api-v1": ">=${minFabricApiVersion}",
-    "com_electronwill_night-config_core": "*",
-    "com_electronwill_night-config_toml": "*",
     "minecraft": ">=${minMinecraftVersion} <${nextMinecraftVersion}",
-    "java": ">=16"
+    "java": ">=17"
   },
 
   "custom": {

@@ -29,8 +29,8 @@ public class ConfigSync {
     public static final Logger LOGGER = LogManager.getLogger();
 
     public static final ConfigSync INSTANCE = new ConfigSync(ConfigTracker.INSTANCE);
-    public static final ResourceLocation SYNC_CONFIGS_CHANNEL = new ResourceLocation(ForgeConfigAPIPort.MODID, "sync_configs");
-    public static final ResourceLocation MODDED_CONNECTION_CHANNEL = new ResourceLocation(ForgeConfigAPIPort.MODID, "modded_connection");
+    public static final ResourceLocation SYNC_CONFIGS_CHANNEL = new ResourceLocation(ForgeConfigAPIPort.MOD_ID, "sync_configs");
+    public static final ResourceLocation MODDED_CONNECTION_CHANNEL = new ResourceLocation(ForgeConfigAPIPort.MOD_ID, "modded_connection");
     private final ConfigTracker tracker;
 
     private ConfigSync(final ConfigTracker tracker) {
