@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog].
 
+## [v2.0.4-1.17.1] - 2022-08-02
+### Fixed
+- Fixed required version of Fabric Api
+
 ## [v2.0.3-1.17.1] - 2022-08-02
 - Bundled Fabric API, it's no longer an external dependency
 - Publish latest 1.17.1 build to Maven and Modrinth

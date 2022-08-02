@@ -35,9 +35,9 @@
 
   "depends": {
     "fabricloader": ">=${minFabricVersion}",
-    "fabric-lifecycle-events-v1": ">=${minFabricApiVersion}",
-    "fabric-command-api-v1": ">=${minFabricApiVersion}",
-    "fabric-networking-api-v1": ">=${minFabricApiVersion}",
+    "fabric-lifecycle-events-v1": "*",
+    "fabric-command-api-v1": "*",
+    "fabric-networking-api-v1": "*",
     "minecraft": ">=${minMinecraftVersion} <${nextMinecraftVersion}",
     "java": ">=16"
   },
