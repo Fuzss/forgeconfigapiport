@@ -35,9 +35,9 @@
 
   "depends": {
     "fabricloader": ">=${minFabricVersion}",
-    "fabric-lifecycle-events-v1": ">=${minFabricApiVersion}",
-    "fabric-command-api-v2": ">=${minFabricApiVersion}",
-    "fabric-networking-api-v1": ">=${minFabricApiVersion}",
+    "fabric-lifecycle-events-v1": "*",
+    "fabric-command-api-v2": "*",
+    "fabric-networking-api-v1": "*",
     "com_electronwill_night-config_core": "*",
     "com_electronwill_night-config_toml": "*",
     "minecraft": ">=${minMinecraftVersion} <${nextMinecraftVersion}",
