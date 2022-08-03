@@ -1,0 +1,65 @@
+name: Bug Report
+description: >-
+  Please use this template when you have encountered a bug in this mod.
+title: '[Bug]: '
+labels: ["bug"]
+assignees:
+  - Fuzss
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this issue report!
+  - type: dropdown
+    id: loader
+    attributes:
+      label: Mod Loader (Required)
+      description: What mod loader are you using the mod on?
+      multiple: false
+      options:
+        - Forge
+        - Fabric
+        - Quilt
+    validations:
+      required: true
+  - type: input
+    id: minecraft
+    attributes:
+      label: Minecraft Version (Required)
+      description: What is the Minecraft version you are playing with?
+      placeholder: ex. 1.19
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Mod Version (Required)
+      description: What version of the mod are you playing with?
+      placeholder: ex. v4.0.0
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes (Required)
+      description: Please explain what happens because of the bug (including all the steps required to cause the bug), and what behavior you would expect if the bug were fixed.
+      placeholder: >-
+        ex.  
+        
+        Current behavior: Shift-clicking a fuel item in the furnace fuel slots does not work.
+
+        Steps to reproduce: 
+        
+        1. Open the furnace screen.
+
+        2. Attempt to shift-click a fuel item into the fuel slot.
+        
+        Expected: Following the steps to reproduce the bug, the fuel item should be moved into the furnace fuel slot.
+    validations:
+      required: true
+  - type: input
+    id: latest-log
+    attributes:
+      label: latest.log (Optional)
+      description: Please paste the url to your shared `latest.log` file. [To share your `latest.log` here, please follow these steps.](https://gist.github.com/Fuzss/866b384d353912986e37b17eeef7a285)
+      placeholder: ex. https://gist.github.com/<your_user_name>/<gist_id>
