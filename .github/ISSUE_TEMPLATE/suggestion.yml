@@ -1,0 +1,16 @@
+name: Suggestion
+description: >-
+  Please use this template when you want to suggest a feature.
+title: '[Suggestion]: '
+labels: ["enhancement"]
+assignees:
+  - Fuzss
+body:
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggestion (Required)
+      placeholder: >-
+        ex. Here is my very awesome suggestion for your mod. It would be some much better if you could add that!
+    validations:
+      required: true
