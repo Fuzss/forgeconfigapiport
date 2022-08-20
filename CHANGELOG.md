@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog].
 
+## [v3.2.4-1.18.2] - 2022-08-20
+### Changed
+- Fabric Api is no longer bundled again, was causing issues with Quilt and was an inconvenience when bundling the mod as jar-in-jar
+### Fixed
+- Fixed missing sub-folders not being created for configs not in the main config directory
+
 ## [v3.2.3-1.18.2] - 2022-08-02
 ### Fixed
 - Fixed required version of Fabric Api
