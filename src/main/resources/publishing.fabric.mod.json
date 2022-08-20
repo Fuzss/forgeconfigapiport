@@ -32,9 +32,7 @@
 
   "depends": {
     "fabricloader": ">=${minFabricVersion}",
-    "fabric-lifecycle-events-v1": "*",
-    "fabric-command-api-v1": "*",
-    "fabric-networking-api-v1": "*",
+    "fabric": ">=${minFabricApiVersion}",
     "minecraft": ">=${minMinecraftVersion} <${nextMinecraftVersion}",
     "java": ">=8"
   },
