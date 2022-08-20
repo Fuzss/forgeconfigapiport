@@ -33,18 +33,14 @@ dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraftVersion}"
 	mappings loom.officialMojangMappings()
 
-	modImplementation "net.fabricmc:fabric-loader:${project.fabricVersion}"
-	def fabricApiModules = [
-			"fabric-api-base",
-			"fabric-lifecycle-events-v1",
-			"fabric-command-api-v1",
-			"fabric-networking-api-v1"
-	]
-	fabricApiModules.forEach {
-		modImplementation(include(fabricApi.module(it, fabricApiVersion)))
-	}
+	// Fabric
+	modImplementation "net.fabricmc:fabric-loader:${fabricVersion}"
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${fabricApiVersion}"
 
+	// Mod Menu
 	modImplementation "com.terraformersmc:modmenu:2.0.12"
+
+	// Config Dependencies
 	implementation(include('com.electronwill.night-config:core:3.6.5'))
 	implementation(include('com.electronwill.night-config:toml:3.6.5'))
 }
@@ -235,14 +231,15 @@ curseforge {
 		changelogType = 'markdown'
 		changelog = file('CHANGELOG.md')
 		releaseType = projectReleaseType
-		addGameVersion projectLoader
+		addGameVersion "Fabric"
+		addGameVersion "Quilt"
 		projectGameVersions.split(",").each {
 			addGameVersion it.trim()
 		}
 		mainArtifact(remapJar) {
 			displayName = "[${projectLoader.toUpperCase()}] [${minecraftVersion}] ${rootProject.name}-v${modVersion}"
 			relations {
-				embeddedLibrary 'fabric-api'
+				requiredDependency 'fabric-api'
 				optionalDependency 'modmenu'
 			}
 		}
@@ -267,10 +264,11 @@ modrinth {
 	projectGameVersions.split(",").each {
 		gameVersions.add it.trim()
 	}
-	loaders.add projectLoader.toLowerCase()
+	loaders.add "fabric"
+	loaders.add "quilt"
 	additionalFiles.add file("${project.buildDir}/libs/${project.archivesBaseName}-${project.version}-sources.jar")
 	dependencies {
-		embedded.project "fabric-api"
+		required.project "fabric-api"
 		optional.project "modmenu"
 	}
 //	debugMode = true
