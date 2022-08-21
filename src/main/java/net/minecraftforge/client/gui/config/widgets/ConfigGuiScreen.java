@@ -21,6 +21,7 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -31,7 +32,20 @@ import net.minecraftforge.common.ForgeConfigSpec;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE;
 
 public class ConfigGuiScreen extends Screen
 {
@@ -45,7 +59,7 @@ public class ConfigGuiScreen extends Screen
     private final Collection<SpecificationData> specs;
     private final Set<ConfigEntry> invalidEntries = Sets.newHashSet();
     private final Runnable onClose;
-    private ConfigEntryList configEntryList;
+    private ConfigGuiScreen.ConfigEntryList configEntryList;
     private Button doneButton;
     private ImageContentButton resetToInitialButton = null;
     private ImageContentButton resetToDefaultButton = null;
@@ -85,8 +99,19 @@ public class ConfigGuiScreen extends Screen
     public void onClose()
     {
         super.onClose();
-        this.configEntryList.onSave();
         this.onClose.run();
+    }
+
+    @Override
+    public boolean keyPressed(final int key, final int scanCode, final int modifiers)
+    {
+        if (key == GLFW_KEY_ESCAPE && this.shouldCloseOnEsc())
+        {
+            this.configEntryList.onCancel(this::onClose);
+            return true;
+        }
+
+        return super.keyPressed(key, scanCode, modifiers);
     }
 
     @Override
@@ -97,25 +122,21 @@ public class ConfigGuiScreen extends Screen
         this.configEntryList = new ConfigEntryList();
         this.addWidget(this.configEntryList);
         this.addRenderableWidget(new Button(this.width / 2 - 155 + 160, this.height - 29, 150, 20,
-                CommonComponents.GUI_CANCEL, (p_101073_) ->
-        {
-            this.configEntryList.onCancel();
+                CommonComponents.GUI_CANCEL, (button) -> this.configEntryList.onCancel(this::onClose)));
+        this.doneButton = this.addRenderableWidget(new Button(this.width / 2 - 155, this.height - 29, 150, 20,
+                CommonComponents.GUI_DONE, (button) -> {
+            this.configEntryList.onSave();
             this.onClose();
         }));
-        this.doneButton = this.addRenderableWidget(new Button(this.width / 2 - 155, this.height - 29, 150, 20,
-                CommonComponents.GUI_DONE, (p_101059_) -> this.onClose()));
         final EditBox searchBox = this.addRenderableWidget(new EditBox(this.font, this.width / 2 + 32, 16,
                 (this.width - 100) / 2, 20, Component.translatable("forge.configgui.search")));
         searchBox.setResponder(searchString -> this.configEntryList.initializeEntries(searchString.trim()));
         this.resetToInitialButton = this.addRenderableWidget(new ImageContentButton(this.width / 2 - 155 + 316,
                 this.height - 29, 24, 20, 0, 2, 0, FORGE_RESET_TO_INITIAL_ICON, 24, 24,
-                botton -> this.configEntryList.resetToInitial(), Component.translatable("forge.configgui" +
-                                                                                        ".resetAllToInitial")));
-
+                botton -> this.configEntryList.resetToInitial(), Component.translatable("forge.configgui.resetAllToInitial")));
         this.resetToDefaultButton = this.addRenderableWidget(new ImageContentButton(this.width / 2 - 155 + 342,
                 this.height - 29, 24, 20, 0, 2, 0, FORGE_RESET_TO_DEFAULT_ICON, 24, 24,
-                botton -> this.configEntryList.resetToDefault(), Component.translatable("forge.configgui" +
-                                                                                        ".resetAllToDefault")));
+                botton -> this.configEntryList.resetToDefault(), Component.translatable("forge.configgui.resetAllToDefault")));
     }
 
     @Override
@@ -146,9 +167,9 @@ public class ConfigGuiScreen extends Screen
         GuiComponent.blit(stack, this.width / 2 + 12, 20, 0.0F, 0.0F, 14, 14, 14, 14);
     }
 
-    void setTooltip(@Nullable List<FormattedCharSequence> p_101082_)
+    void setTooltip(@Nullable List<FormattedCharSequence> lines)
     {
-        this.tooltip = p_101082_;
+        this.tooltip = lines;
     }
 
     private void updateDoneButton()
@@ -218,10 +239,10 @@ public class ConfigGuiScreen extends Screen
         }
 
         @Override
-        public void render(@NotNull PoseStack p_101205_, int p_101206_, int p_101207_, float p_101208_)
+        public void render(@NotNull PoseStack poseStack, int mouseX, int mouseY, float partialTickTime)
         {
             setTooltip(null);
-            super.render(p_101205_, p_101206_, p_101207_, p_101208_);
+            super.render(poseStack, mouseX, mouseY, partialTickTime);
         }
 
         @Override
@@ -246,16 +267,16 @@ public class ConfigGuiScreen extends Screen
             if (!spec.configSpec().isLoaded()) return;
 
             spec.configSpec()
-                .getValues()
-                .valueMap()
-                .values()
-                .forEach(configValue -> handleConfigValue(spec, map, configValue));
+                    .getValues()
+                    .valueMap()
+                    .values()
+                    .forEach(configValue -> handleConfigValue(spec, map, configValue));
 
             final Set<List<String>> groups = new HashSet<>();
             map.entrySet()
-               .stream()
-               .sorted(Map.Entry.comparingByKey(createListComparator()))
-               .forEach((configEntry) -> initializeEntry(searchString, spec, groups, configEntry));
+                    .stream()
+                    .sorted(Map.Entry.comparingByKey(createListComparator()))
+                    .forEach((configEntry) -> initializeEntry(searchString, spec, groups, configEntry));
 
             map.clear();
         }
@@ -264,21 +285,21 @@ public class ConfigGuiScreen extends Screen
                                      final Set<List<String>> groups,
                                      final Map.Entry<List<String>, ConfigEntry> configEntry)
         {
-            if (!searchString.isEmpty() && !searchString.isBlank() && !Arrays.stream(searchString.split(" ")).allMatch(
+            if (!searchString.isEmpty() && !searchString.isBlank() && !Arrays.stream(searchString.toLowerCase().split(" ")).allMatch(
                     searchEntry -> configEntry.getValue()
-                                              .getLabel()
-                                              .getString()
-                                              .toLowerCase()
-                                              .contains(searchEntry)))
+                            .getLabel()
+                            .getString()
+                            .toLowerCase()
+                            .contains(searchEntry)))
+            {
                 return;
+            }
 
             final Set<List<String>> entryGroup = createGroups(configEntry.getKey());
             for (final List<String> group : entryGroup)
             {
-                if (!groups.contains(group))
+                if (groups.add(group))
                 {
-                    groups.add(group);
-
                     final String label = spec.configSpec().getLevelTranslationKey(group);
                     if (label != null)
                     {
@@ -292,11 +313,14 @@ public class ConfigGuiScreen extends Screen
 
         private Set<List<String>> createGroups(final List<String> group)
         {
-            if (group.isEmpty()) return Sets.newHashSet();
+            if (group.isEmpty())
+            {
+                return Sets.newHashSet();
+            }
 
             final List<String> groupKeys = new ArrayList<>(group);
             groupKeys.remove(groupKeys.size() - 1);
-            final Set<List<String>> groups = new HashSet<>();
+            final Set<List<String>> groups = Sets.newHashSet();
 
             final List<String> workingList = Lists.newArrayList();
             for (String s : group)
@@ -336,16 +360,60 @@ public class ConfigGuiScreen extends Screen
         {
             ConfigGuiScreen.this.currentValues.forEach((entry, value) ->
                     this.children()
-                        .stream()
-                        .filter(ConfigEntry.class::isInstance)
-                        .map(ConfigEntry.class::cast)
-                        .filter(e -> e.configValue.getPath().equals(entry))
-                        .findFirst()
-                        .ifPresent(e -> ((ForgeConfigSpec.ConfigValue) e.configValue).set(value)));
+                            .stream()
+                            .filter(ConfigEntry.class::isInstance)
+                            .map(ConfigEntry.class::cast)
+                            .filter(e -> e.configValue.getPath().equals(entry))
+                            .findFirst()
+                            .ifPresent(e -> ((ForgeConfigSpec.ConfigValue) e.configValue).set(value)));
 
+            saveSpecifications();
+        }
+
+        @SuppressWarnings({"unchecked", "rawtypes"}) // Stupid generics.
+        public void onCancel(Runnable onSucceedRunner)
+        {
+            if (initialValues.entrySet().stream().allMatch(
+                    e -> currentValues.get(e.getKey()).equals(initialValues.get(e.getKey()))))
+            {
+                onSucceedRunner.run();
+                return;
+            }
+
+            Minecraft.getInstance().setScreen(
+                    new ConfirmScreen((t) -> {
+                        if (!t)
+                        {
+                            Minecraft.getInstance().setScreen(ConfigGuiScreen.this);
+                            return;
+                        }
+
+                        initialValues.forEach((entry, value) ->
+                                this.children().stream()
+                                        .filter(ConfigEntry.class::isInstance)
+                                        .map(ConfigEntry.class::cast)
+                                        .filter(e -> e.configValue.getPath().equals(entry))
+                                        .findFirst()
+                                        .ifPresent(e -> ((ForgeConfigSpec.ConfigValue) e.configValue).set(value)));
+
+                        saveSpecifications();
+
+                        onSucceedRunner.run();
+                    },
+                            Component.translatable("forge.configgui.cancel.confirm.title"),
+                            Component.translatable("forge.configgui.cancel.confirm.message")
+                    ));
+        }
+
+        private void saveSpecifications()
+        {
             ConfigGuiScreen.this.specs.forEach(spec ->
             {
-                if (spec.isSynced()) return; //FOR NOW;
+                // At the moment it is unfeaseable to support config specifications which are synced from the server.
+                // This was an effective team decision for 2 reasons:
+                // 1. A security risk with a client modifying a config on the server.
+                // 2. No client ever knows about the servers common config, as such it is impossible to offer a complete solution.
+                if (spec.isSynced()) return;
 
                 if (!spec.configSpec().isLoaded()) return; //Can't save unloaded configs
 
@@ -353,84 +421,59 @@ public class ConfigGuiScreen extends Screen
             });
         }
 
-        @SuppressWarnings({"unchecked", "rawtypes"}) // Stupid generics.
-        public void onCancel()
-        {
-            ConfigGuiScreen.this.initialValues.forEach((entry, value) ->
-                    this.children().stream()
-                        .filter(ConfigEntry.class::isInstance)
-                        .map(ConfigEntry.class::cast)
-                        .filter(e -> e.configValue.getPath().equals(entry))
-                        .findFirst()
-                        .ifPresent(e -> ((ForgeConfigSpec.ConfigValue) e.configValue).set(value)));
+        public void forEachWidget(final Predicate<ConfigEntry> entryPredicate, final Consumer<ConfigGuiWidget> consumer) {
+            this.children()
+                    .stream()
+                    .filter(ConfigEntry.class::isInstance)
+                    .map(ConfigEntry.class::cast)
+                    .filter(e -> e.widget != null && entryPredicate.test(e))
+                    .forEach(e -> consumer.accept(e.widget));
+        }
+
+        public boolean hasEntriesMatching(final Predicate<ConfigEntry> matcher) {
+            return this.children()
+                    .stream()
+                    .filter(ConfigEntry.class::isInstance)
+                    .map(ConfigEntry.class::cast)
+                    .anyMatch(matcher);
         }
 
         public void resetToInitial()
         {
-            this.children()
-                .stream()
-                .filter(ConfigEntry.class::isInstance)
-                .map(ConfigEntry.class::cast)
-                .filter(e -> e.widget != null)
-                .forEach(e -> e.widget.resetToInitial());
+            forEachWidget(e -> true, ConfigGuiWidget::resetToInitial);
         }
 
         public void resetToDefault()
         {
-            this.children()
-                .stream()
-                .filter(ConfigEntry.class::isInstance)
-                .map(ConfigEntry.class::cast)
-                .filter(e -> e.widget != null)
-                .forEach(e -> e.widget.resetToDefault());
+            forEachWidget(e -> true, ConfigGuiWidget::resetToDefault);
         }
 
         public void resetToDefault(final List<String> pathPrefix)
         {
-            this.children()
-                .stream()
-                .filter(ConfigEntry.class::isInstance)
-                .map(ConfigEntry.class::cast)
-                .filter(e -> isPrefixList(pathPrefix, e.configValue.getPath()))
-                .filter(e -> e.widget != null)
-                .forEach(e -> e.widget.resetToDefault());
+            forEachWidget(e -> isPrefixList(pathPrefix, e.configValue.getPath()), ConfigGuiWidget::resetToDefault);
         }
 
         public void resetToInitial(final List<String> pathPrefix)
         {
-
-            this.children()
-                .stream()
-                .filter(ConfigEntry.class::isInstance)
-                .map(ConfigEntry.class::cast)
-                .filter(e -> isPrefixList(pathPrefix, e.configValue.getPath()))
-                .filter(e -> e.widget != null)
-                .forEach(e -> e.widget.resetToInitial());
+            forEachWidget(e -> isPrefixList(pathPrefix, e.configValue.getPath()), ConfigGuiWidget::resetToInitial);
         }
 
         public boolean hasEntriesWhichCanBeResetToInitial(final List<String> pathPrefix)
         {
-            return this.children()
-                       .stream()
-                       .filter(ConfigEntry.class::isInstance)
-                       .map(ConfigEntry.class::cast)
-                       .filter(e -> isPrefixList(pathPrefix, e.configValue.getPath()))
-                       .anyMatch(ConfigEntry::canBeResetToInitial);
+            return hasEntriesMatching(e -> isPrefixList(pathPrefix, e.configValue.getPath()) && e.canBeResetToInitial());
         }
 
         public boolean hasEntriesWhichCanBeResetToDefault(final List<String> pathPrefix)
         {
-            return this.children()
-                       .stream()
-                       .filter(ConfigEntry.class::isInstance)
-                       .map(ConfigEntry.class::cast)
-                       .filter(e -> isPrefixList(pathPrefix, e.configValue.getPath()))
-                       .anyMatch(ConfigEntry::canBeResetToDefault);
+            return hasEntriesMatching(e -> isPrefixList(pathPrefix, e.configValue.getPath()) && e.canBeResetToDefault());
         }
 
         public boolean isPrefixList(final List<String> prefix, final List<String> candidate)
         {
-            if (prefix.size() > candidate.size()) return false;
+            if (prefix.size() > candidate.size())
+            {
+                return false;
+            }
 
             for (int i = 0; i < prefix.size(); i++)
             {
@@ -469,17 +512,11 @@ public class ConfigGuiScreen extends Screen
                             ConfigGuiScreen.this.width / 2) : null;
 
             final ConfigGuiWidgetFactory factory = configValue.getScreenWidgetFactorySupplier().get();
-            this.widget = factory != null ? factory.create(configValue, this.valueSpec, valueManager, spec,
-                    this.label) : null;
+            this.widget = factory != null ? factory.create(configValue, this.valueSpec, valueManager, spec, this.label) : null;
             if (this.widget != null)
             {
-                this.resetToDefaultButton = new ImageContentButton(0, 0, 24, 20, 0, 2, 0, FORGE_RESET_TO_DEFAULT_ICON
-                        , 24, 24, botton -> this.widget.resetToDefault(), Component.translatable("forge.configgui" +
-                                                                                                 ".resetToDefault"));
-
-                this.resetToInitialButton = new ImageContentButton(0, 0, 24, 20, 0, 2, 0, FORGE_RESET_TO_INITIAL_ICON
-                        , 24, 24, botton -> this.widget.resetToInitial(), Component.translatable("forge.configgui" +
-                                                                                                 ".resetToInitial"));
+                this.resetToDefaultButton = new ImageContentButton(0, 0, 24, 20, 0, 2, 0, FORGE_RESET_TO_DEFAULT_ICON, 24, 24, botton -> this.widget.resetToDefault(), Component.translatable("forge.configgui.resetToDefault"));
+                this.resetToInitialButton = new ImageContentButton(0, 0, 24, 20, 0, 2, 0, FORGE_RESET_TO_INITIAL_ICON, 24, 24, botton -> this.widget.resetToInitial(), Component.translatable("forge.configgui.resetToInitial"));
             }
         }
 
@@ -502,7 +539,6 @@ public class ConfigGuiScreen extends Screen
                 this.resetToDefaultButton.x = left + entryWidth - 26;
                 this.resetToDefaultButton.y = top;
                 this.resetToDefaultButton.render(poseStack, mouseX, mouseY, partialTick);
-
 
                 if (widget.isValid())
                 {
@@ -529,20 +565,26 @@ public class ConfigGuiScreen extends Screen
             }
             this.renderRequiresReloadIndicator(poseStack, mouseX, mouseY, top, left, isHovered);
             this.renderWarning(poseStack, mouseX, mouseY, top, left, isHovered);
+
+            final int maxLabelLineWidth = this.labelLines.stream().mapToInt(Minecraft.getInstance().font::width).max().orElse(0);
+            if (isHovered && maxLabelLineWidth > 0 && mouseX >= left + 24 && mouseX <= left + 24 + maxLabelLineWidth)
+            {
+                ConfigGuiScreen.this.setTooltip(this.tooltip);
+            }
         }
 
         @Override
         public @NotNull List<? extends NarratableEntry> narratables()
         {
-            return this.widget != null ? Lists.newArrayList(this.widget, this.resetToInitialButton,
-                    this.resetToDefaultButton) : Collections.emptyList();
+            return this.widget != null ? ImmutableList.of(this.widget, this.resetToInitialButton,
+                    this.resetToDefaultButton) : ImmutableList.of();
         }
 
         @Override
         public @NotNull List<? extends GuiEventListener> children()
         {
-            return this.widget != null ? Lists.newArrayList(this.widget, this.resetToInitialButton,
-                    this.resetToDefaultButton) : Collections.emptyList();
+            return this.widget != null ? ImmutableList.of(this.widget, this.resetToInitialButton,
+                    this.resetToDefaultButton) : ImmutableList.of();
         }
 
         public Component getLabel()
@@ -552,16 +594,13 @@ public class ConfigGuiScreen extends Screen
 
         protected void renderLabel(PoseStack poseStack, int top, int left)
         {
-            if (this.labelLines.size() == 1)
+            if (this.labelLines.size() > 0)
             {
-                Minecraft.getInstance().font.draw(poseStack, this.labelLines.get(0), (float) left + 24,
-                        (float) (top + 5), 16777215);
-            } else if (this.labelLines.size() >= 2)
-            {
-                Minecraft.getInstance().font.draw(poseStack, this.labelLines.get(0), (float) left + 24, (float) top,
-                        16777215);
-                Minecraft.getInstance().font.draw(poseStack, this.labelLines.get(1), (float) left + 24,
-                        (float) (top + 10), 16777215);
+                Minecraft.getInstance().font.draw(poseStack, this.labelLines.get(0), (float) left + 24, (float) (top + (this.labelLines.size() == 1 ? 5 : 0)), 16777215);
+                if (this.labelLines.size() >= 2)
+                {
+                    Minecraft.getInstance().font.draw(poseStack, this.labelLines.get(1), (float) left + 24, (float) (top + 10), 16777215);
+                }
             }
         }
 
@@ -574,10 +613,7 @@ public class ConfigGuiScreen extends Screen
                 if (isHovered && mouseX > left + 1 && mouseX < left + 23 && mouseY > top + 1 && mouseY < top + 23)
                 {
                     final Component errorComponent = this.widget.getError();
-                    List<FormattedCharSequence> tooltip =
-                            Minecraft.getInstance().font.split(errorComponent != null ? errorComponent :
-                                            Component.translatable("forge.configgui.entryInvalid"),
-                                    ConfigGuiScreen.this.width / 2);
+                    List<FormattedCharSequence> tooltip = Minecraft.getInstance().font.split(errorComponent != null ? errorComponent : Component.translatable("forge.configgui.entryInvalid"), ConfigGuiScreen.this.width / 2);
                     ConfigGuiScreen.this.setTooltip(tooltip);
                 }
             }
@@ -592,9 +628,7 @@ public class ConfigGuiScreen extends Screen
                 GuiComponent.blit(stack, left - 2, top - 2, 0.0F, 0.0F, 22, 22, 22, 22);
                 if (isHovered && mouseX > left + 1 && mouseX < left + 23 && mouseY > top + 1 && mouseY < top + 23)
                 {
-                    List<FormattedCharSequence> tooltip =
-                            Minecraft.getInstance().font.split(Component.translatable("forge.configgui" +
-                                                                                      ".requiresWorldRestartToTakeEffect"), ConfigGuiScreen.this.width / 2);
+                    List<FormattedCharSequence> tooltip = Minecraft.getInstance().font.split(Component.translatable("forge.configgui.requiresWorldRestartToTakeEffect"), ConfigGuiScreen.this.width / 2);
                     ConfigGuiScreen.this.setTooltip(tooltip);
                 }
             }
@@ -602,13 +636,12 @@ public class ConfigGuiScreen extends Screen
 
         private boolean canBeResetToDefault()
         {
-            return this.widget != null && this.widget.currentValue() != this.configValue.getDefault();
+            return this.widget != null && !Objects.equals(this.widget.getValue(), this.configValue.getDefault());
         }
 
         private boolean canBeResetToInitial()
         {
-            return this.widget != null && !ConfigGuiScreen.this.initialValues.get(this.configValue.getPath())
-                                                      .equals(ConfigGuiScreen.this.currentValues.get(this.configValue.getPath()));
+            return this.widget != null && !Objects.equals(ConfigGuiScreen.this.initialValues.get(this.configValue.getPath()), ConfigGuiScreen.this.currentValues.get(this.configValue.getPath()));
         }
     }
 
@@ -625,12 +658,8 @@ public class ConfigGuiScreen extends Screen
             this.pathPrefix = pathPrefix;
             this.label = header;
 
-            this.resetToDefaultButton = new ImageContentButton(0, 0, 24, 20, 0, 2, 0, FORGE_RESET_TO_DEFAULT_ICON, 24
-                    , 24, botton -> ConfigGuiScreen.this.configEntryList.resetToDefault(this.pathPrefix),
-                    Component.translatable("forge.configgui.resetGroupToDefault"));
-            this.resetToInitialButton = new ImageContentButton(0, 0, 24, 20, 0, 2, 0, FORGE_RESET_TO_INITIAL_ICON, 24
-                    , 24, botton -> ConfigGuiScreen.this.configEntryList.resetToInitial(this.pathPrefix),
-                    Component.translatable("forge.configgui.resetGroupToInitial"));
+            this.resetToDefaultButton = new ImageContentButton(0, 0, 24, 20, 0, 2, 0, FORGE_RESET_TO_DEFAULT_ICON, 24, 24, botton -> ConfigGuiScreen.this.configEntryList.resetToDefault(this.pathPrefix), Component.translatable("forge.configgui.resetGroupToDefault"));
+            this.resetToInitialButton = new ImageContentButton(0, 0, 24, 20, 0, 2, 0, FORGE_RESET_TO_INITIAL_ICON, 24, 24, botton -> ConfigGuiScreen.this.configEntryList.resetToInitial(this.pathPrefix), Component.translatable("forge.configgui.resetGroupToInitial"));
         }
 
         @Override
@@ -651,10 +680,10 @@ public class ConfigGuiScreen extends Screen
 
             if (this.resetToInitialButton.isActive() && this.resetToInitialButton.isHoveredOrFocused())
             {
-                ConfigGuiScreen.this.setTooltip(Minecraft.getInstance().font.split(this.resetToInitialButton.getMessage(), ConfigGuiScreen.this.width / 2));
+                ConfigGuiScreen.this.setTooltip(ConfigGuiScreen.this.minecraft.font.split(this.resetToInitialButton.getMessage(), ConfigGuiScreen.this.width / 2));
             } else if (this.resetToDefaultButton.isActive() && this.resetToDefaultButton.isHoveredOrFocused())
             {
-                ConfigGuiScreen.this.setTooltip(Minecraft.getInstance().font.split(this.resetToDefaultButton.getMessage(), ConfigGuiScreen.this.width / 2));
+                ConfigGuiScreen.this.setTooltip(ConfigGuiScreen.this.minecraft.font.split(this.resetToDefaultButton.getMessage(), ConfigGuiScreen.this.width / 2));
             }
         }
 
@@ -670,9 +699,9 @@ public class ConfigGuiScreen extends Screen
             return ImmutableList.of(new NarratableEntry()
             {
                 @Override
-                public @NotNull NarrationPriority narrationPriority()
+                public NarratableEntry.@NotNull NarrationPriority narrationPriority()
                 {
-                    return NarrationPriority.HOVERED;
+                    return NarratableEntry.NarrationPriority.HOVERED;
                 }
 
                 @Override
