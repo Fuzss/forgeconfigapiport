@@ -5,11 +5,9 @@
   "package": "net.minecraftforge.mixin",
   "refmap": "forgeconfigapiport.refmap.json",
   "mixins": [
-    "LevelResourceAccessor"
+    "accessor.LevelResourceAccessor"
   ],
   "client": [
-    "client.AbstractContainerEventHandlerMixin",
-    "client.AbstractSelectionListMixin",
     "client.ClientHandshakePacketListenerImplMixin",
     "client.MinecraftMixin",
     "client.accessor.AbstractWidgetAccessor"

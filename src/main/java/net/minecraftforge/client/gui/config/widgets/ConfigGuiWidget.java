@@ -7,7 +7,6 @@ package net.minecraftforge.client.gui.config.widgets;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.TooltipAccessor;
@@ -40,6 +39,15 @@ public abstract class ConfigGuiWidget implements ContainerEventHandler, TooltipA
     @Nullable
     private NarratableEntry lastNarratable;
     private boolean dragging;
+    @NotNull
+    private final ForgeConfigSpec.ValueSpec spec;
+    @NotNull
+    private final ValueManager valueManager;
+
+    protected ConfigGuiWidget(@NotNull final ForgeConfigSpec.ValueSpec spec, final @NotNull ValueManager valueManager) {
+        this.spec = spec;
+        this.valueManager = valueManager;
+    }
 
     @Override
     public boolean isDragging()
@@ -83,7 +91,7 @@ public abstract class ConfigGuiWidget implements ContainerEventHandler, TooltipA
             {
                 output.add(NarratedElementType.POSITION, Component.translatable("narrator.position.object_list",
                         searchResult.index + 1, narratables.size()));
-                if (searchResult.priority == NarrationPriority.FOCUSED)
+                if (searchResult.priority == NarratableEntry.NarrationPriority.FOCUSED)
                 {
                     output.add(NarratedElementType.USAGE, Component.translatable("narration.component_list.usage"));
                 }
@@ -91,6 +99,18 @@ public abstract class ConfigGuiWidget implements ContainerEventHandler, TooltipA
 
             searchResult.entry.updateNarration(output.nest());
         }
+    }
+
+    @NotNull
+    public ForgeConfigSpec.ValueSpec getSpec()
+    {
+        return spec;
+    }
+
+    @NotNull
+    public ValueManager getValueManager()
+    {
+        return valueManager;
     }
 
     /**
@@ -103,15 +123,22 @@ public abstract class ConfigGuiWidget implements ContainerEventHandler, TooltipA
     public abstract boolean isValid();
 
     /**
+     * Invoked to set the value of the widget.
+     *
+     * @param value The new value to set the widget to.
+     */
+    protected abstract void setValue(@NotNull Object value);
+
+    /**
      * The current value for the configuration entry that this widgets value or state represents.
      *
      * @return The current value.
      */
-    public abstract Object currentValue();
+    public abstract Object getValue();
 
     /**
      * The narratable entries for this widget.
-     * Since this class is not actually gui component, screen etc, we need a way to handle
+     * Since this class is not actually a gui component, screen etc., we need a way to handle
      * the narration entries for it. So this controls the narration entries for this widget.
      *
      * @return The list of narratable entries.
@@ -122,14 +149,14 @@ public abstract class ConfigGuiWidget implements ContainerEventHandler, TooltipA
      * Invoked to render this widget in the config entry.
      * This call also handles positioning the widget since it might be contained in a scrollable object.
      *
-     * @param poseStack The rendering pose stack.
-     * @param top The top offset to render from.
-     * @param left The left offset to render from.
-     * @param maxWidth The maximal width that the widget can render to.
-     * @param maxHeight The maximal height that the widget can render to.
-     * @param mouseX The current mouse x position.
-     * @param mouseY The current mouse y position.
-     * @param isHovered Whether the mouse is currently hovering over this widget.
+     * @param poseStack   The rendering pose stack.
+     * @param top         The top offset to render from.
+     * @param left        The left offset to render from.
+     * @param maxWidth    The maximal width that the widget can render to.
+     * @param maxHeight   The maximal height that the widget can render to.
+     * @param mouseX      The current mouse x position.
+     * @param mouseY      The current mouse y position.
+     * @param isHovered   Whether the mouse is currently hovering over this widget.
      * @param partialTick The partial tick time.
      */
     public abstract void render(final PoseStack poseStack, final int top, final int left, final int maxWidth,
@@ -142,19 +169,41 @@ public abstract class ConfigGuiWidget implements ContainerEventHandler, TooltipA
      * @return The error text component.
      * @throws IllegalStateException if the widget is valid.
      */
-    public abstract Component getError();
+    public Component getError() {
+        return this.spec.getError(getValue());
+    }
 
     /**
      * Invoked to reset the state of this widget to the default value.
      * Implementers should use the {@link ValueManager} given to the widget factory to reset the value.
      */
-    public abstract void resetToDefault();
+    public void resetToDefault() {
+        this.setValue(this.getSpec().getDefault());
+        this.valueManager.setter().accept(getValue());
+    }
 
     /**
      * Invoked to reset the state of this widget to the initial value when the screen was opened.
      * Implementers should use the {@link ValueManager} given to the widget factory to reset the value.
      */
-    public abstract void resetToInitial();
+    public void resetToInitial() {
+        this.setValue(this.getValueManager().initial().get());
+        this.valueManager.setter().accept(getValue());
+    }
+
+    /**
+     * Configures the priority for the narration of this widget.
+     * By default, this widget will get priority when it is overridden.
+     * <p>
+     * Override this method to change this behaviour.
+     *
+     * @return The narration priority.
+     */
+    @Override
+    public @NotNull NarrationPriority narrationPriority()
+    {
+        return NarrationPriority.HOVERED;
+    }
 
     /**
      * Default implementation for a {@link ConfigGuiWidget} for a {@link ForgeConfigSpec.BooleanValue}.
@@ -166,29 +215,24 @@ public abstract class ConfigGuiWidget implements ContainerEventHandler, TooltipA
          */
         public static ConfigGuiWidgetFactory FACTORY = (value, valueSpec, valueManager, spec, name) ->
         {
-            if (value instanceof ForgeConfigSpec.BooleanValue booleanConfigValue)
+            if (value instanceof ForgeConfigSpec.BooleanValue)
             {
-                return new BooleanWidget(booleanConfigValue, valueSpec, valueManager, spec, name);
+                return new BooleanWidget(valueSpec, valueManager, spec, name);
             }
 
-            throw new IllegalArgumentException("The given config value for path: " + String.join(".",
-                    value.getPath()) + " is not a boolean value!");
+            throw new IllegalArgumentException("The given config value for path: " + String.join(".", value.getPath()) + " is not a boolean value!");
         };
 
         private final CycleButton<Boolean> checkbox;
-        private final ForgeConfigSpec.ValueSpec spec;
-        private final ValueManager valueManager;
 
-        public BooleanWidget(ForgeConfigSpec.ConfigValue<Boolean> value, final ForgeConfigSpec.ValueSpec spec,
-                             ValueManager valueManager, SpecificationData specificationData, Component name)
+        public BooleanWidget(final ForgeConfigSpec.ValueSpec spec, ValueManager valueManager, SpecificationData specificationData, Component name)
         {
-            this.spec = spec;
-            this.valueManager = valueManager;
-            this.checkbox = CycleButton.onOffBuilder(value.get())
-                                       .displayOnlyValue()
-                                       .withCustomNarration(CycleButton::createDefaultNarrationMessage)
-                                       .create(0, 0, 44, 20, name, (p_170215_, p_170216_) -> valueManager.setter()
-                                                                                                         .accept(p_170216_));
+            super(spec, valueManager);
+            this.checkbox = CycleButton.onOffBuilder((Boolean) valueManager.getter().get())
+                    .displayOnlyValue()
+                    .withCustomNarration(CycleButton::createDefaultNarrationMessage)
+                    .create(0, 0, 68, 20, name, (button, value) -> valueManager.setter()
+                            .accept(value));
 
             this.checkbox.active = !specificationData.isSynced();
         }
@@ -200,7 +244,13 @@ public abstract class ConfigGuiWidget implements ContainerEventHandler, TooltipA
         }
 
         @Override
-        public Object currentValue()
+        protected void setValue(@NotNull final Object value)
+        {
+            this.checkbox.setValue((Boolean) value);
+        }
+
+        @Override
+        public Object getValue()
         {
             return this.checkbox.getValue();
         }
@@ -224,26 +274,6 @@ public abstract class ConfigGuiWidget implements ContainerEventHandler, TooltipA
         }
 
         @Override
-        public Component getError()
-        {
-            return this.spec.getError(currentValue());
-        }
-
-        @Override
-        public void resetToDefault()
-        {
-            this.checkbox.setValue((Boolean) this.spec.getDefault());
-            this.valueManager.setter().accept(this.checkbox.getValue());
-        }
-
-        @Override
-        public void resetToInitial()
-        {
-            this.checkbox.setValue((Boolean) this.valueManager.initial().get());
-            this.valueManager.setter().accept(this.checkbox.getValue());
-        }
-
-        @Override
         public @NotNull List<FormattedCharSequence> getTooltip()
         {
             return this.checkbox.getTooltip();
@@ -254,12 +284,6 @@ public abstract class ConfigGuiWidget implements ContainerEventHandler, TooltipA
         {
             return Collections.singletonList(this.checkbox);
         }
-
-        @Override
-        public @NotNull NarrationPriority narrationPriority()
-        {
-            return NarrationPriority.HOVERED;
-        }
     }
 
 
@@ -268,43 +292,33 @@ public abstract class ConfigGuiWidget implements ContainerEventHandler, TooltipA
      */
     public static class EnumWidget<T extends Enum<T>> extends ConfigGuiWidget
     {
-
         /**
-         * Creates a new factory for the enum widget with the values of the given parameter Z.
-         *
-         * @return The widget factory for the given parameter Z.
-         * @param <Z> The enum type which supplies its values to the selector.
+         * The default factory to use for a boolean widget.
          */
-        @SuppressWarnings("unchecked")
-        public static <Z extends Enum<Z>> ConfigGuiWidgetFactory getFactory()
+        public static ConfigGuiWidgetFactory FACTORY = (value, valueSpec, valueManager, spec, name) ->
         {
-            return (value, valueSpec, valueManager, spec, name) ->
+            if (value instanceof ForgeConfigSpec.EnumValue<?> enumConfigValue)
             {
-                if (value instanceof ForgeConfigSpec.EnumValue enumConfigValue)
-                {
-                    return new EnumWidget<Z>(enumConfigValue, valueSpec, valueManager, spec, name);
-                }
+                return new EnumWidget<>(enumConfigValue, valueSpec, valueManager, spec, name);
+            }
 
-                throw new IllegalArgumentException("The given config value for path: " + String.join(".",
-                        value.getPath()) + " is not a boolean value!");
-            };
-        }
+            throw new IllegalArgumentException("The given config value for path: " + String.join(".", value.getPath()) + " is not an enum value!");
+        };
 
         private final CycleButton<T> enumButton;
-        private final ForgeConfigSpec.ValueSpec spec;
-        private final ValueManager valueManager;
 
+        @SuppressWarnings("unchecked")
         public EnumWidget(ForgeConfigSpec.EnumValue<T> value, final ForgeConfigSpec.ValueSpec spec,
                           final ValueManager valueManager, SpecificationData specificationData, Component name)
         {
-            this.spec = spec;
-            this.valueManager = valueManager;
+            super(spec, valueManager);
             this.enumButton = CycleButton.<T>builder(t -> Component.literal(t.name()))
-                                         .withValues(List.of(value.getEnumClass().getEnumConstants()))
-                                         .displayOnlyValue()
-                                         .withCustomNarration(CycleButton::createDefaultNarrationMessage)
-                                         .create(0, 0, 44, 20, name, (p_170215_, p_170216_) -> valueManager.setter()
-                                                                                                           .accept(p_170216_));
+                    .withValues(List.of(value.getEnumClass().getEnumConstants()))
+                    .displayOnlyValue()
+                    .withCustomNarration(CycleButton::createDefaultNarrationMessage)
+                    .withInitialValue((T) valueManager.getter().get())
+                    .create(0, 0, 68, 20, name, (button, newValue) -> valueManager.setter()
+                            .accept(newValue));
 
             this.enumButton.active = !specificationData.isSynced();
         }
@@ -315,32 +329,17 @@ public abstract class ConfigGuiWidget implements ContainerEventHandler, TooltipA
             return true;
         }
 
+        @SuppressWarnings("unchecked")
         @Override
-        public Object currentValue()
+        protected void setValue(@NotNull final Object value)
+        {
+            this.enumButton.setValue((T) value);
+        }
+
+        @Override
+        public Object getValue()
         {
             return this.enumButton.getValue();
-        }
-
-        @SuppressWarnings("unchecked")
-        @Override
-        public void resetToDefault()
-        {
-            this.enumButton.setValue((T) this.spec.getDefault());
-            this.valueManager.setter().accept(this.enumButton.getValue());
-        }
-
-        @SuppressWarnings("unchecked")
-        @Override
-        public void resetToInitial()
-        {
-            this.enumButton.setValue((T) this.valueManager.initial().get());
-            this.valueManager.setter().accept(this.enumButton.getValue());
-        }
-
-        @Override
-        public Component getError()
-        {
-            return this.spec.getError(currentValue());
         }
 
         @Override
@@ -372,11 +371,115 @@ public abstract class ConfigGuiWidget implements ContainerEventHandler, TooltipA
         {
             return Collections.singletonList(this.enumButton);
         }
+    }
+
+    /**
+     * Defines a widget which uses a vanilla {@link EditBox} to edit the value.
+     */
+    public static class EditBoxBasedWidget extends ConfigGuiWidget {
+        public static ConfigGuiWidgetFactory SIMPLE = (value, valueSpec, valueManager, spec, name) ->
+        {
+            try
+            {
+                // Try to cast it to something that we can handle to verify it is of the right type.
+                // We should really just provide a spec for it but meh for now this suffices.
+                return new EditBoxBasedWidget(valueSpec, valueManager, spec, name);
+            }
+            catch (ClassCastException ex)
+            {
+                throw new IllegalArgumentException("The given config value for path: " + String.join(".", value.getPath()) + " is not a Text value!", ex);
+            }
+        };
+
+        private final EditBox editBox;
+
+        protected EditBoxBasedWidget(final ForgeConfigSpec.@NotNull ValueSpec spec, final @NotNull ValueManager valueManager, @NotNull SpecificationData specificationData, @NotNull final Component name)
+        {
+            super(spec, valueManager);
+            this.editBox = new ColoredEditBox(Minecraft.getInstance().font, 0, 0, 68, 20, name)
+            {
+                @Override
+                public int getBorderColor()
+                {
+                    return isValid() ? super.getBorderColor() : 0x55FF0000;
+                }
+
+                @Override
+                public int getBorderColorFocused()
+                {
+                    return isValid() ? super.getBorderColor() : 0xFFFF0000;
+                }
+            };
+            this.editBox.setValue(valueManager.getter().get().toString());
+            this.editBox.setResponder(this::onInput);
+            this.editBox.active = !specificationData.isSynced();
+            this.editBox.setEditable(this.editBox.active);
+        }
+
+        public EditBox getEditBox()
+        {
+            return editBox;
+        }
 
         @Override
-        public @NotNull NarrationPriority narrationPriority()
+        public boolean isValid()
         {
-            return NarrationPriority.HOVERED;
+            return isValid(this.editBox.getValue());
+        }
+
+        @Override
+        public void render(final PoseStack poseStack, final int top, final int left, final int maxWidth,
+                           final int maxHeight, final int mouseX, final int mouseY, final boolean isHovered,
+                           final float partialTick)
+        {
+            this.editBox.setWidth(maxWidth - 4);
+            ((AbstractWidgetAccessor) this.editBox).setHeight(maxHeight);
+            this.editBox.x = left + 2;
+            this.editBox.y = top;
+            this.editBox.render(poseStack, mouseX, mouseY, partialTick);
+        }
+
+
+        @Override
+        public List<? extends NarratableEntry> narratables()
+        {
+            return Collections.singletonList(this.editBox);
+        }
+
+        @Override
+        public @NotNull List<FormattedCharSequence> getTooltip()
+        {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public @NotNull List<? extends GuiEventListener> children()
+        {
+            return Collections.singletonList(this.editBox);
+        }
+
+        @Override
+        public Object getValue()
+        {
+            return this.getEditBox().getValue();
+        }
+
+        @Override
+        protected void setValue(@NotNull final Object value)
+        {
+            this.editBox.setValue(value.toString());
+        }
+
+        protected boolean isValid(final String value) {
+            return this.getSpec().test(value);
+        }
+
+        protected void onInput(final String input)
+        {
+            if (isValid(input))
+            {
+                getValueManager().setter().accept(input);
+            }
         }
     }
 
@@ -386,139 +489,78 @@ public abstract class ConfigGuiWidget implements ContainerEventHandler, TooltipA
      *
      * @param <T> The type of the number.
      */
-    public static abstract class NumberWidget<T extends Number> extends ConfigGuiWidget
+    public static class NumberWidget<T extends Number> extends EditBoxBasedWidget
     {
+        public static ConfigGuiWidgetFactory INTEGER = (value, valueSpec, valueManager, spec, name) ->
+        {
+            if (value instanceof ForgeConfigSpec.IntValue)
+            {
+                return new NumberWidget<>(valueSpec, valueManager, spec, name, Integer::parseInt);
+            }
 
-        private final EditBox editBox;
-        private final ForgeConfigSpec.ConfigValue<T> value;
-        private final ForgeConfigSpec.ValueSpec valueSpec;
-        private final ValueManager valueManager;
+            throw new IllegalArgumentException("The given config value for path: " + String.join(".", value.getPath()) + " is not an Integer value!");
+        };
+
+        public static ConfigGuiWidgetFactory LONG = (value, valueSpec, valueManager, spec, name) ->
+        {
+            if (value instanceof ForgeConfigSpec.LongValue)
+            {
+                return new NumberWidget<>(valueSpec, valueManager, spec, name, Long::parseLong);
+            }
+
+            throw new IllegalArgumentException("The given config value for path: " + String.join(".", value.getPath()) + " is not a Long value!");
+        };
+
+        public static ConfigGuiWidgetFactory DOUBLE = (value, valueSpec, valueManager, spec, name) ->
+        {
+            if (value instanceof ForgeConfigSpec.DoubleValue)
+            {
+                return new NumberWidget<>(valueSpec, valueManager, spec, name, Double::parseDouble);
+            }
+
+            throw new IllegalArgumentException("The given config value for path: " + String.join(".", value.getPath()) + " is not a Double value!");
+        };
+
+
         private final Function<String, T> parser;
 
-        public NumberWidget(ForgeConfigSpec.ConfigValue<T> value, ForgeConfigSpec.ValueSpec valueSpec,
+        public NumberWidget(ForgeConfigSpec.ValueSpec spec,
                             ValueManager valueManager, SpecificationData specificationData, Component name,
                             final Function<String, T> parser)
         {
-            this.value = value;
-            this.valueSpec = valueSpec;
-            this.valueManager = valueManager;
-            this.editBox = new ColoredEditBox(Minecraft.getInstance().font, 0, 0, 44, 20, name)
-            {
-                @Override
-                public int getBorderColor()
-                {
-                    if (isValid())
-                    {
-                        return super.getBorderColor();
-                    }
-
-                    return 0x55FF0000;
-                }
-
-                @Override
-                public int getBorderColorFocused()
-                {
-                    if (isValid())
-                    {
-                        return super.getBorderColor();
-                    }
-
-                    return 0xFFFF0000;
-                }
-            };
+            super(spec, valueManager, specificationData, name);
             this.parser = parser;
-            this.editBox.setValue(valueManager.getter().get().toString());
-            this.editBox.setResponder((inputValue) ->
-            {
-                if (isValid(inputValue))
-                {
-                    valueManager.setter().accept(parser.apply(inputValue));
-                }
-            });
-            this.editBox.active = !specificationData.isSynced();
-            this.editBox.setEditable(this.editBox.active);
         }
 
         @Override
-        public boolean isValid()
+        protected void onInput(final String input)
         {
-            return isValid(this.editBox.getValue());
-        }
-
-        @Override
-        public Object currentValue()
-        {
-            try
+            if (isValid(input))
             {
-                return parser.apply(this.editBox.getValue());
-            } catch (NumberFormatException e)
-            {
-                return this.editBox.getValue();
+                getValueManager().setter().accept(parser.apply(input));
             }
         }
 
         @Override
-        public void resetToDefault()
+        public Object getValue()
         {
-            this.editBox.setValue(this.value.getDefault().toString());
-            this.valueManager.setter().accept(currentValue());
+            try
+            {
+                return parser.apply(this.getEditBox().getValue());
+            }
+            catch (NumberFormatException e)
+            {
+                return super.getValue();
+            }
         }
 
-        @Override
-        public void resetToInitial()
-        {
-            this.editBox.setValue(this.valueManager.initial().get().toString());
-            this.valueManager.setter().accept(currentValue());
-        }
-
-        @Override
-        public Component getError()
-        {
-            return this.valueSpec.getError(currentValue());
-        }
-
-        @Override
-        public List<? extends NarratableEntry> narratables()
-        {
-            return Collections.singletonList(this.editBox);
-        }
-
-        @Override
-        public void render(final PoseStack poseStack, final int top, final int left, final int maxWidth,
-                           final int maxHeight, final int mouseX, final int mouseY, final boolean isHovered,
-                           final float partialTick)
-        {
-            this.editBox.setWidth(maxWidth - 4);
-            ((AbstractWidgetAccessor) this.editBox).setHeight(maxHeight);
-            this.editBox.x = left + 2;
-            this.editBox.y = top;
-            this.editBox.render(poseStack, mouseX, mouseY, partialTick);
-        }
-
-        @Override
-        public @NotNull List<FormattedCharSequence> getTooltip()
-        {
-            return Collections.emptyList();
-        }
-
-        @Override
-        public @NotNull List<? extends GuiEventListener> children()
-        {
-            return Collections.singletonList(this.editBox);
-        }
-
-        @Override
-        public @NotNull NarrationPriority narrationPriority()
-        {
-            return NarrationPriority.HOVERED;
-        }
-
-        private boolean isValid(final String value)
+        protected boolean isValid(final String value)
         {
             try
             {
                 return isValid(parser.apply(value));
-            } catch (NumberFormatException e)
+            }
+            catch (NumberFormatException e)
             {
                 return false;
             }
@@ -526,219 +568,7 @@ public abstract class ConfigGuiWidget implements ContainerEventHandler, TooltipA
 
         private boolean isValid(T value)
         {
-            return this.valueSpec.test(value);
-        }
-    }
-
-    /**
-     * Default implementation for a {@link ConfigGuiWidget} for a {@link ForgeConfigSpec.IntValue}.
-     */
-    public static class IntegerWidget extends NumberWidget<Integer>
-    {
-        public static ConfigGuiWidgetFactory FACTORY = (value, valueSpec, valueManager, spec, name) ->
-        {
-            if (value instanceof ForgeConfigSpec.IntValue intConfigValue)
-            {
-                return new IntegerWidget(intConfigValue, valueSpec, valueManager, spec, name);
-            }
-
-            throw new IllegalArgumentException("The given config value for path: " + String.join(".",
-                    value.getPath()) + " is not a integer value!");
-        };
-
-        public IntegerWidget(final ForgeConfigSpec.ConfigValue<Integer> value,
-                             final ForgeConfigSpec.ValueSpec valueSpec, final ValueManager valueManager,
-                             SpecificationData specificationData, final Component name)
-        {
-            super(value, valueSpec, valueManager, specificationData, name, Integer::parseInt);
-        }
-    }
-
-    /**
-     * Default implementation for a {@link ConfigGuiWidget} for a {@link ForgeConfigSpec.LongValue}.
-     */
-    public static class LongWidget extends NumberWidget<Long>
-    {
-        public static ConfigGuiWidgetFactory FACTORY = (value, valueSpec, valueManager, spec, name) ->
-        {
-            if (value instanceof ForgeConfigSpec.LongValue longConfigValue)
-            {
-                return new LongWidget(longConfigValue, valueSpec, valueManager, spec, name);
-            }
-
-            throw new IllegalArgumentException("The given config value for path: " + String.join(".",
-                    value.getPath()) + " is not a long value!");
-        };
-
-        public LongWidget(final ForgeConfigSpec.ConfigValue<Long> value, final ForgeConfigSpec.ValueSpec valueSpec,
-                          final ValueManager valueManager, SpecificationData specificationData, final Component name)
-        {
-            super(value, valueSpec, valueManager, specificationData, name, Long::parseLong);
-        }
-    }
-
-    /**
-     * Default implementation for a {@link ConfigGuiWidget} for a {@link ForgeConfigSpec.DoubleValue}.
-     */
-    public static class DoubleWidget extends NumberWidget<Double>
-    {
-        public static ConfigGuiWidgetFactory FACTORY = (value, valueSpec, valueManager, spec, name) ->
-        {
-            if (value instanceof ForgeConfigSpec.DoubleValue doubleConfigValue)
-            {
-                return new DoubleWidget(doubleConfigValue, valueSpec, valueManager, spec, name);
-            }
-
-            throw new IllegalArgumentException("The given config value for path: " + String.join(".",
-                    value.getPath()) + " is not a Double value!");
-        };
-
-        public DoubleWidget(final ForgeConfigSpec.ConfigValue<Double> value,
-                            final ForgeConfigSpec.ValueSpec valueSpec, final ValueManager valueManager,
-                            SpecificationData specificationData, final Component name)
-        {
-            super(value, valueSpec, valueManager, specificationData, name, Double::parseDouble);
-        }
-    }
-
-    /**
-     * Default implementation for a {@link ConfigGuiWidget} for a {@link ForgeConfigSpec.ConfigValue} which references a {@link String}.
-     */
-    public static class TextWidget extends ConfigGuiWidget
-    {
-        @SuppressWarnings("unchecked")
-        public static ConfigGuiWidgetFactory FACTORY = (value, valueSpec, valueManager, spec, name) ->
-        {
-            try
-            {
-                final ForgeConfigSpec.ConfigValue<String> stringValue = (ForgeConfigSpec.ConfigValue<String>) value;
-                return new TextWidget(stringValue, valueSpec, valueManager, spec, name);
-            } catch (ClassCastException ex)
-            {
-                throw new IllegalArgumentException("The given config value for path: " + String.join(".",
-                        value.getPath()) + " is not a Double value!", ex);
-            }
-        };
-
-
-        private final EditBox editBox;
-        private final ForgeConfigSpec.ConfigValue<String> value;
-        private final ForgeConfigSpec.ValueSpec valueSpec;
-        private final ValueManager valueManager;
-
-        public TextWidget(ForgeConfigSpec.ConfigValue<String> value, ForgeConfigSpec.ValueSpec valueSpec,
-                          final ValueManager valueManager, SpecificationData specificationData, Component name)
-        {
-            this.value = value;
-            this.valueSpec = valueSpec;
-            this.valueManager = valueManager;
-            this.editBox = new ColoredEditBox(Minecraft.getInstance().font, 0, 0, 44, 20, name)
-            {
-                @Override
-                public int getBorderColor()
-                {
-                    if (isValid())
-                    {
-                        return super.getBorderColor();
-                    }
-
-                    return 0x55FF0000;
-                }
-
-                @Override
-                public int getBorderColorFocused()
-                {
-                    if (isValid())
-                    {
-                        return super.getBorderColor();
-                    }
-
-                    return 0xFFFF0000;
-                }
-            };
-            this.editBox.setValue(valueManager.getter().get().toString());
-            this.editBox.setResponder((inputValue) ->
-            {
-                if (isValid(inputValue))
-                {
-                    valueManager.setter().accept(inputValue);
-                }
-            });
-            this.editBox.active = !specificationData.isSynced();
-            this.editBox.setEditable(this.editBox.active);
-        }
-
-        private boolean isValid(String value)
-        {
-            return this.valueSpec.test(value);
-        }
-
-        @Override
-        public boolean isValid()
-        {
-            return isValid(this.editBox.getValue());
-        }
-
-        @Override
-        public Object currentValue()
-        {
-            return this.editBox.getValue();
-        }
-
-        @Override
-        public void resetToDefault()
-        {
-            this.editBox.setValue(this.value.getDefault());
-            this.valueManager.setter().accept(currentValue());
-        }
-
-        @Override
-        public void resetToInitial()
-        {
-            this.editBox.setValue(this.valueManager.initial().get().toString());
-            this.valueManager.setter().accept(currentValue());
-        }
-
-        @Override
-        public Component getError()
-        {
-            return this.valueSpec.getError(currentValue());
-        }
-
-        @Override
-        public List<? extends NarratableEntry> narratables()
-        {
-            return Collections.singletonList(this.editBox);
-        }
-
-        @Override
-        public void render(final PoseStack poseStack, final int top, final int left, final int maxWidth,
-                           final int maxHeight, final int mouseX, final int mouseY, final boolean isHovered,
-                           final float partialTick)
-        {
-            this.editBox.setWidth(maxWidth - 4);
-            ((AbstractWidgetAccessor) this.editBox).setHeight(maxHeight);
-            this.editBox.x = left + 2;
-            this.editBox.y = top;
-            this.editBox.render(poseStack, mouseX, mouseY, partialTick);
-        }
-
-        @Override
-        public @NotNull List<FormattedCharSequence> getTooltip()
-        {
-            return Collections.emptyList();
-        }
-
-        @Override
-        public @NotNull List<? extends GuiEventListener> children()
-        {
-            return Collections.singletonList(this.editBox);
-        }
-
-        @Override
-        public @NotNull NarrationPriority narrationPriority()
-        {
-            return NarrationPriority.HOVERED;
+            return this.getSpec().test(value);
         }
     }
 }

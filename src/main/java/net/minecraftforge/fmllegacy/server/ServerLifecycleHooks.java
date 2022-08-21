@@ -6,7 +6,7 @@ import net.minecraftforge.api.ConfigPaths;
 import net.minecraftforge.fml.config.ConfigTracker;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.loading.FileUtils;
-import net.minecraftforge.mixin.LevelResourceAccessor;
+import net.minecraftforge.mixin.accessor.LevelResourceAccessor;
 
 import java.nio.file.Path;
 

@@ -20,6 +20,9 @@
   "forge.configgui.entryInvalid": "The value is not valid. Please change it.",
   "forge.configgui.requiresWorldRestartToTakeEffect": "This change requires a world restart to take effect.",
 
+  "forge.configgui.cancel.confirm.title": "Are you sure you want to cancel config editing?",
+  "forge.configgui.cancel.confirm.message": "All changes made during editing will be reverted.",
+
   "forge.configgui.error.boolean.notTrueOrFalse": "The current value is: {0}.\nIt must be true or false.",
   "forge.configgui.error.boolean.needsToBeText": "The value must be a text value.",
   "forge.configgui.error.ranged.notInBounds": "The current value is: {0}.\nIt must be between {1} and {2}.",

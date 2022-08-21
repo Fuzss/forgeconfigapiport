@@ -1,4 +1,4 @@
-package net.minecraftforge.mixin;
+package net.minecraftforge.mixin.accessor;
 
 import net.minecraft.world.level.storage.LevelResource;
 import org.spongepowered.asm.mixin.Mixin;
