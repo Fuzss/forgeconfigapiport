@@ -511,7 +511,7 @@ public class ConfigGuiScreen extends Screen
                     Minecraft.getInstance().font.split(Component.translatable(tooltipTranslationKey),
                             ConfigGuiScreen.this.width / 2) : null;
 
-            final ConfigGuiWidgetFactory factory = configValue.getScreenWidgetFactorySupplier().get();
+            final ConfigGuiWidgetFactory factory = configValue.getScreenWidgetFactorySupplier() != null ? configValue.getScreenWidgetFactorySupplier().get() : null;
             this.widget = factory != null ? factory.create(configValue, this.valueSpec, valueManager, spec, this.label) : null;
             if (this.widget != null)
             {
