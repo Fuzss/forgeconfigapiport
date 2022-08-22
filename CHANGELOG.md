@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog].
 
+## [v4.2.3-1.19.2] - 2022-08-22
+### Fixed
+- Fixed config screen crashing for config values without a widget factory
+
 ## [v4.2.2-1.19.2] - 2022-08-21
 ### Fixed
 - Added missing translation keys when cancelling config editing
