@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) Forge Development LLC and contributors
+ * SPDX-License-Identifier: LGPL-2.1-only
+ */
+
 package net.minecraftforge.server.command;
 
 import com.google.gson.JsonObject;
@@ -21,15 +26,15 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class EnumArgument<T extends Enum<T>> implements ArgumentType<T> {
-    private static final Dynamic2CommandExceptionType INVALID_ENUM = new Dynamic2CommandExceptionType((found, constants) -> Component.translatable("commands.forge.arguments.enum.invalid", constants, found));
+    private static final Dynamic2CommandExceptionType INVALID_ENUM = new Dynamic2CommandExceptionType(
+            (found, constants) -> Component.translatable("commands.forge.arguments.enum.invalid", constants, found));
     private final Class<T> enumClass;
-
-    private EnumArgument(final Class<T> enumClass) {
-        this.enumClass = enumClass;
-    }
 
     public static <R extends Enum<R>> EnumArgument<R> enumArgument(Class<R> enumClass) {
         return new EnumArgument<>(enumClass);
+    }
+    private EnumArgument(final Class<T> enumClass) {
+        this.enumClass = enumClass;
     }
 
     @Override
@@ -38,18 +43,18 @@ public class EnumArgument<T extends Enum<T>> implements ArgumentType<T> {
         try {
             return Enum.valueOf(enumClass, name);
         } catch (IllegalArgumentException e) {
-            throw INVALID_ENUM.createWithContext(reader, name, Arrays.toString(enumClass.getEnumConstants()));
+            throw INVALID_ENUM.createWithContext(reader, name, Arrays.toString(Arrays.stream(enumClass.getEnumConstants()).map(Enum::name).toArray()));
         }
     }
 
     @Override
     public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
-        return SharedSuggestionProvider.suggest(Stream.of(enumClass.getEnumConstants()).map(Object::toString), builder);
+        return SharedSuggestionProvider.suggest(Stream.of(enumClass.getEnumConstants()).map(Enum::name), builder);
     }
 
     @Override
     public Collection<String> getExamples() {
-        return Stream.of(enumClass.getEnumConstants()).map(Object::toString).collect(Collectors.toList());
+        return Stream.of(enumClass.getEnumConstants()).map(Enum::name).collect(Collectors.toList());
     }
 
     public static class Info<T extends Enum<T>> implements ArgumentTypeInfo<EnumArgument<T>, Info<T>.Template>
@@ -97,7 +102,7 @@ public class EnumArgument<T extends Enum<T>> implements ArgumentType<T> {
             }
 
             @Override
-            public EnumArgument<T> instantiate(CommandBuildContext p_223435_)
+            public EnumArgument<T> instantiate(CommandBuildContext pStructure)
             {
                 return new EnumArgument<>(this.enumClass);
             }

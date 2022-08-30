@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) Forge Development LLC and contributors
+ * SPDX-License-Identifier: LGPL-2.1-only
+ */
+
 package net.minecraftforge.fml.config;
 
 import com.electronwill.nightconfig.core.ConfigFormat;
@@ -6,26 +11,29 @@ import com.electronwill.nightconfig.core.file.FileWatcher;
 import com.electronwill.nightconfig.core.io.ParsingException;
 import com.electronwill.nightconfig.core.io.WritingMode;
 import com.electronwill.nightconfig.toml.TomlFormat;
+import com.mojang.logging.LogUtils;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraftforge.api.ConfigPaths;
 import net.minecraftforge.api.fml.event.config.ModConfigEvent;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.Function;
 
+import static net.minecraftforge.fml.config.ConfigTracker.CONFIG;
+
 public class ConfigFileTypeHandler {
-    private static final Logger LOGGER = LogManager.getLogger();
+    private static final Logger LOGGER = LogUtils.getLogger();
     static ConfigFileTypeHandler TOML = new ConfigFileTypeHandler();
     private static final Path defaultConfigPath = FabricLoader.getInstance().getGameDir().resolve(ConfigPaths.DEFAULT_CONFIGS_PATH);
 
     public Function<ModConfig, CommentedFileConfig> reader(Path configBasePath) {
         return (c) -> {
             final Path configPath = configBasePath.resolve(c.getFileName());
+            // Forge Config API Port:
             // force toml format which is normally auto-detected by night config from the file extension
             // there have been reports of this failing and the auto-detection not working
             // my guess is this is caused by the toml format not having been registered as the registration is done in a static initializer in the class itself
@@ -37,7 +45,7 @@ public class ConfigFileTypeHandler {
                     onFileNotFound((newfile, configFormat)-> setupConfigFile(c, newfile, configFormat)).
                     writingMode(WritingMode.REPLACE).
                     build();
-            LOGGER.debug(ConfigTracker.CONFIG, "Built TOML config for {}", configPath.toString());
+            LOGGER.debug(CONFIG, "Built TOML config for {}", configPath.toString());
             try
             {
                 configData.load();
@@ -46,10 +54,10 @@ public class ConfigFileTypeHandler {
             {
                 throw new ConfigLoadingException(c, ex);
             }
-            LOGGER.debug(ConfigTracker.CONFIG, "Loaded TOML config file {}", configPath.toString());
+            LOGGER.debug(CONFIG, "Loaded TOML config file {}", configPath.toString());
             try {
                 FileWatcher.defaultInstance().addWatch(configPath, new ConfigWatcher(c, configData, Thread.currentThread().getContextClassLoader()));
-                LOGGER.debug(ConfigTracker.CONFIG, "Watching TOML config file {} for changes", configPath.toString());
+                LOGGER.debug(CONFIG, "Watching TOML config file {} for changes", configPath.toString());
             } catch (IOException e) {
                 throw new RuntimeException("Couldn't watch config file", e);
             }
@@ -70,7 +78,7 @@ public class ConfigFileTypeHandler {
         Files.createDirectories(file.getParent());
         Path p = defaultConfigPath.resolve(modConfig.getFileName());
         if (Files.exists(p)) {
-            LOGGER.info(ConfigTracker.CONFIG, "Loading default config file from path {}", p);
+            LOGGER.info(CONFIG, "Loading default config file from path {}", p);
             Files.copy(p, file);
         } else {
             Files.createFile(file);
@@ -107,7 +115,7 @@ public class ConfigFileTypeHandler {
         }
         catch (IOException exception)
         {
-            LOGGER.warn(ConfigTracker.CONFIG, "Failed to back up config file {}", commentedFileConfig.getNioPath(), exception);
+            LOGGER.warn(CONFIG, "Failed to back up config file {}", commentedFileConfig.getNioPath(), exception);
         }
     }
 
@@ -132,7 +140,7 @@ public class ConfigFileTypeHandler {
                     this.commentedFileConfig.load();
                     if(!this.modConfig.getSpec().isCorrect(commentedFileConfig))
                     {
-                        LOGGER.warn(ConfigTracker.CONFIG, "Configuration file {} is not correct. Correcting", commentedFileConfig.getFile().getAbsolutePath());
+                        LOGGER.warn(CONFIG, "Configuration file {} is not correct. Correcting", commentedFileConfig.getFile().getAbsolutePath());
                         ConfigFileTypeHandler.backUpConfig(commentedFileConfig);
                         this.modConfig.getSpec().correct(commentedFileConfig);
                         commentedFileConfig.save();
@@ -142,8 +150,9 @@ public class ConfigFileTypeHandler {
                 {
                     throw new ConfigLoadingException(modConfig, ex);
                 }
-                LOGGER.debug(ConfigTracker.CONFIG, "Config file {} changed, sending notifies", this.modConfig.getFileName());
+                LOGGER.debug(CONFIG, "Config file {} changed, sending notifies", this.modConfig.getFileName());
                 this.modConfig.getSpec().afterReload();
+                // Forge Config API Port: invoke Fabric style callback instead of Forge event
                 ModConfigEvent.RELOADING.invoker().onModConfigReloading(this.modConfig);
             }
         }

@@ -7,6 +7,7 @@ package net.minecraftforge.client.gui.config.widgets;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.Checkbox;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.TooltipAccessor;
@@ -17,8 +18,10 @@ import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraftforge.client.gui.widget.ColoredEditBox;
+import net.minecraftforge.client.gui.widget.DynamicCheckbox;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.mixin.client.accessor.AbstractWidgetAccessor;
 import org.jetbrains.annotations.NotNull;
@@ -210,6 +213,9 @@ public abstract class ConfigGuiWidget implements ContainerEventHandler, TooltipA
      */
     public static class BooleanWidget extends ConfigGuiWidget
     {
+
+        private static final ResourceLocation CHECKBOX_BLOCKED_TEXTURE = new ResourceLocation("forge", "textures/gui/checkbox_blocked.png");
+
         /**
          * The default factory to use for a boolean widget.
          */
@@ -223,16 +229,26 @@ public abstract class ConfigGuiWidget implements ContainerEventHandler, TooltipA
             throw new IllegalArgumentException("The given config value for path: " + String.join(".", value.getPath()) + " is not a boolean value!");
         };
 
-        private final CycleButton<Boolean> checkbox;
+        private final Checkbox checkbox;
 
         public BooleanWidget(final ForgeConfigSpec.ValueSpec spec, ValueManager valueManager, SpecificationData specificationData, Component name)
         {
             super(spec, valueManager);
-            this.checkbox = CycleButton.onOffBuilder((Boolean) valueManager.getter().get())
-                    .displayOnlyValue()
-                    .withCustomNarration(CycleButton::createDefaultNarrationMessage)
-                    .create(0, 0, 68, 20, name, (button, value) -> valueManager.setter()
-                            .accept(value));
+            this.checkbox = new DynamicCheckbox(0,0,20, 20, name, (Boolean) valueManager.getter().get(), false) {
+                @Override
+                public void onPress()
+                {
+                    super.onPress();
+                    valueManager.setter().accept(selected());
+                }
+
+                @NotNull
+                @Override
+                protected ResourceLocation getTexture()
+                {
+                    return CHECKBOX_BLOCKED_TEXTURE;
+                }
+            };
 
             this.checkbox.active = !specificationData.isSynced();
         }
@@ -246,13 +262,15 @@ public abstract class ConfigGuiWidget implements ContainerEventHandler, TooltipA
         @Override
         protected void setValue(@NotNull final Object value)
         {
-            this.checkbox.setValue((Boolean) value);
+            if (this.checkbox.selected()  != (Boolean) value) {
+                this.checkbox.onPress();
+            }
         }
 
         @Override
         public Object getValue()
         {
-            return this.checkbox.getValue();
+            return this.checkbox.selected();
         }
 
         @Override
@@ -266,9 +284,7 @@ public abstract class ConfigGuiWidget implements ContainerEventHandler, TooltipA
                            final int maxHeight, final int mouseX, final int mouseY, final boolean isHovered,
                            final float partialTick)
         {
-            this.checkbox.setWidth(maxWidth);
-            ((AbstractWidgetAccessor) this.checkbox).setHeight(maxHeight);
-            this.checkbox.x = left;
+            this.checkbox.x = left + Math.max((maxWidth - this.checkbox.getWidth()) / 2, 0);
             this.checkbox.y = top;
             this.checkbox.render(poseStack, mouseX, mouseY, partialTick);
         }
@@ -276,7 +292,7 @@ public abstract class ConfigGuiWidget implements ContainerEventHandler, TooltipA
         @Override
         public @NotNull List<FormattedCharSequence> getTooltip()
         {
-            return this.checkbox.getTooltip();
+            return Collections.emptyList();
         }
 
         @Override
@@ -354,6 +370,7 @@ public abstract class ConfigGuiWidget implements ContainerEventHandler, TooltipA
                            final float partialTick)
         {
             this.enumButton.setWidth(maxWidth);
+            // Forge Config API Port: Fabric needs an accessor (not going to get into interface injection just for this lol)
             ((AbstractWidgetAccessor) this.enumButton).setHeight(maxHeight);
             this.enumButton.x = left;
             this.enumButton.y = top;
@@ -396,6 +413,7 @@ public abstract class ConfigGuiWidget implements ContainerEventHandler, TooltipA
         protected EditBoxBasedWidget(final ForgeConfigSpec.@NotNull ValueSpec spec, final @NotNull ValueManager valueManager, @NotNull SpecificationData specificationData, @NotNull final Component name)
         {
             super(spec, valueManager);
+            // Forge Config API Port: don't mess with vanilla's class, just extend it
             this.editBox = new ColoredEditBox(Minecraft.getInstance().font, 0, 0, 68, 20, name)
             {
                 @Override
@@ -433,6 +451,7 @@ public abstract class ConfigGuiWidget implements ContainerEventHandler, TooltipA
                            final float partialTick)
         {
             this.editBox.setWidth(maxWidth - 4);
+            // Forge Config API Port: Fabric needs an accessor (not going to get into interface injection just for this lol)
             ((AbstractWidgetAccessor) this.editBox).setHeight(maxHeight);
             this.editBox.x = left + 2;
             this.editBox.y = top;

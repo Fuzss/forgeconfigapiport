@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+// Forge Config API Port: mod menu integration for config screens, some similarities to Forge's ModList class
 public class ConfigFactoryHandler implements ModMenuApi {
 
     @Override

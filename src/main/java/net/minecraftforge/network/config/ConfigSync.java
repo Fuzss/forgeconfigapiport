@@ -1,9 +1,16 @@
+/*
+ * Copyright (c) Forge Development LLC and contributors
+ * SPDX-License-Identifier: LGPL-2.1-only
+ */
+
 package net.minecraftforge.network.config;
 
+import com.mojang.logging.LogUtils;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.ServerLoginConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerLoginNetworking;
+import net.minecraft.Util;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -12,10 +19,9 @@ import net.minecraftforge.ForgeConfigAPIPort;
 import net.minecraftforge.fml.config.ConfigTracker;
 import net.minecraftforge.fml.config.ModConfig;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.Marker;
-import org.apache.logging.log4j.MarkerManager;
+import org.slf4j.Logger;
+import org.slf4j.Marker;
+import org.slf4j.MarkerFactory;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -23,14 +29,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+// Forge Config API Port: this class is greatly altered from Forge, as it includes all relevant parts from net.minecraftforge.network.HandshakeHandler which has not been ported separately
+// also there are a number of changes to adapt to Fabric's style of networking
 public class ConfigSync {
-    static final Marker NETWORK = MarkerManager.getMarker("FMLNETWORK");
-    public static final Marker FMLHSMARKER = MarkerManager.getMarker("FMLHANDSHAKE").setParents(NETWORK);
-    public static final Logger LOGGER = LogManager.getLogger();
+    static final Marker NETWORK = MarkerFactory.getMarker("FMLNETWORK");
+    public static final Marker FMLHSMARKER = Util.make(MarkerFactory.getMarker("FMLHANDSHAKE"), marker -> marker.add(NETWORK));
+    private static final Logger LOGGER = LogUtils.getLogger();
 
-    public static final ConfigSync INSTANCE = new ConfigSync(ConfigTracker.INSTANCE);
     public static final ResourceLocation SYNC_CONFIGS_CHANNEL = new ResourceLocation(ForgeConfigAPIPort.MOD_ID, "sync_configs");
     public static final ResourceLocation MODDED_CONNECTION_CHANNEL = new ResourceLocation(ForgeConfigAPIPort.MOD_ID, "modded_connection");
+
+    public static final ConfigSync INSTANCE = new ConfigSync(ConfigTracker.INSTANCE);
     private final ConfigTracker tracker;
 
     private ConfigSync(final ConfigTracker tracker) {

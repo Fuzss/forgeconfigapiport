@@ -7,6 +7,8 @@ package net.minecraftforge.client.gui.config.widgets;
 
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.common.ForgeConfigSpec;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Factory definition for making config entry widgets.
@@ -24,5 +26,6 @@ public interface ConfigGuiWidgetFactory
      * @param name The name of the configuration entry.
      * @return A config gui widget or null if not supported.
      */
-    ConfigGuiWidget create(final ForgeConfigSpec.ConfigValue<?> value, final ForgeConfigSpec.ValueSpec valueSpec, final ValueManager valueManager, final SpecificationData spec, Component name);
+    @Nullable
+    ConfigGuiWidget create(@NotNull final ForgeConfigSpec.ConfigValue<?> value, @NotNull final ForgeConfigSpec.ValueSpec valueSpec, @NotNull final ValueManager valueManager, @NotNull final SpecificationData spec, @NotNull Component name);
 }

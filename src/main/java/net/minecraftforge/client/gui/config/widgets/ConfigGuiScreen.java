@@ -32,16 +32,7 @@ import net.minecraftforge.common.ForgeConfigSpec;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -117,24 +108,23 @@ public class ConfigGuiScreen extends Screen
     @Override
     protected void init()
     {
-        Objects.requireNonNull(this.minecraft).keyboardHandler.setSendRepeatsToGui(true);
         super.init();
-        this.configEntryList = new ConfigEntryList();
-        this.addWidget(this.configEntryList);
-        this.addRenderableWidget(new Button(this.width / 2 - 155 + 160, this.height - 29, 150, 20,
-                CommonComponents.GUI_CANCEL, (button) -> this.configEntryList.onCancel(this::onClose)));
+        Objects.requireNonNull(this.minecraft).keyboardHandler.setSendRepeatsToGui(true);
+        final EditBox searchBox = this.addRenderableWidget(new EditBox(this.font, this.width / 2 + 32, 16,
+                (this.width - 100) / 2 + 5, 20, Component.translatable("forge.configgui.search")));
+        searchBox.setResponder(searchString -> this.configEntryList.initializeEntries(searchString.trim()));
+        this.configEntryList = addWidget(new ConfigEntryList());
         this.doneButton = this.addRenderableWidget(new Button(this.width / 2 - 155, this.height - 29, 150, 20,
                 CommonComponents.GUI_DONE, (button) -> {
             this.configEntryList.onSave();
             this.onClose();
         }));
-        final EditBox searchBox = this.addRenderableWidget(new EditBox(this.font, this.width / 2 + 32, 16,
-                (this.width - 100) / 2, 20, Component.translatable("forge.configgui.search")));
-        searchBox.setResponder(searchString -> this.configEntryList.initializeEntries(searchString.trim()));
-        this.resetToInitialButton = this.addRenderableWidget(new ImageContentButton(this.width / 2 - 155 + 316,
+        this.addRenderableWidget(new Button(this.width / 2 - 155 + 160, this.height - 29, 150, 20,
+                CommonComponents.GUI_CANCEL, (button) -> this.configEntryList.onCancel(this::onClose)));
+        this.resetToInitialButton = this.addRenderableWidget(new ImageContentButton(this.width / 2 - 155 + 320,
                 this.height - 29, 24, 20, 0, 2, 0, FORGE_RESET_TO_INITIAL_ICON, 24, 24,
                 botton -> this.configEntryList.resetToInitial(), Component.translatable("forge.configgui.resetAllToInitial")));
-        this.resetToDefaultButton = this.addRenderableWidget(new ImageContentButton(this.width / 2 - 155 + 342,
+        this.resetToDefaultButton = this.addRenderableWidget(new ImageContentButton(this.width / 2 - 155 + 346,
                 this.height - 29, 24, 20, 0, 2, 0, FORGE_RESET_TO_DEFAULT_ICON, 24, 24,
                 botton -> this.configEntryList.resetToDefault(), Component.translatable("forge.configgui.resetAllToDefault")));
     }
@@ -148,6 +138,10 @@ public class ConfigGuiScreen extends Screen
     @Override
     public void render(@NotNull PoseStack poseStack, int mouseX, int mouseY, float partialTick)
     {
+        if (Minecraft.getInstance().screen != this) {
+            return;
+        }
+
         this.tooltip = null;
         this.configEntryList.render(poseStack, mouseX, mouseY, partialTick);
         drawString(poseStack, this.font, this.title, 25, 20, 16777215);
@@ -380,10 +374,12 @@ public class ConfigGuiScreen extends Screen
                 return;
             }
 
+            // Forge Config API Port: use vanilla method instead of Forge's gui layers feature
             Minecraft.getInstance().setScreen(
                     new ConfirmScreen((t) -> {
                         if (!t)
                         {
+                            // Forge Config API Port: use vanilla method instead of Forge's gui layers feature
                             Minecraft.getInstance().setScreen(ConfigGuiScreen.this);
                             return;
                         }
@@ -501,17 +497,13 @@ public class ConfigGuiScreen extends Screen
             this.valueSpec = spec.configSpec().getRaw(configValue.getPath());
 
             final String labelTranslationKey = this.valueSpec.getTranslationKey();
-            final String tooltipTranslationKey = labelTranslationKey != null ? labelTranslationKey + ".tooltip" :
-                    this.valueSpec.getComment();
+            final String tooltipTranslationKey = labelTranslationKey != null ? labelTranslationKey + ".tooltip" : this.valueSpec.getComment();
 
-            this.label = labelTranslationKey != null ? Component.translatable(labelTranslationKey) :
-                    Component.literal(String.join(".", configValue.getPath()));
-            this.labelLines = Minecraft.getInstance().font.split(this.label, ConfigGuiScreen.this.width - 160);
-            this.tooltip = tooltipTranslationKey != null ?
-                    Minecraft.getInstance().font.split(Component.translatable(tooltipTranslationKey),
-                            ConfigGuiScreen.this.width / 2) : null;
+            this.label = labelTranslationKey != null ? Component.translatable(labelTranslationKey) : Component.literal(String.join(".", configValue.getPath()));
+            this.labelLines = Minecraft.getInstance().font.split(this.label, ConfigGuiScreen.this.width - 270);
+            this.tooltip = tooltipTranslationKey != null ? Minecraft.getInstance().font.split(Component.translatable(tooltipTranslationKey), ConfigGuiScreen.this.width / 2) : null;
 
-            final ConfigGuiWidgetFactory factory = configValue.getScreenWidgetFactorySupplier() != null ? configValue.getScreenWidgetFactorySupplier().get() : null;
+            final ConfigGuiWidgetFactory factory = configValue.getScreenWidgetFactorySupplier().get();
             this.widget = factory != null ? factory.create(configValue, this.valueSpec, valueManager, spec, this.label) : null;
             if (this.widget != null)
             {
@@ -527,7 +519,7 @@ public class ConfigGuiScreen extends Screen
             this.renderLabel(poseStack, top, left);
             if (widget != null)
             {
-                widget.render(poseStack, top, ConfigGuiScreen.this.width - 150, 72, entryHeight, mouseX, mouseY,
+                widget.render(poseStack, top, ConfigGuiScreen.this.width - 200, 122, entryHeight, mouseX, mouseY,
                         isHovered, partialTick);
 
                 this.resetToInitialButton.setActive(canBeResetToInitial());
@@ -576,15 +568,13 @@ public class ConfigGuiScreen extends Screen
         @Override
         public @NotNull List<? extends NarratableEntry> narratables()
         {
-            return this.widget != null ? ImmutableList.of(this.widget, this.resetToInitialButton,
-                    this.resetToDefaultButton) : ImmutableList.of();
+            return this.widget != null ? ImmutableList.of(this.widget, this.resetToInitialButton, this.resetToDefaultButton) : ImmutableList.of();
         }
 
         @Override
         public @NotNull List<? extends GuiEventListener> children()
         {
-            return this.widget != null ? ImmutableList.of(this.widget, this.resetToInitialButton,
-                    this.resetToDefaultButton) : ImmutableList.of();
+            return this.widget != null ? ImmutableList.of(this.widget, this.resetToInitialButton, this.resetToDefaultButton) : ImmutableList.of();
         }
 
         public Component getLabel()
@@ -666,8 +656,9 @@ public class ConfigGuiScreen extends Screen
         public void render(@NotNull PoseStack poseStack, int entryIdx, int top, int left, int entryWidth,
                            int entryHeight, int mouseX, int mouseY, boolean isHovered, float partialTick)
         {
-            GuiComponent.drawCenteredString(poseStack, Objects.requireNonNull(ConfigGuiScreen.this.minecraft).font,
-                    this.label, left + entryWidth / 2, top + 5, 16777215);
+            fill(poseStack, left, top, left + entryWidth, top + entryHeight, 0xAE282828);
+
+            GuiComponent.drawString(poseStack, Objects.requireNonNull(ConfigGuiScreen.this.minecraft).font, this.label, left + 5, top + (entryHeight - font.lineHeight + 1) / 2, 16777215);
             this.resetToInitialButton.setActive(ConfigGuiScreen.this.configEntryList.hasEntriesWhichCanBeResetToInitial(this.pathPrefix));
             this.resetToInitialButton.x = left + entryWidth - 52;
             this.resetToInitialButton.y = top;

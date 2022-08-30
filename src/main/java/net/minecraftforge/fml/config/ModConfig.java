@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) Forge Development LLC and contributors
+ * SPDX-License-Identifier: LGPL-2.1-only
+ */
+
 package net.minecraftforge.fml.config;
 
 import com.electronwill.nightconfig.core.CommentedConfig;
@@ -15,6 +20,7 @@ public class ModConfig {
     private final Type type;
     private final IConfigSpec<?> spec;
     private final String fileName;
+    // Forge Config API Port: replace Forge's ModContainer with the Fabric equivalent
     private final ModContainer container;
     private final ConfigFileTypeHandler configHandler;
     private CommentedConfig configData;
@@ -30,6 +36,7 @@ public class ModConfig {
     }
 
     public ModConfig(final Type type, final IConfigSpec<?> spec, final ModContainer activeContainer) {
+        // Forge Config API Port: getting mod id from mod container is different on Fabric
         this(type, spec, activeContainer, defaultConfigName(type, activeContainer.getMetadata().getId()));
     }
 
@@ -56,6 +63,7 @@ public class ModConfig {
     }
 
     public String getModId() {
+        // Forge Config API Port: getting mod id from mod container is different on Fabric
         return container.getMetadata().getId();
     }
 
@@ -85,6 +93,7 @@ public class ModConfig {
         {
             setConfigData(null);
         }
+        // Forge Config API Port: invoke Fabric style callback instead of Forge event
         ModConfigEvent.RELOADING.invoker().onModConfigReloading(this);
     }
 
