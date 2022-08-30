@@ -1,22 +1,27 @@
+/*
+ * Copyright (c) Forge Development LLC and contributors
+ * SPDX-License-Identifier: LGPL-2.1-only
+ */
+
 package net.minecraftforge.fml.config;
 
 import com.electronwill.nightconfig.core.CommentedConfig;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
+import com.mojang.logging.LogUtils;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraftforge.api.fml.config.IConfigTracker;
 import net.minecraftforge.api.fml.event.config.ModConfigEvent;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.Marker;
-import org.apache.logging.log4j.MarkerManager;
+import org.slf4j.Logger;
+import org.slf4j.Marker;
+import org.slf4j.MarkerFactory;
 
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ConfigTracker implements IConfigTracker {
-    private static final Logger LOGGER = LogManager.getLogger();
-    public static final Marker CONFIG = MarkerManager.getMarker("CONFIG");
+    private static final Logger LOGGER = LogUtils.getLogger();
+    static final Marker CONFIG = MarkerFactory.getMarker("CONFIG");
     public static final ConfigTracker INSTANCE = new ConfigTracker();
     private final ConcurrentHashMap<String, ModConfig> fileMap;
     private final EnumMap<ModConfig.Type, Set<ModConfig>> configSets;
@@ -41,9 +46,10 @@ public class ConfigTracker implements IConfigTracker {
         this.configSets.get(config.getType()).add(config);
         this.configsByMod.computeIfAbsent(config.getModId(), (k)->new EnumMap<>(ModConfig.Type.class)).put(config.getType(), config);
         LOGGER.debug(CONFIG, "Config file {} for {} tracking", config.getFileName(), config.getModId());
-        loadConfig(config, FabricLoader.getInstance().getConfigDir());
+        loadConfig(config, FabricLoader.getInstance().getConfigDir());  // Forge Config API Port: load configs immediately
     }
 
+    // Forge Config API Port: additional method for loading a single config immediately
     private void loadConfig(ModConfig config, Path configBasePath) {
         // unlike on forge there isn't really more than one loading stage for mods on fabric, therefore we load configs immediately
         if (config.getType() != ModConfig.Type.SERVER) {
@@ -65,6 +71,7 @@ public class ConfigTracker implements IConfigTracker {
         LOGGER.trace(CONFIG, "Loading config file type {} at {} for {}", config.getType(), config.getFileName(), config.getModId());
         final CommentedFileConfig configData = config.getHandler().reader(configBasePath).apply(config);
         config.setConfigData(configData);
+        // Forge Config API Port: invoke Fabric style callback instead of Forge event
         ModConfigEvent.LOADING.invoker().onModConfigLoading(config);
         config.save();
     }
@@ -83,6 +90,7 @@ public class ConfigTracker implements IConfigTracker {
             final CommentedConfig commentedConfig = CommentedConfig.inMemory();
             modConfig.getSpec().correct(commentedConfig);
             modConfig.setConfigData(commentedConfig);
+            // Forge Config API Port: invoke Fabric style callback instead of Forge event
             ModConfigEvent.LOADING.invoker().onModConfigLoading(modConfig);
         });
     }

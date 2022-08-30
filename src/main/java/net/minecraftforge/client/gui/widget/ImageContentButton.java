@@ -50,12 +50,12 @@ public class ImageContentButton extends ImageButton
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.setShaderTexture(0, WIDGETS_LOCATION);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, this.alpha);
-        int i = this.getYImage(this.isHoveredOrFocused() && this.isActive());
+        int yOffset = this.getYImage(this.isHoveredOrFocused() && this.isActive());
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         RenderSystem.enableDepthTest();
-        this.blit(poseStack, this.x, this.y, 0, 46 + i * 20, this.width / 2, this.height);
-        this.blit(poseStack, this.x + this.width / 2, this.y, 200 - this.width / 2, 46 + i * 20, this.width / 2, this.height);
+        this.blit(poseStack, this.x, this.y, 0, 46 + yOffset * 20, this.width / 2, this.height);
+        this.blit(poseStack, this.x + this.width / 2, this.y, 200 - this.width / 2, 46 + yOffset * 20, this.width / 2, this.height);
         this.renderBg(poseStack, minecraft, mouseX, mouseY);
         super.renderButton(poseStack, mouseX, mouseY, partialTickTime);
         if (this.isHoveredOrFocused()) {

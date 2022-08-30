@@ -6,8 +6,11 @@ import net.minecraftforge.fml.config.ModConfig;
 
 /**
  * class to mimic Forge's ModLoadingContext, name is misleading in this case though, as this is only used for registering configs
+ *
+ * <p>package is purposefully different from Forge, as the class itself works completely differently and is not compatible with the implementation on Fore
  */
 public final class ModLoadingContext {
+
     /**
      * Register a new mod config, only difference from registering on Forge is <code>modId</code> has to be provided as there is no loading context to get that information from
      *

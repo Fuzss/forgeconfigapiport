@@ -18,22 +18,19 @@ import net.minecraftforge.network.config.ConfigSync;
 import net.minecraftforge.server.command.ConfigCommand;
 import net.minecraftforge.server.command.EnumArgument;
 import net.minecraftforge.server.command.ModIdArgument;
-import org.apache.logging.log4j.Marker;
-import org.apache.logging.log4j.MarkerManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+// Forge Config API Port: Fabric main class
 public class ForgeConfigAPIPort implements ModInitializer {
     public static final String MOD_ID = "forgeconfigapiport";
     public static final String MOD_NAME = "Forge Config API Port";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_NAME);
 
-    public static final Marker CORE = MarkerManager.getMarker("CORE");
-
     @Override
     public void onInitialize() {
         ConfigSync.INSTANCE.init();
-        FMLConfig.loadDefaultConfigPath();
+        FMLConfig.load();
         registerArgumentTypes();
         registerHandlers();
     }
