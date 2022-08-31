@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog].
 
+## [v4.2.6-1.19.2] - 2022-08-31
+### Fixed
+- Fixed crash when a config screen attempts to handle unsupported config value types
+
 ## [v4.2.5-1.19.2] - 2022-08-31
 ### Added
 - Added a new `ModConfigEvents` class which is the new way of handling mod config events (loading and reloading), to ensure config events are only accessed on a mod specific basis

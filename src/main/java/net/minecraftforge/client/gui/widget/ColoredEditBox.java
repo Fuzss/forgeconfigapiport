@@ -6,9 +6,7 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
 
-/**
- * Forge Config API Port: an edit box with a custom outline
- */
+// Forge Config API Port: an edit box with a custom outline
 public class ColoredEditBox extends EditBox {
     private boolean bordered = true;
     
