@@ -17,6 +17,15 @@ public class FMLConfig
 {
     private static final Logger LOGGER = LogUtils.getLogger();
 
+    /**
+     * @deprecated renamed to {@link #load()}, you should have never used this anyways...
+     */
+    @Deprecated(forRemoval = true)
+    public static void loadDefaultConfigPath()
+    {
+        load();
+    }
+
     public static void load()
     {
         if (LOGGER.isTraceEnabled(CORE))

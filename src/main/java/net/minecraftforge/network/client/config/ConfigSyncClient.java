@@ -18,7 +18,7 @@ import org.slf4j.Logger;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-import static net.minecraftforge.network.config.ConfigSync.FMLHSMARKER;
+import static net.minecraftforge.network.config.ConfigSync.FMLHSMARKER_SLF4J;
 
 // Forge Config API Port: a class by that name does not exist on Forge, though this is an extract from net.minecraftforge.network.HandshakeHandler
 // with the client side code regarding configs
@@ -35,14 +35,14 @@ public class ConfigSyncClient {
     public void clientInit() {
         ClientLoginNetworking.registerGlobalReceiver(ConfigSync.SYNC_CONFIGS_CHANNEL, (client, handler, buf, listenerAdder) -> {
             final String fileName = this.receiveSyncedConfig(buf);
-            LOGGER.debug(FMLHSMARKER, "Received config sync for {} from server", fileName);
+            LOGGER.debug(FMLHSMARKER_SLF4J, "Received config sync for {} from server", fileName);
             FriendlyByteBuf response = PacketByteBufs.create();
             response.writeUtf(fileName);
-            LOGGER.debug(FMLHSMARKER, "Sent config sync for {} to server", fileName);
+            LOGGER.debug(FMLHSMARKER_SLF4J, "Sent config sync for {} to server", fileName);
             return CompletableFuture.completedFuture(response);
         });
         ClientLoginNetworking.registerGlobalReceiver(ConfigSync.MODDED_CONNECTION_CHANNEL, (client, handler, buf, listenerAdder) -> {
-            LOGGER.debug(FMLHSMARKER, "Received modded connection marker from server");
+            LOGGER.debug(FMLHSMARKER_SLF4J, "Received modded connection marker from server");
             NetworkHooks.setModdedConnection();
             return CompletableFuture.completedFuture(PacketByteBufs.create());
         });

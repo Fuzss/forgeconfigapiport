@@ -8,7 +8,10 @@ import net.minecraftforge.fml.config.ModConfig;
  * mod config events adapted for Fabric's callback event style
  *
  * <p>package is purposefully different from Forge, as the class itself works completely differently and is not compatible with the implementation on Fore
+ *
+ * @deprecated for removal in the next major release for 1.20, please migrate to {@link ModConfigEvents} to ensure config events are only accessed on a mod specific basis
  */
+@Deprecated(forRemoval = true)
 public final class ModConfigEvent {
     /**
      * Called when a config is loaded or unloaded (only applies for server configs)
