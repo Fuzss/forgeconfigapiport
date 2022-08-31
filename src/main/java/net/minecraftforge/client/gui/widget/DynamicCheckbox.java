@@ -11,9 +11,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.NotNull;
 
-/**
- * Forge Config API Port: a checkbox with a custom texture
- */
+// Forge Config API Port: a checkbox with a custom texture
 public class DynamicCheckbox extends Checkbox {
     private static final ResourceLocation TEXTURE = new ResourceLocation("textures/gui/checkbox.png");
 
