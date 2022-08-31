@@ -11,6 +11,7 @@ import com.mojang.logging.LogUtils;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraftforge.api.fml.config.IConfigTracker;
 import net.minecraftforge.api.fml.event.config.ModConfigEvent;
+import net.minecraftforge.api.fml.event.config.ModConfigEvents;
 import org.slf4j.Logger;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
@@ -19,6 +20,7 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+// Fore Config Api Port: implements interface to offer some level of abstraction, will be removed for 1.20
 public class ConfigTracker implements IConfigTracker {
     private static final Logger LOGGER = LogUtils.getLogger();
     static final Marker CONFIG = MarkerFactory.getMarker("CONFIG");
@@ -73,6 +75,7 @@ public class ConfigTracker implements IConfigTracker {
         config.setConfigData(configData);
         // Forge Config API Port: invoke Fabric style callback instead of Forge event
         ModConfigEvent.LOADING.invoker().onModConfigLoading(config);
+        ModConfigEvents.loading(config.getModId()).invoker().onModConfigLoading(config);
         config.save();
     }
 
@@ -92,6 +95,7 @@ public class ConfigTracker implements IConfigTracker {
             modConfig.setConfigData(commentedConfig);
             // Forge Config API Port: invoke Fabric style callback instead of Forge event
             ModConfigEvent.LOADING.invoker().onModConfigLoading(modConfig);
+            ModConfigEvents.loading(modConfig.getModId()).invoker().onModConfigLoading(modConfig);
         });
     }
 

@@ -9,7 +9,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * extracted two methods for getting config data which need to be frequently accessed
+ *
+ * @deprecated access methods on {@link ConfigTracker} directly
  */
+@Deprecated(forRemoval = true)
 public interface IConfigTracker {
     /**
      * Forge config tracker instance
