@@ -40,6 +40,9 @@ dependencies {
 	// Mod Menu
 	modImplementation "com.terraformersmc:modmenu:4.0.6"
 
+	// Configured
+	modImplementation "curse.maven:configured-fabric-667378:4010582"
+
 	// Config Dependencies
 	implementation(include('com.electronwill.night-config:core:3.6.5'))
 	implementation(include('com.electronwill.night-config:toml:3.6.5'))

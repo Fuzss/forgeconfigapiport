@@ -47,6 +47,11 @@
       "badges": [
         "library"
       ]
+    },
+    "configured": {
+      "providers": [
+        "net.minecraftforge.configured.ForgeConfigProvider"
+      ]
     }
   }
 }

@@ -1,6 +1,7 @@
 package net.minecraftforge.modmenu;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;
 import net.fabricmc.loader.api.FabricLoader;
@@ -24,6 +25,7 @@ public class ConfigFactoryHandler implements ModMenuApi {
 
     @Override
     public Map<String, ConfigScreenFactory<?>> getProvidedConfigScreenFactories() {
+        if (FabricLoader.getInstance().isModLoaded("configured")) return ImmutableMap.of();
         // this will provide a default config screen for any mod using Forge Config API Port that doesn't provide its own screen
         Minecraft minecraft = Minecraft.getInstance();
         ImmutableMap.Builder<String, ConfigScreenFactory<?>> builder = ImmutableMap.builder();
