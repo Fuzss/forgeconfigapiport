@@ -89,14 +89,17 @@ public class ModConfig {
         if (bytes != null)
         {
             setConfigData(TomlFormat.instance().createParser().parse(new ByteArrayInputStream(bytes)));
+            // Forge Config API Port: invoke Fabric style callback instead of Forge event
+            ModConfigEvents.reloading(this.getModId()).invoker().onModConfigReloading(this);
         }
         else
         {
             setConfigData(null);
+            // Forge Config API Port: invoke Fabric style callback instead of Forge event
+            ModConfigEvents.unloading(this.getModId()).invoker().onModConfigUnloading(this);
         }
         // Forge Config API Port: invoke Fabric style callback instead of Forge event
         ModConfigEvent.RELOADING.invoker().onModConfigReloading(this);
-        ModConfigEvents.reloading(this.getModId()).invoker().onModConfigReloading(this);
     }
 
     public enum Type {

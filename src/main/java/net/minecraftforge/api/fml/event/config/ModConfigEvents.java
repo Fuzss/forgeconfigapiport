@@ -41,6 +41,17 @@ public final class ModConfigEvents {
         return ModConfigEventsHolder.modSpecific(modId).reloading();
     }
 
+    /**
+     * access to mod specific unloading event
+     *
+     * @param modId     the mod id to access config event for
+     * @return          the {@link Unloading} event
+     */
+    public static Event<Unloading> unloading(String modId) {
+        Objects.requireNonNull(modId, "mod id is null");
+        return ModConfigEventsHolder.modSpecific(modId).unloading();
+    }
+
     private ModConfigEvents() {
 
     }
@@ -55,7 +66,6 @@ public final class ModConfigEvents {
          * @param config    the mod config that is loading
          */
         void onModConfigLoading(ModConfig config);
-
     }
 
     /**
@@ -68,7 +78,18 @@ public final class ModConfigEvents {
          * @param config    the mod config that is reloading
          */
         void onModConfigReloading(ModConfig config);
+    }
 
+    /**
+     * Called when a config is unloaded which happens only for server configs when the corresponding world is unloaded
+     */
+    @FunctionalInterface
+    public interface Unloading {
+
+        /**
+         * @param config    the mod config that is unloading
+         */
+        void onModConfigUnloading(ModConfig config);
     }
 
     /**
@@ -78,7 +99,7 @@ public final class ModConfigEvents {
      * @param loading           loading event
      * @param reloading         reloading event
      */
-    record ModConfigEventsHolder(String modId, Event<Loading> loading, Event<Reloading> reloading) {
+    record ModConfigEventsHolder(String modId, Event<Loading> loading, Event<Reloading> reloading, Event<Unloading> unloading) {
         /**
          * internal storage for mod specific config events
          */
@@ -113,7 +134,12 @@ public final class ModConfigEvents {
                     event.onModConfigReloading(config);
                 }
             });
-            return new ModConfigEventsHolder(modId, loading, reloading);
+            Event<Unloading> unloading = EventFactory.createArrayBacked(Unloading.class, listeners -> config -> {
+                for (Unloading event : listeners) {
+                    event.onModConfigUnloading(config);
+                }
+            });
+            return new ModConfigEventsHolder(modId, loading, reloading, unloading);
         }
     }
 }
