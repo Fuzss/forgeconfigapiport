@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) MrCrayfish
+ * SPDX-License-Identifier: GPLv3
+ */
+
 package net.minecraftforge.configured;
 
 import com.mrcrayfish.configured.api.IConfigProvider;

@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) MrCrayfish
+ * SPDX-License-Identifier: GPLv3
+ */
+
 package net.minecraftforge.configured;
 
 import com.electronwill.nightconfig.core.CommentedConfig;
@@ -21,6 +26,9 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+/**
+ * Author: MrCrayfish
+ */
 public class ForgeConfig implements IModConfig
 {
     protected static final EnumMap<ModConfig.Type, ConfigType> TYPE_RESOLVER = Util.make(new EnumMap<>(ModConfig.Type.class), (map) -> {

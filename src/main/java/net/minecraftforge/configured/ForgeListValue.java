@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) MrCrayfish
+ * SPDX-License-Identifier: GPLv3
+ */
+
 package net.minecraftforge.configured;
 
 import net.minecraftforge.common.ForgeConfigSpec;
@@ -10,6 +15,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Function;
 
+/**
+ * Author: MrCrayfish
+ */
 public class ForgeListValue extends ForgeValue<List<?>>
 {
     protected final Function<List<?>, List<?>> converter;
