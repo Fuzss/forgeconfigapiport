@@ -244,6 +244,7 @@ curseforge {
 			relations {
 				requiredDependency 'fabric-api'
 				optionalDependency 'modmenu'
+				optionalDependency 'configured-fabric'
 			}
 		}
 		addArtifact sourcesJar

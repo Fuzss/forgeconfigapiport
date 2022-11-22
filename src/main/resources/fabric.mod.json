@@ -42,12 +42,18 @@
     "java": ">=17"
   },
 
+  "suggests": {
+    "configured": "*",
+    "modmenu": "*"
+  },
+
   "custom": {
     "modmenu": {
       "badges": [
         "library"
       ]
     },
+
     "configured": {
       "providers": [
         "net.minecraftforge.configured.ForgeConfigProvider"

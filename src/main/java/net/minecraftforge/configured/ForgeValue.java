@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) MrCrayfish
+ * SPDX-License-Identifier: GPLv3
+ */
+
 package net.minecraftforge.configured;
 
 import com.mrcrayfish.configured.api.IConfigValue;
@@ -12,6 +17,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+/**
+ * Author: MrCrayfish
+ */
 public class ForgeValue<T> implements IConfigValue<T>
 {
     public final ForgeConfigSpec.ConfigValue<T> configValue;

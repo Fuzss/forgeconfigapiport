@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) MrCrayfish
+ * SPDX-License-Identifier: GPLv3
+ */
+
 package net.minecraftforge.configured;
 
 import com.electronwill.nightconfig.core.UnmodifiableConfig;
@@ -13,6 +18,9 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Author: MrCrayfish
+ */
 public class ForgeFolderEntry implements IConfigEntry
 {
     protected final List<String> path;

@@ -3,6 +3,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog].
 
+## [v4.2.7-1.19.2] - 2022-11-22
+### Added
+- Added a callback that fires when server configs are unloading 
+- Added support for the [Configured] mod, it will automatically provide config screens to replace the built-in ones when installed
+### Fixed
+- Fixed  a race condition with unloading server config
+
 ## [v4.2.6-1.19.2] - 2022-08-31
 ### Fixed
 - Fixed crash when a config screen attempts to handle unsupported config value types
@@ -79,3 +86,4 @@ The format is based on [Keep a Changelog].
 - Ported to Minecraft 1.19
 
 [Keep a Changelog]: https://keepachangelog.com/en/1.0.0/
+[Configured]: https://www.curseforge.com/minecraft/mc-mods/configured-fabric
