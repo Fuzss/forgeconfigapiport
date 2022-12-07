@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog].
 
+## [v4.2.9-1.19.2] - 2022-12-07
+### Fixed
+- Fixed maven publication depending on Night Config as a mod at runtime
+
 ## [v4.2.8-1.19.2] - 2022-12-07
 ### Fixed
 - Fixed maven publication depending on Configured mod when it's actually just optional
