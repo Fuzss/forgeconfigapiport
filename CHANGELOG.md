@@ -3,12 +3,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog].
 
+## [v4.2.8-1.19.2] - 2022-12-07
+### Fixed
+- Fixed maven publication depending on Configured mod when it's actually just optional
+
 ## [v4.2.7-1.19.2] - 2022-11-22
 ### Added
 - Added a callback that fires when server configs are unloading 
 - Added support for the [Configured] mod, it will automatically provide config screens to replace the built-in ones when installed
 ### Fixed
-- Fixed  a race condition with unloading server config
+- Fixed a race condition with unloading server config
 
 ## [v4.2.6-1.19.2] - 2022-08-31
 ### Fixed
