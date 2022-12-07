@@ -171,7 +171,12 @@ publishing {
 		mavenJava (MavenPublication) {
 			artifactId = "${modId}-fabric"
 			version = modVersion
-			from components.java
+			// don't use this, it has the default jar, not sure how we could remove it
+			// maybe as is done here for the sources jar: https://docs.gradle.org/current/userguide/publishing_customization.html
+//			from components.java
+			artifact remapPublishingJar
+			artifact sourcesJar
+			artifact javadocJar
 			pom {
 				name = "${modName} [Fabric]"
 				description = "${modDescription}"
@@ -198,13 +203,14 @@ publishing {
 					}
 				}
 			}
+			// this is necessary when not using 'from components.java', otherwise dependencies block will still be empty at this point
 			afterEvaluate {
 				// exclude certain dependencies when publishing to maven
 				// from https://stackoverflow.com/a/50121790
 				pom.withXml {
 					asNode().dependencies.dependency.each { dep ->
 						// use this approach to make excluding dependencies from Curse Maven more convenient
-						if (["curse.maven:", "com.terraformersmc:modmenu"].stream().anyMatch(mod -> "${dep.groupId.last().value().last()}:${dep.artifactId.last().value().last()}".startsWith(mod))) {
+						if (["curse.maven:", "com.terraformersmc:modmenu"].stream().anyMatch(mod -> "${dep.groupId.last().value()}:${dep.artifactId.last().value()}".startsWith(mod))) {
 							assert dep.parent().remove(dep)
 						}
 					}
