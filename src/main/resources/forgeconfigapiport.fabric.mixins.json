@@ -2,15 +2,14 @@
   "required": true,
   "minVersion": "0.8",
   "compatibilityLevel": "JAVA_17",
-  "package": "net.minecraftforge.mixin",
+  "package": "fuzs.forgeconfigapiport.mixin",
   "refmap": "forgeconfigapiport.refmap.json",
   "mixins": [
     "accessor.LevelResourceAccessor"
   ],
   "client": [
     "client.ClientHandshakePacketListenerImplMixin",
-    "client.MinecraftMixin",
-    "client.accessor.AbstractWidgetAccessor"
+    "client.MinecraftMixin"
   ],
   "injectors": {
     "defaultRequire": 1

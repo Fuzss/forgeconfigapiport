@@ -20,13 +20,10 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "${mainEntryPoint}"
+      "${modGroup}.impl.ForgeConfigAPIPort"
     ],
     "client": [
-      "${clientEntryPoint}"
-    ],
-    "modmenu": [
-      "${modGroup}.modmenu.ConfigFactoryHandler"
+      "${modGroup}.impl.client.ForgeConfigAPIPortClient"
     ]
   },
   "mixins": [
@@ -40,10 +37,21 @@
     "java": ">=17"
   },
 
+  "suggests": {
+    "configured": "*",
+    "modmenu": "*"
+  },
+
   "custom": {
     "modmenu": {
       "badges": [
         "library"
+      ]
+    },
+
+    "configured": {
+      "providers": [
+        "${modGroup}.impl.integration.configured.ForgeConfigProvider"
       ]
     }
   }

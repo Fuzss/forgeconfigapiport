@@ -20,13 +20,10 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "${mainEntryPoint}"
+      "${modGroup}.impl.ForgeConfigAPIPort"
     ],
     "client": [
-      "${clientEntryPoint}"
-    ],
-    "modmenu": [
-      "${modGroup}.modmenu.ConfigFactoryHandler"
+      "${modGroup}.impl.client.ForgeConfigAPIPortClient"
     ]
   },
   "mixins": [
@@ -56,7 +53,7 @@
 
     "configured": {
       "providers": [
-        "net.minecraftforge.configured.ForgeConfigProvider"
+        "${modGroup}.impl.integration.configured.ForgeConfigProvider"
       ]
     }
   }

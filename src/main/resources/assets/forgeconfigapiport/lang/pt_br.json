@@ -1,0 +1,5 @@
+{
+    "commands.forge.arguments.enum.invalid": "Enum constante deve ser um dos {0}encontradand {1}",
+    "commands.config.getwithtype": "Configuração para %s do tipo %s Encontrado em %s",
+    "commands.config.noconfig": "Configuração para %s do tipo %s não encontrado"
+  }

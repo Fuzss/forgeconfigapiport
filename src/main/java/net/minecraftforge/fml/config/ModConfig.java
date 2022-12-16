@@ -9,8 +9,7 @@ import com.electronwill.nightconfig.core.CommentedConfig;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.electronwill.nightconfig.toml.TomlFormat;
 import net.fabricmc.loader.api.ModContainer;
-import net.minecraftforge.api.fml.event.config.ModConfigEvent;
-import net.minecraftforge.api.fml.event.config.ModConfigEvents;
+import fuzs.forgeconfigapiport.api.config.v2.ModConfigEvents;
 
 import java.io.ByteArrayInputStream;
 import java.nio.file.Path;
@@ -98,8 +97,6 @@ public class ModConfig {
             // Forge Config API Port: invoke Fabric style callback instead of Forge event
             ModConfigEvents.unloading(this.getModId()).invoker().onModConfigUnloading(this);
         }
-        // Forge Config API Port: invoke Fabric style callback instead of Forge event
-        ModConfigEvent.RELOADING.invoker().onModConfigReloading(this);
     }
 
     public enum Type {
