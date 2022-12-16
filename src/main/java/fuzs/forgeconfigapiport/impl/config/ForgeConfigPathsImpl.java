@@ -13,7 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 public final class ForgeConfigPathsImpl implements ForgeConfigPaths {
-    private static final LevelResource SERVER_CONFIG_LEVEL_KEY = LevelResourceAccessor.forgeconfigapiport$create("serverconfig");
+    private static final LevelResource SERVER_CONFIG_LEVEL_RESOURCE = LevelResourceAccessor.forgeconfigapiport$create("serverconfig");
 
     public Path getClientConfigPath() {
         return FabricLoader.getInstance().getConfigDir();
@@ -24,16 +24,16 @@ public final class ForgeConfigPathsImpl implements ForgeConfigPaths {
     }
 
     public Path getServerConfigPath(final MinecraftServer server) {
-        if (ForgeConfigApiPortConfig.getInstance().disableGlobalServerConfigs) {
+        if (ForgeConfigApiPortConfig.INSTANCE.getValue("disableGlobalServerConfigs", true)) {
             return FabricLoader.getInstance().getConfigDir();
         }
-        final Path serverConfig = server.getWorldPath(SERVER_CONFIG_LEVEL_KEY);
+        final Path serverConfig = server.getWorldPath(SERVER_CONFIG_LEVEL_RESOURCE);
         getOrCreateDirectory(serverConfig, "server config directory");
         return serverConfig;
     }
 
     public Path getDefaultConfigsPath() {
-        Path defaultConfigs = FabricLoader.getInstance().getGameDir().resolve(ForgeConfigApiPortConfig.getInstance().defaultsConfigPath);
+        Path defaultConfigs = FabricLoader.getInstance().getGameDir().resolve(ForgeConfigApiPortConfig.INSTANCE.getValue("defaultConfigsPath", "defaultconfigs"));
         getOrCreateDirectory(defaultConfigs, "default configs directory");
         return defaultConfigs;
     }
