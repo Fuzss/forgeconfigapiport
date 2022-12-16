@@ -8,10 +8,8 @@ package net.minecraftforge.fml.config;
 import com.electronwill.nightconfig.core.CommentedConfig;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.mojang.logging.LogUtils;
-import net.fabricmc.loader.api.FabricLoader;
-import net.minecraftforge.api.fml.config.IConfigTracker;
-import net.minecraftforge.api.fml.event.config.ModConfigEvent;
-import net.minecraftforge.api.fml.event.config.ModConfigEvents;
+import fuzs.forgeconfigapiport.api.config.v2.ForgeConfigPaths;
+import fuzs.forgeconfigapiport.api.config.v2.ModConfigEvents;
 import org.slf4j.Logger;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
@@ -20,8 +18,7 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-// Fore Config Api Port: implements interface to offer some level of abstraction, will be removed for 1.20
-public class ConfigTracker implements IConfigTracker {
+public class ConfigTracker {
     private static final Logger LOGGER = LogUtils.getLogger();
     static final Marker CONFIG = MarkerFactory.getMarker("CONFIG");
     public static final ConfigTracker INSTANCE = new ConfigTracker();
@@ -48,15 +45,18 @@ public class ConfigTracker implements IConfigTracker {
         this.configSets.get(config.getType()).add(config);
         this.configsByMod.computeIfAbsent(config.getModId(), (k)->new EnumMap<>(ModConfig.Type.class)).put(config.getType(), config);
         LOGGER.debug(CONFIG, "Config file {} for {} tracking", config.getFileName(), config.getModId());
-        loadConfig(config, FabricLoader.getInstance().getConfigDir());  // Forge Config API Port: load configs immediately
+        loadTrackedConfig(config);  // Forge Config API Port: load configs immediately
     }
 
     // Forge Config API Port: additional method for loading a single config immediately
-    private void loadConfig(ModConfig config, Path configBasePath) {
+    private void loadTrackedConfig(ModConfig config) {
         // unlike on forge there isn't really more than one loading stage for mods on fabric, therefore we load configs immediately
-        if (config.getType() != ModConfig.Type.SERVER) {
-            openConfig(config, configBasePath);
+        if (config.getType() == ModConfig.Type.CLIENT) {
+            openConfig(config, ForgeConfigPaths.INSTANCE.getClientConfigPath());
+        } else if (config.getType() == ModConfig.Type.COMMON) {
+            openConfig(config, ForgeConfigPaths.INSTANCE.getCommonConfigPath());
         }
+        // server configs are not handled here, they are all loaded at once when a world is loaded
     }
 
     public void loadConfigs(ModConfig.Type type, Path configBasePath) {
@@ -74,7 +74,6 @@ public class ConfigTracker implements IConfigTracker {
         final CommentedFileConfig configData = config.getHandler().reader(configBasePath).apply(config);
         config.setConfigData(configData);
         // Forge Config API Port: invoke Fabric style callback instead of Forge event
-        ModConfigEvent.LOADING.invoker().onModConfigLoading(config);
         ModConfigEvents.loading(config.getModId()).invoker().onModConfigLoading(config);
         config.save();
     }
@@ -96,7 +95,6 @@ public class ConfigTracker implements IConfigTracker {
             modConfig.getSpec().correct(commentedConfig);
             modConfig.setConfigData(commentedConfig);
             // Forge Config API Port: invoke Fabric style callback instead of Forge event
-            ModConfigEvent.LOADING.invoker().onModConfigLoading(modConfig);
             ModConfigEvents.loading(modConfig.getModId()).invoker().onModConfigLoading(modConfig);
         });
     }
@@ -106,12 +104,10 @@ public class ConfigTracker implements IConfigTracker {
                 map(ModConfig::getFullPath).map(Object::toString).orElse(null);
     }
 
-    @Override
     public Map<ModConfig.Type, Set<ModConfig>> configSets() {
         return configSets;
     }
 
-    @Override
     public ConcurrentHashMap<String, ModConfig> fileMap() {
         return fileMap;
     }

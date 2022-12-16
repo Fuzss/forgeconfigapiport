@@ -12,10 +12,8 @@ import com.electronwill.nightconfig.core.io.ParsingException;
 import com.electronwill.nightconfig.core.io.WritingMode;
 import com.electronwill.nightconfig.toml.TomlFormat;
 import com.mojang.logging.LogUtils;
-import net.fabricmc.loader.api.FabricLoader;
-import net.minecraftforge.api.fml.event.config.ModConfigEvent;
-import net.minecraftforge.api.fml.event.config.ModConfigEvents;
-import net.minecraftforge.fml.loading.FMLConfig;
+import fuzs.forgeconfigapiport.api.config.v2.ForgeConfigPaths;
+import fuzs.forgeconfigapiport.api.config.v2.ModConfigEvents;
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 
@@ -30,7 +28,7 @@ public class ConfigFileTypeHandler {
     private static final Logger LOGGER = LogUtils.getLogger();
     static ConfigFileTypeHandler TOML = new ConfigFileTypeHandler();
     // Forge Config Api Port: adapted for Fabric
-    private static final Path defaultConfigPath = FabricLoader.getInstance().getGameDir().resolve(FMLConfig.defaultConfigPath());
+    private static final Path defaultConfigPath = ForgeConfigPaths.INSTANCE.getDefaultConfigsPath();
 
     public Function<ModConfig, CommentedFileConfig> reader(Path configBasePath) {
         return (c) -> {
@@ -155,7 +153,6 @@ public class ConfigFileTypeHandler {
                 LOGGER.debug(CONFIG, "Config file {} changed, sending notifies", this.modConfig.getFileName());
                 this.modConfig.getSpec().afterReload();
                 // Forge Config API Port: invoke Fabric style callback instead of Forge event
-                ModConfigEvent.RELOADING.invoker().onModConfigReloading(this.modConfig);
                 ModConfigEvents.reloading(this.modConfig.getModId()).invoker().onModConfigReloading(this.modConfig);
             }
         }

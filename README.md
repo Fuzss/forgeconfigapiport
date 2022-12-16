@@ -17,6 +17,9 @@ For more information regarding the licensing of this project check the [LICENSIN
 ## DEVELOPER INFORMATION
 
 ### Adding to your workspace
+
+<details>
+
 #### Via Fuzs Mod Resources
 Fuzs Mod Resources is the recommended way of adding Forge Config API Port to your project.
 ```groovy
@@ -28,9 +31,11 @@ repositories {
 }
 
 dependencies {
-        modImplementation "net.minecraftforge:forgeconfigapiport-fabric:<modVersion>"   // e.g. 4.0.0 for Minecraft 1.19
+        modImplementation "fuzs.forgeconfigapiport:forgeconfigapiport-fabric:<modVersion>"   // e.g. 5.0.0 for Minecraft 1.19.3
 }
 ```
+
+**Versions of Forge Config Api Port for Minecraft before 1.19.3 are distributed using the `net.minecraftforge` Maven group instead of `fuzs.forgeconfigapiport`.**
 
 It is important to note, that there is a minor difference from the production jars released on CurseForge and Modrinth: Jars from this Maven do not have a dependency set on Night Config in `fabric.mod.json`. This is necessary as there is no proper way of getting Night Config to be recognized as a Fabric mod.
 
@@ -87,39 +92,47 @@ To resolve this issue, what you need to do is add dependency overrides (check th
 ```
 Also don't forget to manually add this file to your VCS, since the whole `run` directory is usually ignored by default.
 
+</details>
+
 ### Working with Forge Config API Port
+
+<details>
+
 #### Registering configs
 The recommended point for registering your configs is directly in your `ModInitializer::onInitialize` method.
 
-Registering your configs still works via a class called `net.minecraftforge.api.ModLoadingContext`, though the name is only for mimicking Forge, as this is really only used for registering configs.
+Registering your configs works via `fuzs.forgeconfigapiport.api.config.v2.ForgeConfigRegistry`, obtain an instance of the implementation from `ForgeConfigRegistry#INSTANCE`.
 
-You'll have to provide the mod id of your mod, as there is no context which would be aware of the current mod.
+You'll have to provide the mod id of your mod, as there is no context which would be aware of the current mod as there is on Forge.
 ```java
-public static void registerConfig(String modId, ModConfig.Type type, IConfigSpec<?> spec)
+void register(String modId, ModConfig.Type type, IConfigSpec<?> spec)
 ```
 And as on Forge there is also a version which supports a custom file name.
 ```java
-public static void registerConfig(String modId, ModConfig.Type type, IConfigSpec<?> spec, String fileName)
+void register(String modId, ModConfig.Type type, IConfigSpec<?> spec, String fileName)
 ```
 
 #### Config loading
-As Forge's mod loading process is split into multiple stages, configs aren't loaded immediately upon being registered. On Fabric though, no such mod loading stages exist. Therefore, Forge Config API Port loads all registered configs immediately.
+As Forge's mod loading process is split into multiple stages, configs aren't loaded immediately upon being registered. On Fabric though, no such mod loading stages exist. Therefore, Forge Config API Port loads all registered configs **immediately**.
 
-#### Listening for config loading and reloading
-Forge's `ModConfigEvent.Loading` and `ModConfigEvent.Reloading` events are both adapted for Fabric's callback event style. They can be accessed from the `net.minecraftforge.api.fml.event.config.ModConfigEvent` class.
+#### Listening for config loading, reloading and unloading
+Forge's `net.minecraftforge.fml.event.config.ModConfigEvent.Loading` and `net.minecraftforge.fml.event.config.ModConfigEvent.Reloading` events are both adapted for Fabric's callback event style. They can be accessed from the `fuzs.forgeconfigapiport.api.config.v2.ModConfigEvents` class. Additionally, there is an event that fires when server configs are unloading. As on Forge, all these events provide is the config being handled.
 
-As on Forge, all these events provide is the config that is loading / reloading. But unlike on Forge, when processing that config, you'll have to make sure it actually comes from your mod. This is important, as there is no mod specific event bus on Fabric, meaning all events are fired for all mods subscribed to them.
+All mod config related events run on the ModLifecycle event bus instead of the primary event bus on Forge (this essentially means events do not run globally, but are instead only handed to the mod that initially registered a listener). As there is no mod specific event bus on Fabric, your mod id must be provided when registering a listener for a config callback to achieve the same behavior as on Forge, where the listener will only run for your mod.
 
 As an example, a complete implementation of the reloading callback looks something like this:
 ```java
-ModConfigEvent.RELOADING.register((ModConfig config) -> {
-    if (config.getModId().equals(<modId>)) {
-        ...
-    }
+ModConfigEvents.reloading(<modId>).register((ModConfig config) -> {
+    <...>
 });
 ```
 
+</details>
+
 ### Forge Config API Port in a multi-loader workspace
+
+<details>
+
 As the sole purpose of this library is to allow for config parity on Forge and Fabric, Forge Config API Port works especially great when developing your mod using a multi-loader workspace Gradle setup such as [this one](https://github.com/jaredlll08/MultiLoader-Template), arranged by [Jaredlll08](https://github.com/jaredlll08).
 
 Configs can extremely easily be dealt with in the common project without having to use any abstractions at all: Simply add Forge Config API Port to the common project, since all class and package names are the same as on Forge your code will compile on both Forge and Fabric without any issues.
@@ -128,7 +141,17 @@ The only thing where you'll actually have to use mod loader specific code is whe
 
 A complete implementation of this can be found e.g. [here](https://github.com/thexaero/open-parties-and-claims).
 
-### In-game configuration using Forge Config API Port
-In-game configuration has been ported from Forge for Minecraft 1.19.1. Config screens are generated automatically for every mod using Forge Config API port, to use them in-game [Mod Menu](https://github.com/TerraformersMC/ModMenu) needs to be installed. Adding Mod Menu to your development environment is not a requirement, but highly recommended.
+</details>
 
-As Forge's config screens are just extremely basic, I'm also working on porting my own [Config Menus for Forge](https://github.com/Fuzss/configmenusforge) mod to Fabric, to provide more usable config screens.
+### In-game configuration using Forge Config API Port
+
+<details>
+
+Just as with Forge itself, in-game configuration is not available in Forge Config Api Port by default. Instead, users will have to rely on third-party mods to offer that capability.
+
+Forge Config Api Port includes default support for the [Configured (Fabric)](https://www.curseforge.com/minecraft/mc-mods/configured-fabric) mod, which already is the most popular way of handling in-game configs on Forge. To use the configs in-game [Mod Menu](https://github.com/TerraformersMC/ModMenu) needs to be installed, too.
+
+Adding Configured and Mod Menu to your development environment is not a requirement, but highly recommended.
+
+</details>
+
