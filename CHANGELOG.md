@@ -9,10 +9,10 @@ This version includes major changes and refactors regarding the whole structure 
 - Forge Config Api Port now includes a config file itself which includes the following options:
   - An option to set the `defaultsconfigs` directory (just like Forge, not that it's too useful)
   - An option to force server configs to generate in and load from the standard config directory (`.minecraft/config/`), so those configs are no longer world specific, but can be accessed much easier by users
-  - An option to manually prevent the custom command for opening configs from being registered, intended to be used when hosting a LAN world to allow clients without this mod to connect (changing the option requires a restart)
+  - An option to manually prevent the custom `/config` command for opening local config files from being registered, intended to be used when hosting a LAN world to allow clients without this mod to connect
 ### Changed
 - Classes not originally found in Forge now use a separate domain `fuzs.forgeconfigapiport` with a similar structure to Fabric Api (divided into `api`, `impl`, and `mixin`)
-- `fuzs.forgeconfigapiport` also is the new domain used for the Maven
+- `fuzs.forgeconfigapiport` also is the new domain used for the Maven distribution
 - The `api` package at `net.minecraftforge.api` has been moved to the new domain at `fuzs.forgeconfigapiport.api` and refactored:
   - `net.minecraftforge.api.ModLoadingContext` -> `fuzs.forgeconfigapiport.api.config.v2.ForgeConfigRegistry`: Same as before, methods have been renamed from `registerConfig` to simply `register` though and registration needs an instance from `ForgeConfigRegistry#INSTANCE`.
   - `net.minecraftforge.api.ConfigPaths` -> `fuzs.forgeconfigapiport.api.config.v2.ForgeConfigPaths`: Overhauled, includes helper methods for getting default paths for all config types, also provides the full file path, not just the directory name.
