@@ -23,6 +23,7 @@ import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -54,8 +55,6 @@ public class ConfigGuiScreen extends Screen
     private Button doneButton;
     private ImageContentButton resetToInitialButton = null;
     private ImageContentButton resetToDefaultButton = null;
-    @Nullable
-    private List<FormattedCharSequence> tooltip;
 
     public ConfigGuiScreen(Component title, final Collection<SpecificationData> specs, Runnable onClose)
     {
@@ -109,18 +108,23 @@ public class ConfigGuiScreen extends Screen
     protected void init()
     {
         super.init();
-        Objects.requireNonNull(this.minecraft).keyboardHandler.setSendRepeatsToGui(true);
         final EditBox searchBox = this.addRenderableWidget(new EditBox(this.font, this.width / 2 + 32, 16,
                 (this.width - 100) / 2 + 5, 20, Component.translatable("forge.configgui.search")));
         searchBox.setResponder(searchString -> this.configEntryList.initializeEntries(searchString.trim()));
         this.configEntryList = addWidget(new ConfigEntryList());
-        this.doneButton = this.addRenderableWidget(new Button(this.width / 2 - 155, this.height - 29, 150, 20,
-                CommonComponents.GUI_DONE, (button) -> {
-            this.configEntryList.onSave();
-            this.onClose();
-        }));
-        this.addRenderableWidget(new Button(this.width / 2 - 155 + 160, this.height - 29, 150, 20,
-                CommonComponents.GUI_CANCEL, (button) -> this.configEntryList.onCancel(this::onClose)));
+        this.doneButton = this.addRenderableWidget(Button
+                .builder(CommonComponents.GUI_DONE, (button) -> {
+                    this.configEntryList.onSave();
+                    this.onClose();
+                })
+                .bounds(this.width / 2 - 155, this.height - 29, 150, 20)
+                .build()
+        );
+        this.addRenderableWidget(Button
+                .builder(CommonComponents.GUI_CANCEL, (button) -> this.configEntryList.onCancel(this::onClose))
+                .bounds(this.width / 2 - 155 + 160, this.height - 29, 150, 20)
+                .build()
+        );
         this.resetToInitialButton = this.addRenderableWidget(new ImageContentButton(this.width / 2 - 155 + 320,
                 this.height - 29, 24, 20, 0, 2, 0, FORGE_RESET_TO_INITIAL_ICON, 24, 24,
                 botton -> this.configEntryList.resetToInitial(), Component.translatable("forge.configgui.resetAllToInitial")));
@@ -130,26 +134,15 @@ public class ConfigGuiScreen extends Screen
     }
 
     @Override
-    public void removed()
-    {
-        Objects.requireNonNull(this.minecraft).keyboardHandler.setSendRepeatsToGui(false);
-    }
-
-    @Override
     public void render(@NotNull PoseStack poseStack, int mouseX, int mouseY, float partialTick)
     {
         if (Minecraft.getInstance().screen != this) {
             return;
         }
 
-        this.tooltip = null;
         this.configEntryList.render(poseStack, mouseX, mouseY, partialTick);
         drawString(poseStack, this.font, this.title, 25, 20, 16777215);
         super.render(poseStack, mouseX, mouseY, partialTick);
-        if (this.tooltip != null)
-        {
-            this.renderTooltip(poseStack, this.tooltip, mouseX, mouseY);
-        }
         renderSearchIcon(poseStack);
         this.resetToInitialButton.setActive(this.configEntryList.hasEntriesWhichCanBeResetToInitial(Collections.emptyList()));
         this.resetToDefaultButton.setActive(this.configEntryList.hasEntriesWhichCanBeResetToDefault(Collections.emptyList()));
@@ -159,11 +152,6 @@ public class ConfigGuiScreen extends Screen
     {
         RenderSystem.setShaderTexture(0, FORGE_SEARCH_ICON);
         GuiComponent.blit(stack, this.width / 2 + 12, 20, 0.0F, 0.0F, 14, 14, 14, 14);
-    }
-
-    void setTooltip(@Nullable List<FormattedCharSequence> lines)
-    {
-        this.tooltip = lines;
     }
 
     private void updateDoneButton()
@@ -191,9 +179,6 @@ public class ConfigGuiScreen extends Screen
 
     public static abstract class AbstractListEntry extends ContainerObjectSelectionList.Entry<AbstractListEntry>
     {
-        @Nullable
-        protected List<FormattedCharSequence> tooltip = null;
-
         protected AbstractListEntry()
         {
         }
@@ -207,12 +192,6 @@ public class ConfigGuiScreen extends Screen
 
         @Override
         public abstract @NotNull List<? extends GuiEventListener> children();
-
-        @Nullable
-        public List<FormattedCharSequence> getTooltip()
-        {
-            return tooltip;
-        }
     }
 
     public class ConfigEntryList extends ContainerObjectSelectionList<AbstractListEntry>
@@ -225,18 +204,10 @@ public class ConfigGuiScreen extends Screen
             initializeEntries("");
         }
 
-
         @Override
         public int getRowWidth()
         {
             return ConfigGuiScreen.this.width - 50;
-        }
-
-        @Override
-        public void render(@NotNull PoseStack poseStack, int mouseX, int mouseY, float partialTickTime)
-        {
-            setTooltip(null);
-            super.render(poseStack, mouseX, mouseY, partialTickTime);
         }
 
         @Override
@@ -489,6 +460,7 @@ public class ConfigGuiScreen extends Screen
         private final ForgeConfigSpec.ValueSpec valueSpec;
         private ImageContentButton resetToInitialButton = null;
         private ImageContentButton resetToDefaultButton = null;
+        private final @Nullable List<FormattedCharSequence> tooltip;
 
         public ConfigEntry(final SpecificationData spec, final ForgeConfigSpec.ConfigValue<?> configValue,
                            final ValueManager valueManager)
@@ -523,13 +495,11 @@ public class ConfigGuiScreen extends Screen
                         isHovered, partialTick);
 
                 this.resetToInitialButton.setActive(canBeResetToInitial());
-                this.resetToInitialButton.x = left + entryWidth - 52;
-                this.resetToInitialButton.y = top;
+                this.resetToInitialButton.setPosition(left + entryWidth - 52, top);
                 this.resetToInitialButton.render(poseStack, mouseX, mouseY, partialTick);
 
                 this.resetToDefaultButton.setActive(canBeResetToDefault());
-                this.resetToDefaultButton.x = left + entryWidth - 26;
-                this.resetToDefaultButton.y = top;
+                this.resetToDefaultButton.setPosition(left + entryWidth - 26, top);
                 this.resetToDefaultButton.render(poseStack, mouseX, mouseY, partialTick);
 
                 if (widget.isValid())
@@ -539,21 +509,6 @@ public class ConfigGuiScreen extends Screen
                 {
                     ConfigGuiScreen.this.markInvalid(this);
                 }
-                if (isHovered)
-                {
-                    if (this.resetToInitialButton.isHoveredOrFocused())
-                    {
-                        ConfigGuiScreen.this.setTooltip(Minecraft.getInstance().font.split(Component.translatable(
-                                "forge.configgui.resetToInitial"), ConfigGuiScreen.this.width / 2));
-                    } else if (this.resetToDefaultButton.isHoveredOrFocused())
-                    {
-                        ConfigGuiScreen.this.setTooltip(Minecraft.getInstance().font.split(Component.translatable(
-                                "forge.configgui.resetToDefault"), ConfigGuiScreen.this.width / 2));
-                    } else
-                    {
-                        ConfigGuiScreen.this.setTooltip(widget.getTooltip());
-                    }
-                }
             }
             this.renderRequiresReloadIndicator(poseStack, mouseX, mouseY, top, left, isHovered);
             this.renderWarning(poseStack, mouseX, mouseY, top, left, isHovered);
@@ -561,7 +516,7 @@ public class ConfigGuiScreen extends Screen
             final int maxLabelLineWidth = this.labelLines.stream().mapToInt(Minecraft.getInstance().font::width).max().orElse(0);
             if (isHovered && maxLabelLineWidth > 0 && mouseX >= left + 24 && mouseX <= left + 24 + maxLabelLineWidth)
             {
-                ConfigGuiScreen.this.setTooltip(this.tooltip);
+                setTooltipForNextRenderPass(tooltip, DefaultTooltipPositioner.INSTANCE, false);
             }
         }
 
@@ -604,7 +559,7 @@ public class ConfigGuiScreen extends Screen
                 {
                     final Component errorComponent = this.widget.getError();
                     List<FormattedCharSequence> tooltip = Minecraft.getInstance().font.split(errorComponent != null ? errorComponent : Component.translatable("forge.configgui.entryInvalid"), ConfigGuiScreen.this.width / 2);
-                    ConfigGuiScreen.this.setTooltip(tooltip);
+                    setTooltipForNextRenderPass(tooltip, DefaultTooltipPositioner.INSTANCE, false);
                 }
             }
         }
@@ -619,7 +574,7 @@ public class ConfigGuiScreen extends Screen
                 if (isHovered && mouseX > left + 1 && mouseX < left + 23 && mouseY > top + 1 && mouseY < top + 23)
                 {
                     List<FormattedCharSequence> tooltip = Minecraft.getInstance().font.split(Component.translatable("forge.configgui.requiresWorldRestartToTakeEffect"), ConfigGuiScreen.this.width / 2);
-                    ConfigGuiScreen.this.setTooltip(tooltip);
+                    setTooltipForNextRenderPass(tooltip, DefaultTooltipPositioner.INSTANCE, false);
                 }
             }
         }
@@ -660,22 +615,12 @@ public class ConfigGuiScreen extends Screen
 
             GuiComponent.drawString(poseStack, Objects.requireNonNull(ConfigGuiScreen.this.minecraft).font, this.label, left + 5, top + (entryHeight - font.lineHeight + 1) / 2, 16777215);
             this.resetToInitialButton.setActive(ConfigGuiScreen.this.configEntryList.hasEntriesWhichCanBeResetToInitial(this.pathPrefix));
-            this.resetToInitialButton.x = left + entryWidth - 52;
-            this.resetToInitialButton.y = top;
+            this.resetToInitialButton.setPosition(left + entryWidth - 52, top);
             this.resetToInitialButton.render(poseStack, mouseX, mouseY, partialTick);
 
             this.resetToDefaultButton.setActive(ConfigGuiScreen.this.configEntryList.hasEntriesWhichCanBeResetToDefault(this.pathPrefix));
-            this.resetToDefaultButton.x = left + entryWidth - 26;
-            this.resetToDefaultButton.y = top;
+            this.resetToDefaultButton.setPosition(left + entryWidth - 26, top);
             this.resetToDefaultButton.render(poseStack, mouseX, mouseY, partialTick);
-
-            if (this.resetToInitialButton.isActive() && this.resetToInitialButton.isHoveredOrFocused())
-            {
-                ConfigGuiScreen.this.setTooltip(ConfigGuiScreen.this.minecraft.font.split(this.resetToInitialButton.getMessage(), ConfigGuiScreen.this.width / 2));
-            } else if (this.resetToDefaultButton.isActive() && this.resetToDefaultButton.isHoveredOrFocused())
-            {
-                ConfigGuiScreen.this.setTooltip(ConfigGuiScreen.this.minecraft.font.split(this.resetToDefaultButton.getMessage(), ConfigGuiScreen.this.width / 2));
-            }
         }
 
         @Override
