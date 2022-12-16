@@ -33,6 +33,8 @@ public class ForgeConfigAPIPort implements ModInitializer {
         ConfigSync.INSTANCE.init();
         registerArgumentTypes();
         registerHandlers();
+        // force-generate default configs directory
+        ForgeConfigPaths.INSTANCE.getDefaultConfigsPath();
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -41,9 +43,11 @@ public class ForgeConfigAPIPort implements ModInitializer {
         // clients without this mod will be unable to connect to a server with Forge Config Api Port installed
         // So we disable the command on servers (it does not work anyway as the file name is not clickable in the server console),
         // and allow for disabling the command on dedicated clients via the config to support LAN hosting in a similar scenario
-        if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT && !ForgeConfigApiPortConfig.getInstance().disableConfigCommand) {
-            ArgumentTypeRegistry.registerArgumentType(new ResourceLocation(MOD_ID, "enum"), EnumArgument.class, new EnumArgument.Info());
-            ArgumentTypeRegistry.registerArgumentType(new ResourceLocation(MOD_ID, "modid"), ModIdArgument.class, SingletonArgumentInfo.contextFree(ModIdArgument::modIdArgument));
+        if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {
+            if (!ForgeConfigApiPortConfig.INSTANCE.getValue("disableConfigCommand", false)) {
+                ArgumentTypeRegistry.registerArgumentType(new ResourceLocation(MOD_ID, "enum"), EnumArgument.class, new EnumArgument.Info());
+                ArgumentTypeRegistry.registerArgumentType(new ResourceLocation(MOD_ID, "modid"), ModIdArgument.class, SingletonArgumentInfo.contextFree(ModIdArgument::modIdArgument));
+            }
         }
     }
 
@@ -55,8 +59,10 @@ public class ForgeConfigAPIPort implements ModInitializer {
             ConfigTracker.INSTANCE.unloadConfigs(ModConfig.Type.SERVER, ForgeConfigPaths.INSTANCE.getServerConfigPath(server));
         });
         CommandRegistrationCallback.EVENT.register((CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext registryAccess, Commands.CommandSelection environment) -> {
-            if (environment.includeIntegrated && !ForgeConfigApiPortConfig.getInstance().disableConfigCommand) {
-                ConfigCommand.register(dispatcher);
+            if (environment.includeIntegrated) {
+                if (!ForgeConfigApiPortConfig.INSTANCE.getValue("disableConfigCommand", false)) {
+                    ConfigCommand.register(dispatcher);
+                }
             }
         });
     }
