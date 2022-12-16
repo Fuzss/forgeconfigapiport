@@ -10,6 +10,7 @@ import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.electronwill.nightconfig.toml.TomlFormat;
 import net.fabricmc.loader.api.ModContainer;
 import fuzs.forgeconfigapiport.api.config.v2.ModConfigEvents;
+import net.minecraftforge.api.fml.event.config.ModConfigEvent;
 
 import java.io.ByteArrayInputStream;
 import java.nio.file.Path;
@@ -90,13 +91,17 @@ public class ModConfig {
             setConfigData(TomlFormat.instance().createParser().parse(new ByteArrayInputStream(bytes)));
             // Forge Config API Port: invoke Fabric style callback instead of Forge event
             ModConfigEvents.reloading(this.getModId()).invoker().onModConfigReloading(this);
+            net.minecraftforge.api.fml.event.config.ModConfigEvents.reloading(this.getModId()).invoker().onModConfigReloading(this);
         }
         else
         {
             setConfigData(null);
             // Forge Config API Port: invoke Fabric style callback instead of Forge event
             ModConfigEvents.unloading(this.getModId()).invoker().onModConfigUnloading(this);
+            net.minecraftforge.api.fml.event.config.ModConfigEvents.unloading(this.getModId()).invoker().onModConfigUnloading(this);
         }
+        // there is no unloading event in the old implementation, reloading used to be called no matter what
+        ModConfigEvent.RELOADING.invoker().onModConfigReloading(this);
     }
 
     public enum Type {

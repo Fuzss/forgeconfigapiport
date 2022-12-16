@@ -10,6 +10,7 @@ import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.mojang.logging.LogUtils;
 import fuzs.forgeconfigapiport.api.config.v2.ForgeConfigPaths;
 import fuzs.forgeconfigapiport.api.config.v2.ModConfigEvents;
+import net.minecraftforge.api.fml.event.config.ModConfigEvent;
 import org.slf4j.Logger;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
@@ -75,6 +76,8 @@ public class ConfigTracker {
         config.setConfigData(configData);
         // Forge Config API Port: invoke Fabric style callback instead of Forge event
         ModConfigEvents.loading(config.getModId()).invoker().onModConfigLoading(config);
+        net.minecraftforge.api.fml.event.config.ModConfigEvents.loading(config.getModId()).invoker().onModConfigLoading(config);
+        ModConfigEvent.LOADING.invoker().onModConfigLoading(config);
         config.save();
     }
 
@@ -84,6 +87,7 @@ public class ConfigTracker {
             // stop the filewatcher before we save the file and close it, so reload doesn't fire
             config.getHandler().unload(configBasePath, config);
             ModConfigEvents.unloading(config.getModId()).invoker().onModConfigUnloading(config);
+            net.minecraftforge.api.fml.event.config.ModConfigEvents.unloading(config.getModId()).invoker().onModConfigUnloading(config);
             config.save();
             config.setConfigData(null);
         }
@@ -96,6 +100,8 @@ public class ConfigTracker {
             modConfig.setConfigData(commentedConfig);
             // Forge Config API Port: invoke Fabric style callback instead of Forge event
             ModConfigEvents.loading(modConfig.getModId()).invoker().onModConfigLoading(modConfig);
+            net.minecraftforge.api.fml.event.config.ModConfigEvents.loading(modConfig.getModId()).invoker().onModConfigLoading(modConfig);
+            ModConfigEvent.LOADING.invoker().onModConfigLoading(modConfig);
         });
     }
 

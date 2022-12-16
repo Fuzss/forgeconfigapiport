@@ -15,6 +15,7 @@ import com.mrcrayfish.configured.api.IModConfig;
 import com.mrcrayfish.configured.util.ConfigHelper;
 import net.minecraft.Util;
 import fuzs.forgeconfigapiport.api.config.v2.ModConfigEvents;
+import net.minecraftforge.api.fml.event.config.ModConfigEvent;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.config.ModConfig;
 
@@ -92,7 +93,9 @@ public class ForgeConfig implements IModConfig
             Configured.LOGGER.info("Sending config reloading event for {}", this.config.getFileName());
             this.config.getSpec().afterReload();
             // Forge Config API Port: migrate to Fabric event style
-            ModConfigEvents.reloading(this.getModId());
+            ModConfigEvents.reloading(this.getModId()).invoker().onModConfigReloading(this.config);
+            net.minecraftforge.api.fml.event.config.ModConfigEvents.reloading(this.getModId()).invoker().onModConfigReloading(this.config);
+            ModConfigEvent.RELOADING.invoker().onModConfigReloading(this.config);
         }
     }
 
