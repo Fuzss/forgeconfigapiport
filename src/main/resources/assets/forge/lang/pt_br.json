@@ -1,0 +1,42 @@
+{
+    "commands.forge.arguments.enum.invalid": "Enum constante deve ser um dos {0}encontradand {1}",
+    "commands.config.getwithtype": "Configuração para %s do tipo %s Encontrado em %s",
+    "commands.config.noconfig": "Configuração para %s do tipo %s não encontrado",
+  
+    "forge.configgui.title.runtimeConfigs": "Editar as configurações de %s",
+    "forge.configgui.title.defaultConfigs": "Editar as configurações padrão de %s",
+    "forge.configgui.client": "Opções do cliente",
+    "forge.configgui.server": "Opções de servidor ou mundo",
+    "forge.configgui.common": "Opções comuns",
+    "forge.configgui.fixAdvancementLoading.tooltip": "Defina isso como true para corrigir o carregamento de avanços no World To World, depois que um mod os modificou.",
+    "forge.configgui.fixAdvancementLoading": "Corrija o carregamento do avanço",
+    "forge.configgui.permissionHandler.tooltip": "Defina o manipulador de permissão para usar.",
+    "forge.configgui.permissionHandler": "Manipulador de permissão",
+    "forge.configgui.useCombinedDepthStencilAttachment.toolTip": "Defina isso como TRUE para usar um acessório de profundidade/estêncil combinado para o Principal Framebuffer.",
+    "forge.configgui.useCombinedDepthStencilAttachment": "Use um acessório combinado de profundidade/estêncil",
+    "forge.configgui.compressLanIPv6Addresses.toolTip": "Defina isso como true para compactar endereços IPv6 na LAN.",
+    "forge.configgui.compressLanIPv6Addresses": "Compressa endereços IPv6 LAN",
+  
+    "forge.configgui.entryInvalid": "O valor não é válido.Por favor mude.",
+    "forge.configgui.requiresWorldRestartToTakeEffect": "Essa mudança requer uma reinicialização do mundo para entrar em vigor.",
+  
+    "forge.configgui.error.boolean.notTrueOrFalse": "O valor atual é: {0}.\nDeve ser verdadeiro ou falso.",
+    "forge.configgui.error.boolean.needsToBeText": "O valor deve ser um valor de texto.",
+    "forge.configgui.error.ranged.notInBounds": "O valor atual é: {0}.\nDeve estar entre {1} e {2}.",
+    "forge.configgui.error.ranged.needsToBeOfType": "O valor deve ser do tipo {0}.",
+    "forge.configgui.error.enum.invalidName": "O valor atual é: {0}.\nDeve ser um dos seguintes:{1}",
+    "forge.configgui.error.enum.needsToBeText": "O valor deve ser um valor de texto.",
+    "forge.configgui.error.permissionHandler.unknownName": "O valor atual é: {0}.\nDeve ser um dos seguintes:{1}",
+    "forge.configgui.error.permissionHandler.needsToBeText": "O valor deve ser um valor de texto.",
+  
+    "forge.configgui.resetToInitial": "Redefinir para o valor anterior.\n(O valor de antes de abrir esta tela.)",
+    "forge.configgui.resetToDefault": "Redefinir para o valor padrão",
+    "forge.configgui.resetGroupToInitial": "Redefina todas as entradas deste grupo para o valor anterior.\n(O valor antes de abrir esta tela.)",
+    "forge.configgui.resetGroupToDefault": "Redefina todas as entradas deste grupo para o seu valor padrão",
+    "forge.configgui.resetAllToInitial": "Redefina todas as entradas para o seu valor anterior.\n(O valor de antes de abrir esta tela.)",
+    "forge.configgui.resetAllToDefault": "Redefina todas as entradas para o seu valor padrão",
+    "forge.configgui.search": "Procurar",
+  
+    "forge.configgui.cancel.confirm.title": "Descarte não salvo mudou?",
+    "forge.configgui.cancel.confirm.message": "Tem certeza que deseja descartar todas as alterações não salvas?"
+  }
