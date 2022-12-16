@@ -14,6 +14,7 @@ import com.electronwill.nightconfig.toml.TomlFormat;
 import com.mojang.logging.LogUtils;
 import fuzs.forgeconfigapiport.api.config.v2.ForgeConfigPaths;
 import fuzs.forgeconfigapiport.api.config.v2.ModConfigEvents;
+import net.minecraftforge.api.fml.event.config.ModConfigEvent;
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 
@@ -154,6 +155,8 @@ public class ConfigFileTypeHandler {
                 this.modConfig.getSpec().afterReload();
                 // Forge Config API Port: invoke Fabric style callback instead of Forge event
                 ModConfigEvents.reloading(this.modConfig.getModId()).invoker().onModConfigReloading(this.modConfig);
+                net.minecraftforge.api.fml.event.config.ModConfigEvents.reloading(this.modConfig.getModId()).invoker().onModConfigReloading(this.modConfig);
+                ModConfigEvent.RELOADING.invoker().onModConfigReloading(this.modConfig);
             }
         }
     }

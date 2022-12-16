@@ -3,6 +3,7 @@ package fuzs.forgeconfigapiport.impl;
 import com.mojang.brigadier.CommandDispatcher;
 import fuzs.forgeconfigapiport.api.config.v2.ForgeConfigPaths;
 import fuzs.forgeconfigapiport.impl.config.ForgeConfigApiPortConfig;
+import fuzs.forgeconfigapiport.impl.network.config.ConfigSync;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.ArgumentTypeRegistry;
@@ -16,7 +17,6 @@ import net.minecraft.commands.synchronization.SingletonArgumentInfo;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.fml.config.ConfigTracker;
 import net.minecraftforge.fml.config.ModConfig;
-import fuzs.forgeconfigapiport.impl.network.config.ConfigSync;
 import net.minecraftforge.server.command.ConfigCommand;
 import net.minecraftforge.server.command.EnumArgument;
 import net.minecraftforge.server.command.ModIdArgument;
@@ -33,8 +33,6 @@ public class ForgeConfigAPIPort implements ModInitializer {
         ConfigSync.INSTANCE.init();
         registerArgumentTypes();
         registerHandlers();
-        // force-generate default configs directory
-        ForgeConfigPaths.INSTANCE.getDefaultConfigsPath();
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})

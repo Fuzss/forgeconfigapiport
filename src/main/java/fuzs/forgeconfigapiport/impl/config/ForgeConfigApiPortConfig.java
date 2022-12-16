@@ -18,11 +18,10 @@ public class ForgeConfigApiPortConfig {
     private static final ConfigSpec CONFIG_SPEC;
 
     static {
-        CONFIG_SPEC = new ConfigSpec() {{
-            this.define("defaultConfigsPath", "defaultconfigs");
-            this.define("disableGlobalServerConfigs", true);
-            this.define("disableConfigCommand", false);
-        }};
+        CONFIG_SPEC = new ConfigSpec();
+        CONFIG_SPEC.define("defaultConfigsPath", "defaultconfigs");
+        CONFIG_SPEC.define("disableGlobalServerConfigs", true);
+        CONFIG_SPEC.define("disableConfigCommand", false);
         INSTANCE = new ForgeConfigApiPortConfig();
     }
 
