@@ -1,0 +1,140 @@
+plugins {
+    id 'org.quiltmc.loom' version '0.12.+'
+}
+
+archivesBaseName = rootProject.name
+version = "v${modVersion}-${minecraftVersion}-Common"
+group = modMavenGroup
+
+dependencies {
+    // Minecraft
+    minecraft "com.mojang:minecraft:${minecraftVersion}"
+    mappings loom.layered() {
+        officialMojangMappings()
+//        parchment("org.parchmentmc.data:parchment-${minecraftVersion}:${parchmentMappingsVersion}@zip")
+    }
+
+    // Mixin Dependencies
+    implementation 'org.ow2.asm:asm-tree:9.2'
+    implementation 'org.ow2.asm:asm-commons:9.2'
+    implementation 'org.ow2.asm:asm-util:9.2'
+    implementation 'org.spongepowered:mixin:0.8.5'
+
+    // Config Dependencies
+    implementation 'com.electronwill.night-config:core:3.6.5'
+    implementation 'com.electronwill.night-config:toml:3.6.5'
+
+//    // Puzzles Lib
+//    modImplementation "fuzs.puzzleslib:puzzleslib-common:${puzzlesVersion}"
+}
+
+loom {
+    mixin {
+        // not sure if this is necessary for common...
+        defaultRefmapName = "${modId}.refmap.json"
+        // fix for java.lang.NoClassDefFoundError: org/objectweb/asm/tree/MethodNode
+        useLegacyMixinAp = false
+    }
+
+    // this should hopeful prevent an empty run directory being generated in common during initial project setup
+    runs {
+        client {
+            client()
+            setConfigName("Common Client")
+            ideConfigGenerated(false)
+            runDir("../run")
+        }
+        server {
+            server()
+            setConfigName("Common Server")
+            ideConfigGenerated(false)
+            runDir("../run")
+        }
+    }
+}
+
+processResources {
+    duplicatesStrategy DuplicatesStrategy.INCLUDE
+
+    // this will ensure that this task is redone when a value changes
+    inputs.property "modId", 					"${modId}"
+    inputs.property "modVersion", 				"${modVersion}"
+    inputs.property "modGroup", 				project.group
+    inputs.property "modDescription", 			"${modDescription}"
+    inputs.property "packFormat", 				"${packFormat}"
+
+    // replace stuff in fabric.mod.json and pack.mcmeta
+    filesMatching ('quilt.mod.json') {
+        expand (
+                'modId':                	"${modId}",
+                'modVersion':           	"${modVersion}",
+                'modGroup':             	project.group
+        )
+    }
+
+    // replace stuff in pack.mcmeta
+    filesMatching ('pack.mcmeta') {
+        expand (
+                'modDescription':       "${modDescription}",
+                "packFormat":           "${packFormat}"
+        )
+    }
+}
+
+publishing {
+    publications {
+        mavenJava (MavenPublication) {
+            artifactId = "${modId}-common"
+            version = modVersion
+            from components.java
+            pom {
+                name = "${modName} [Common]"
+                description = "${modDescription}"
+                url = "${modSourceUrl}"
+                scm {
+                    url = "${modSourceUrl}"
+                    connection = "${modSourceUrl}".replace("https", "scm:git:git").concat(".git")
+                    developerConnection = "${modSourceUrl}".replace("https://github.com/", "scm:git:git@github.com:").concat(".git")
+                }
+                issueManagement {
+                    system = 'github'
+                    url = "${modIssueUrl}"
+                }
+                licenses {
+                    license {
+                        name = 'MPL-2'
+                        url = 'https://www.mozilla.org/en-US/MPL/2.0/'
+                    }
+                }
+                developers {
+                    developer {
+                        id = "${modAuthor}".toLowerCase()
+                        name = "${modAuthor}"
+                    }
+                }
+            }
+            afterEvaluate {
+                // exclude certain dependencies when publishing to maven
+                // from https://stackoverflow.com/a/50121790
+                pom.withXml {
+                    asNode().dependencies.dependency.each { dep ->
+                        // use this approach to make excluding dependencies from Curse Maven more convenient
+                        if ([].stream().anyMatch(mod -> "${dep.groupId.last().value().last()}:${dep.artifactId.last().value().last()}".startsWith(mod))) {
+                            assert dep.parent().remove(dep)
+                        }
+                    }
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            name = 'FuzsModResources'
+            url "file://" + project.hasProperty('modResources') ? "${project.findProperty('modResources')}/maven" : System.getenv('local_maven')
+        }
+    }
+}
+
+signing {
+    sign publishing.publications.mavenJava
+}

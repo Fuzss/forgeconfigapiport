@@ -1,9 +1,0 @@
-#Path to load default configs from, intended for setting global server configs for newly created worlds, but also works when recreating client and common configs.
-defaultConfigsPath = "defaultconfigs"
-#Prevent server config files from being saved inside of the current world directory. Instead, save them to the global config directory in .minecraft/config/.
-#This option effectively disables per world server configs, but helps a lot with avoiding user confusion.
-disableGlobalServerConfigs = true
-#Disable the custom '/config' command introduced by Forge for opening config files from in-game. Disabling this option also disables registration of custom command argument serializers.
-#This option mainly exists so that Forge Config Api Port may be present when hosting a LAN world, so that vanilla clients may connect.
-disableConfigCommand = false
-

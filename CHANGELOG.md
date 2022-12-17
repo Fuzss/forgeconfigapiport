@@ -10,6 +10,7 @@ This version includes major changes and refactors regarding the whole structure 
   - An option to set the `defaultsconfigs` directory (just like Forge, not that it's too useful)
   - An option to force server configs to generate in and load from the standard config directory (`.minecraft/config/`), so those configs are no longer world specific, but can be accessed much easier by users
   - An option to manually prevent the custom `/config` command for opening local config files from being registered, intended to be used when hosting a LAN world to allow clients without this mod to connect
+  - An option to apply a workaround for the `com.electronwill.nightconfig.core.io.ParsingException: Not enough data available` (an issue when reading local config files from malformed/corrupted file, which apparently appears quite often)
 ### Changed
 - Classes not originally found in Forge now use a separate domain `fuzs.forgeconfigapiport` with a similar structure to Fabric Api (divided into `api`, `impl`, and `mixin`)
 - `fuzs.forgeconfigapiport` also is the new domain used for the Maven distribution
@@ -20,7 +21,7 @@ This version includes major changes and refactors regarding the whole structure 
 - All implementation related classes have been compacted and moved to `fuzs.forgeconfigapiport.impl`
 - Mixin related classes have been moved to `fuzs.forgeconfigapiport.mixin`
 ### Removed
-- This version also comes with many removals, mainly the WIP Forge config screens have been removed, as they were barely functional and the PR on Forge's GitHub has seemingly been abandoned. As an alternative for in-game configuration, Forge Config Api Port includes default support for the [Configured (Fabric)](https://www.curseforge.com/minecraft/mc-mods/configured-fabric) mod.
+- This version also comes with many removals and deprecations, mainly the WIP Forge config screens have been removed, as they were barely functional and the PR on Forge's GitHub has seemingly been abandoned. As an alternative for in-game configuration, Forge Config Api Port includes default support for the [Configured (Fabric)](https://www.curseforge.com/minecraft/mc-mods/configured-fabric) mod.
 
 ## [v4.2.9-1.19.2] - 2022-12-07
 ### Fixed

@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "id": "${modId}",
+  "version": "${modVersion}",
+
+  "name": "${modName}",
+  "description": "${modDescription}",
+  "authors": [
+    "${modAuthor}"
+  ],
+  "contact": {
+    "homepage": "${modPageUrl}",
+    "issues": "${modIssueUrl}",
+    "sources": "${modPageUrl}"
+  },
+
+  "license": "MPL-2",
+  "icon": "mod_logo.png",
+
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "${modGroup}.impl.ForgeConfigAPIPortFabric"
+    ],
+    "client": [
+      "${modGroup}.impl.client.ForgeConfigAPIPortFabricClient"
+    ]
+  },
+  "mixins": [
+    "${modId}.fabric.mixins.json"
+  ],
+
+  "depends": {
+    "fabricloader": ">=${minFabricVersion}",
+    "fabric-api": ">=${minFabricApiVersion}",
+    "minecraft": "${minecraftVersion}",
+    "java": ">=17"
+  },
+
+  "suggests": {
+    "configured": "*",
+    "modmenu": "*"
+  },
+
+  "custom": {
+    "modmenu": {
+      "badges": [
+        "library"
+      ]
+    },
+
+    "configured": {
+      "providers": [
+        "${modGroup}.impl.integration.configured.ForgeConfigProvider"
+      ]
+    }
+  }
+}

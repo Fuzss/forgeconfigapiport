@@ -7,7 +7,7 @@
   "count_hidden_mods": true,
   "mod_count_location": "title_screen_and_mods_button",
   "hide_mod_links": false,
-  "show_libraries": false,
+  "show_libraries": true,
   "hide_mod_license": false,
   "hide_badges": false,
   "hide_mod_credits": false,
