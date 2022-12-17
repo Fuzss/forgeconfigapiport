@@ -1,68 +1,232 @@
+task forgeClean(type: GradleBuild) {
+    group = '_main'
+    tasks = [
+            ':Common:clean',
+            ':Forge:clean'
+    ]
+}
+
 task fabricClean(type: GradleBuild) {
     group = '_main'
     tasks = [
-            'clean'
+            ':Common:clean',
+            ':Fabric:clean'
+    ]
+}
+
+task allClean(type: GradleBuild) {
+    group = '_main'
+    tasks = [
+            ':Common:clean',
+            ':Forge:clean',
+            ':Fabric:clean'
+    ]
+}
+
+task forgeBuild(type: GradleBuild) {
+    group = '_main'
+    tasks = [
+            ':Common:clean',
+            ':Forge:clean',
+            ':Forge:build'
     ]
 }
 
 task fabricBuild(type: GradleBuild) {
     group = '_main'
     tasks = [
-            'clean',
-            'build'
+            ':Common:clean',
+            ':Fabric:clean',
+            ':Fabric:build'
+    ]
+}
+
+task allBuild(type: GradleBuild) {
+    group = '_main'
+    tasks = [
+            ':Common:clean',
+            ':Forge:clean',
+            ':Fabric:clean',
+            ':Common:build',
+            ':Forge:build',
+            ':Fabric:build'
+    ]
+}
+
+task commonPublish(type: GradleBuild) {
+    group = '_main'
+    tasks = [
+            ':Common:clean',
+            ':Common:publishMavenJavaPublicationToFuzsModResourcesRepository'
+    ]
+}
+
+task forgePublish(type: GradleBuild) {
+    group = '_main'
+    tasks = [
+            ':Common:clean',
+            ':Forge:clean',
+            ':Forge:publishMavenJavaPublicationToFuzsModResourcesRepository'
     ]
 }
 
 task fabricPublish(type: GradleBuild) {
     group = '_main'
     tasks = [
-            'clean',
-            'publishMavenJavaPublicationToFuzsModResourcesRepository'
+            ':Common:clean',
+            ':Fabric:clean',
+            ':Fabric:publishMavenJavaPublicationToFuzsModResourcesRepository'
+    ]
+}
+
+task allPublish(type: GradleBuild) {
+    group = '_main'
+    tasks = [
+            ':Common:clean',
+            ':Forge:clean',
+            ':Fabric:clean',
+            ':Common:publishMavenJavaPublicationToFuzsModResourcesRepository',
+            ':Forge:publishMavenJavaPublicationToFuzsModResourcesRepository',
+            ':Fabric:publishMavenJavaPublicationToFuzsModResourcesRepository'
+    ]
+}
+
+task forgeUploadCurseForge(type: GradleBuild) {
+    group = '_main'
+    tasks = [
+            ':Common:clean',
+            ':Forge:clean',
+            ':Forge:curseforge'
     ]
 }
 
 task fabricUploadCurseForge(type: GradleBuild) {
     group = '_main'
     tasks = [
-            'clean',
-            'curseforge'
+            ':Common:clean',
+            ':Fabric:clean',
+            ':Fabric:curseforge'
+    ]
+}
+
+task allUploadCurseForge(type: GradleBuild) {
+    group = '_main'
+    tasks = [
+            ':Common:clean',
+            ':Forge:clean',
+            ':Fabric:clean',
+            ':Forge:curseforge',
+            ':Fabric:curseforge'
+    ]
+}
+
+task forgeUploadModrinth(type: GradleBuild) {
+    group = '_main'
+    tasks = [
+            ':Common:clean',
+            ':Forge:clean',
+            ':Forge:modrinth'
     ]
 }
 
 task fabricUploadModrinth(type: GradleBuild) {
     group = '_main'
     tasks = [
-            'clean',
-            'modrinth'
+            ':Common:clean',
+            ':Fabric:clean',
+            ':Fabric:modrinth'
+    ]
+}
+
+task allUploadModrinth(type: GradleBuild) {
+    group = '_main'
+    tasks = [
+            ':Common:clean',
+            ':Forge:clean',
+            ':Fabric:clean',
+            ':Forge:modrinth',
+            ':Fabric:modrinth'
+    ]
+}
+
+task forgeUploadEverywhere(type: GradleBuild) {
+    group = '_main'
+    tasks = [
+            ':Common:clean',
+            ':Forge:clean',
+            ':Forge:curseforge',
+            ':Forge:modrinth'
     ]
 }
 
 task fabricUploadEverywhere(type: GradleBuild) {
     group = '_main'
     tasks = [
-            'clean',
-            'curseforge',
-            'modrinth'
+            ':Common:clean',
+            ':Fabric:clean',
+            ':Fabric:curseforge',
+            ':Fabric:modrinth'
+    ]
+}
+
+task allUploadEverywhere(type: GradleBuild) {
+    group = '_main'
+    tasks = [
+            ':Common:clean',
+            ':Forge:clean',
+            ':Fabric:clean',
+            ':Forge:curseforge',
+            ':Forge:modrinth',
+            ':Fabric:curseforge',
+            ':Fabric:modrinth'
+    ]
+}
+
+task commonGenSources(type: GradleBuild) {
+    group = '_main'
+    tasks = [
+            ':Common:genSourcesWithQuiltflower'
+    ]
+}
+
+task forgeGenRuns(type: GradleBuild) {
+    group = '_main'
+    tasks = [
+            ':Forge:genIntellijRuns'
     ]
 }
 
 task fabricGenSources(type: GradleBuild) {
     group = '_main'
     tasks = [
-            'genSourcesWithQuiltflower'
+            ':Fabric:genSourcesWithQuiltflower'
+    ]
+}
+
+task forgeClient(type: GradleBuild) {
+    group = '_main'
+    tasks = [
+            ':Forge:runClient'
     ]
 }
 
 task fabricClient(type: GradleBuild) {
     group = '_main'
     tasks = [
-            'runClient'
+            ':Fabric:runClient'
+    ]
+}
+
+task forgeServer(type: GradleBuild) {
+    group = '_main'
+    tasks = [
+            ':Forge:runServer'
     ]
 }
 
 task fabricServer(type: GradleBuild) {
     group = '_main'
     tasks = [
-            'runServer'
+            ':Fabric:runServer'
     ]
 }
