@@ -57,7 +57,7 @@ dependencies {
     modRuntimeOnly "com.terraformersmc:modmenu:5.0.2"
     modRuntimeOnly "curse.maven:tooltipfix-411557:4167237"
 
-//    // Puzzles Lib
+    // Puzzles Lib
 //    modImplementation "fuzs.puzzleslib:puzzleslib-fabric:${puzzlesVersion}"
 }
 
@@ -257,11 +257,11 @@ curseforge {
             displayName = "[FABRIC] [${minecraftVersion}] ${rootProject.name}-v${modVersion}"
             relations {
                 requiredDependency 'fabric-api'
-                requiredDependency 'forge-config-api-port-fabric'
-                requiredDependency 'puzzles-lib'
+//                requiredDependency 'forge-config-api-port-fabric'
+//                requiredDependency 'puzzles-lib'
             }
         }
-        addArtifact sourcesJar
+//        addArtifact sourcesJar
     }
     options {
 //        debug = true
@@ -283,11 +283,11 @@ modrinth {
         gameVersions.add it.trim()
     }
     loaders.add 'fabric'
-    additionalFiles.add file("${project.buildDir}/libs/${project.archivesBaseName}-${project.version}-sources.jar")
+//    additionalFiles.add file("${project.buildDir}/libs/${project.archivesBaseName}-${project.version}-sources.jar")
     dependencies {
         required.project 'fabric-api'
-        required.project 'forge-config-api-port'
-        required.project 'puzzles-lib'
+//        required.project 'forge-config-api-port'
+//        required.project 'puzzles-lib'
     }
 //	debugMode = true
 }
