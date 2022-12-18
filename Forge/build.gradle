@@ -118,7 +118,7 @@ dependencies {
     runtimeOnly fg.deobf("curse.maven:catalogue-459701:4171025")
     runtimeOnly fg.deobf("curse.maven:configured-457570:4166861")
 
-//    // Puzzles Lib
+    // Puzzles Lib
 //    implementation fg.deobf("fuzs.puzzleslib:puzzleslib-forge:${puzzlesVersion}")
 }
 
@@ -292,11 +292,11 @@ curseforge {
         }
         mainArtifact(jar) {
             displayName = "[FORGE] [${minecraftVersion}] ${rootProject.name}-v${modVersion}"
-            relations {
-                requiredDependency 'puzzles-lib'
-            }
+//            relations {
+//                requiredDependency 'puzzles-lib'
+//            }
         }
-        addArtifact sourcesJar
+//        addArtifact sourcesJar
     }
     options {
 //        debug = true
@@ -318,10 +318,10 @@ modrinth {
         gameVersions.add it.trim()
     }
     loaders.add 'forge'
-    additionalFiles.add file("${project.buildDir}/libs/${project.archivesBaseName}-${project.version}-sources.jar")
-    dependencies {
-        required.project 'puzzles-lib'
-    }
+//    additionalFiles.add file("${project.buildDir}/libs/${project.archivesBaseName}-${project.version}-sources.jar")
+//    dependencies {
+//        required.project 'puzzles-lib'
+//    }
 //	debugMode = true
 }
 
