@@ -2,7 +2,6 @@ package fuzs.forgeconfigapiport.impl;
 
 import com.mojang.brigadier.CommandDispatcher;
 import fuzs.forgeconfigapiport.api.config.v2.ForgeConfigPaths;
-import fuzs.forgeconfigapiport.api.config.v2.ForgeConfigRegistry;
 import fuzs.forgeconfigapiport.impl.config.ForgeConfigApiPortConfig;
 import fuzs.forgeconfigapiport.impl.network.config.ConfigSync;
 import net.fabricmc.api.EnvType;
@@ -16,7 +15,6 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.synchronization.SingletonArgumentInfo;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.config.ConfigTracker;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.server.command.ConfigCommand;
@@ -30,7 +28,6 @@ public class ForgeConfigAPIPortFabric implements ModInitializer {
         ConfigSync.INSTANCE.init();
         registerArgumentTypes();
         registerHandlers();
-        ForgeConfigRegistry.INSTANCE.register(ForgeConfigAPIPort.MOD_ID, ModConfig.Type.COMMON, new ForgeConfigSpec.Builder().push("ha").comment("hello").define("boolean value", true).next().pop().build());
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})

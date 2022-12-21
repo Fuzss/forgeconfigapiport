@@ -20,6 +20,8 @@ public final class ForgeConfigRegistryImpl implements ForgeConfigRegistry {
     }
 
     private static void verifyModId(String modId) {
-        FabricLoader.getInstance().getModContainer(modId).orElseThrow(() -> new IllegalArgumentException("No mod with mod id %s".formatted(modId)));
+        if (!FabricLoader.getInstance().isModLoaded(modId)) {
+            throw new IllegalArgumentException("No mod with mod id %s".formatted(modId));
+        }
     }
 }

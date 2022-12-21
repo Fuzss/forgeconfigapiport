@@ -13,6 +13,8 @@ import com.mrcrayfish.configured.api.IConfigEntry;
 import com.mrcrayfish.configured.api.IConfigValue;
 import com.mrcrayfish.configured.api.IModConfig;
 import com.mrcrayfish.configured.util.ConfigHelper;
+import fuzs.forgeconfigapiport.api.config.v2.ForgeConfigPaths;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.Util;
 import fuzs.forgeconfigapiport.api.config.v2.ModConfigEvents;
 import net.minecraftforge.api.fml.event.config.ModConfigEvent;
@@ -126,6 +128,8 @@ public class ForgeConfig implements IModConfig
     @Override
     public void loadWorldConfig(Path path, Consumer<IModConfig> result)
     {
+        // Forge Config Api Port: load global server configs when enabled
+        if (ForgeConfigPaths.INSTANCE.forceGlobalServerConfigs()) path = FabricLoader.getInstance().getConfigDir();
         final CommentedFileConfig data = this.config.getHandler().reader(path).apply(this.config);
         ForgeConfigHelper.setForgeConfigData(this.config, data);
         result.accept(this);

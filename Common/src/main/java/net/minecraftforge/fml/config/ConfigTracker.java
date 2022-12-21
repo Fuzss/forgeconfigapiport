@@ -35,8 +35,7 @@ public class ConfigTracker {
         this.configSets.put(ModConfig.Type.SERVER, Collections.synchronizedSet(new LinkedHashSet<>()));
     }
 
-    // TODO remove public
-    public void trackConfig(final ModConfig config) {
+    void trackConfig(final ModConfig config) {
         if (this.fileMap.containsKey(config.getFileName())) {
             LOGGER.error(CONFIG,"Detected config file conflict {} between {} and {}", config.getFileName(), this.fileMap.get(config.getFileName()).getModId(), config.getModId());
             throw new RuntimeException("Config conflict detected!");

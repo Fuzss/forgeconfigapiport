@@ -9,6 +9,7 @@ import com.electronwill.nightconfig.core.CommentedConfig;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.electronwill.nightconfig.toml.TomlFormat;
 import fuzs.forgeconfigapiport.impl.core.CommonAbstractions;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.io.ByteArrayInputStream;
 import java.nio.file.Path;
@@ -26,6 +27,7 @@ public class ModConfig {
     private Callable<Void> saveHandler;
 
     // Forge Config API Port: replace ModContainer with mod id
+    @ApiStatus.Internal
     public ModConfig(final Type type, final IConfigSpec<?> spec, String modId, final String fileName) {
         this.type = type;
         this.spec = spec;
@@ -37,6 +39,7 @@ public class ModConfig {
     }
 
     // Forge Config API Port: replace ModContainer with mod id
+    @ApiStatus.Internal
     public ModConfig(final Type type, final IConfigSpec<?> spec, String modId) {
         this(type, spec, modId, defaultConfigName(type, modId));
     }
