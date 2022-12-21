@@ -14,6 +14,7 @@ import com.mojang.logging.LogUtils;
 import fuzs.forgeconfigapiport.impl.core.CommonAbstractions;
 import fuzs.forgeconfigapiport.impl.util.ConfigLoadingUtil;
 import org.apache.commons.io.FilenameUtils;
+import org.jetbrains.annotations.ApiStatus;
 import org.slf4j.Logger;
 
 import java.io.IOException;
@@ -147,6 +148,7 @@ public class ConfigFileTypeHandler {
     }
 
     // Forge Config API Port: turned public to be available for util class
+    @ApiStatus.Internal
     public static class ConfigLoadingException extends RuntimeException
     {
         public ConfigLoadingException(ModConfig config, Exception cause)

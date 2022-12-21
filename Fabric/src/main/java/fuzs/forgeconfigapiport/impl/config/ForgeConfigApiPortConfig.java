@@ -19,7 +19,7 @@ public class ForgeConfigApiPortConfig {
     static {
         CONFIG_SPEC = new ConfigSpec();
         CONFIG_SPEC.define("defaultConfigsPath", "defaultconfigs");
-        CONFIG_SPEC.define("disableGlobalServerConfigs", true);
+        CONFIG_SPEC.define("forceGlobalServerConfigs", true);
         CONFIG_SPEC.define("disableConfigCommand", false);
         CONFIG_SPEC.define("recreateConfigsWhenParsingFails", true);
         INSTANCE = new ForgeConfigApiPortConfig();

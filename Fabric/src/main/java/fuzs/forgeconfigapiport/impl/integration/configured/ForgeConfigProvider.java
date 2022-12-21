@@ -15,6 +15,7 @@ import net.minecraftforge.fml.config.ModConfig;
 
 import java.util.EnumMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -53,9 +54,9 @@ public class ForgeConfigProvider implements IConfigProvider
         filteredConfigSets.forEach(consumer);
     }
 
-    private static EnumMap<ModConfig.Type, Set<ModConfig>> getForgeConfigSets()
+    private static Map<ModConfig.Type, Set<ModConfig>> getForgeConfigSets()
     {
-        // Forge Config API Port: use own reflection helper class
-        return ReflectionHelper.<EnumMap<ModConfig.Type, Set<ModConfig>>>get(ReflectionHelper.getDeclaredField(ConfigTracker.class, "configSets"), ConfigTracker.INSTANCE).get();
+        // Forge Config API Port: use getter instead of reflection
+        return ConfigTracker.INSTANCE.configSets();
     }
 }

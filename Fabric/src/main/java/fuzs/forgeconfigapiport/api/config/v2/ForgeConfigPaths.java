@@ -39,6 +39,14 @@ public interface ForgeConfigPaths {
     Path getServerConfigPath(final MinecraftServer server);
 
     /**
+     * Prevent server config files from being saved inside the current world directory. Instead, save them to the global config directory in <code>.minecraft/config/</code>.
+     * This option effectively disables per world server configs, but helps a lot with avoiding user confusion.
+     *
+     * @return are server configs stored in the global <code>.minecraft/config/</code> directory
+     */
+    boolean forceGlobalServerConfigs();
+
+    /**
      * Path where default configs are stored, by default inside of <code>.minecraft/defaultconfigs</code>.
      * <p>This path is configurable via the Forge Config Api Port config.
      * <p>Default configs are mainly intended for server configs to allow pre-configured configs to be applied to every
