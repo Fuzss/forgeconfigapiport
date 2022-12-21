@@ -292,8 +292,6 @@ modrinth {
 //	debugMode = true
 }
 
-import groovy.json.*
-
 task copyJarToDir(type: Copy) {
     onlyIf { project.hasProperty('buildJarOutputDir') && project.hasProperty('uniqueBuildNumber') }
     if (project.findProperty('copyBuildJar').toBoolean()) {
