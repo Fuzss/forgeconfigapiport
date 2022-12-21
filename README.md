@@ -21,7 +21,7 @@ For more information regarding the licensing of this project check the [LICENSIN
 <details>
 
 #### Via Fuzs Mod Resources
-Fuzs Mod Resources is the recommended way of adding Forge Config API Port to your project.
+Fuzs Mod Resources is the recommended way of adding Forge Config API Port to your project in your `build.gradle` file.
 ```groovy
 repositories {
     maven {
@@ -31,8 +31,13 @@ repositories {
 }
 
 dependencies {
-        modImplementation "fuzs.forgeconfigapiport:forgeconfigapiport-fabric:<modVersion>"   // e.g. 5.0.0 for Minecraft 1.19.3
+    modImplementation "fuzs.forgeconfigapiport:forgeconfigapiport-fabric:<modVersion>"   // e.g. 5.0.0 for Minecraft 1.19.3
 }
+```
+
+When developing for both Forge and Fabric simultaneously using a multi-loader setup, Forge Config Api Port can also be included in the common project to provide all classes common to both loaders. Instead of the Fabric-specific version, simply include the common publication in your `build.gradle` file.
+```groovy
+modImplementation "fuzs.forgeconfigapiport:forgeconfigapiport-common:<modVersion>"
 ```
 
 **Versions of Forge Config Api Port for Minecraft before 1.19.3 are distributed using the `net.minecraftforge` Maven group instead of `fuzs.forgeconfigapiport`.**
@@ -52,7 +57,7 @@ With this in mind, when you plan to `include` Forge Config API Port as a Jar-in-
 #### Via Curse Maven
 Alternatively you can use the Curse Maven to include this library in your workspace. (Note: project name is merely a descriptor, you should be able to choose it freely; project id is found in the info box of a project page, file id is found at the end of the file url) This is how adding a Curse Maven dependency is generally done:
 
-Since the Curse Maven generally isn't aware of any maven dependencies, you might have to add those manually, too. They are only required within your workspace, in a production environment those dependencies are shipped with Forge Config API Port.
+Since the Curse Maven generally isn't aware of any maven dependencies, you have to add those manually. They are only required within your workspace, in a production environment those dependencies are shipped with Forge Config API Port.
 ```groovy
 repositories {
     mavenCentral()
@@ -69,14 +74,14 @@ dependencies {
 }
 ```
 
-There's also one more thing that might have to be done: Depending on how you have enabled Forge Config API Port in your environment, the mod might not be able to recognize the required Night Config libraries. You'll know that is the case when upon running the game instance, you'll be greeted by this message:
+There's also one more thing that will have to be done: When including Forge Config API Port from the Curse Maven, the mod will not be able to recognize the required Night Config libraries. You'll know that is the case when upon running the game, you are greeted with the following message:
 ```
  net.fabricmc.loader.impl.FormattedException: net.fabricmc.loader.impl.discovery.ModResolutionException: Mod resolution encountered an incompatible mod set!
 A potential solution has been determined:
 	 - Install com_electronwill_night-config_core, any version.
 	 - Install com_electronwill_night-config_toml, any version.
 ```
-To resolve this issue, what you need to do is add dependency overrides (check the [Fabric Wiki](https://fabricmc.net/wiki/tutorial:dependency_overrides) for more information on this topic) for your configuration. Do that by creating a new file at `run/config/fabric_loader_dependencies.json`, in which you put the following contents:
+To resolve this issue, manually add dependency overrides (check the [Fabric Wiki](https://fabricmc.net/wiki/tutorial:dependency_overrides) for more information on this topic) to your run configuration. Do that by creating a new file at `run/config/fabric_loader_dependencies.json`, in which you put the following contents:
 ```json
 {
   "version": 1,
@@ -90,7 +95,8 @@ To resolve this issue, what you need to do is add dependency overrides (check th
   }
 }
 ```
-Also don't forget to manually add this file to your VCS, since the whole `run` directory is usually ignored by default.
+
+**Also don't forget to manually add this file to your VCS, since the whole `run` directory is usually ignored by default.**
 
 </details>
 
@@ -133,13 +139,16 @@ ModConfigEvents.reloading(<modId>).register((ModConfig config) -> {
 
 <details>
 
-As the sole purpose of this library is to allow for config parity on Forge and Fabric, Forge Config API Port works especially great when developing your mod using a multi-loader workspace Gradle setup such as [this one](https://github.com/jaredlll08/MultiLoader-Template), arranged by [Jaredlll08](https://github.com/jaredlll08).
+As the sole purpose of Forge Config Api Port is to allow for config parity on Forge and Fabric, it works especially great when developing your mod using a multi-loader workspace Gradle setup such as [this one](https://github.com/jaredlll08/MultiLoader-Template), arranged by [Jaredlll08](https://github.com/jaredlll08).
 
-Configs can extremely easily be dealt with in the common project without having to use any abstractions at all: Simply add Forge Config API Port to the common project, since all class and package names are the same as on Forge your code will compile on both Forge and Fabric without any issues.
+Configs can be created and used within the common project without having to use any abstractions at all: Simply add Forge Config API Port to the common project (use the dedicated common publication so no Fabric related code makes its way into your common project!).
+```groovy
+modImplementation "fuzs.forgeconfigapiport:forgeconfigapiport-common:<modVersion>"
+```
 
-The only thing where you'll actually have to use mod loader specific code is when registering configs, that's all! Just make sure to stay away from the `net.minecraftforge.api` package in the common project, as that is where Fabric specific code is located (this will no longer be accessible from common in the future, by splitting the Maven publication into `common` and `fabric` sub-projects).
+As all class and package names are the same as Forge your code will compile on both Forge and Fabric without any issues. The only thing where you'll actually have to use mod loader specific code is when registering configs, that's all!
 
-A complete implementation of this can be found e.g. [here](https://github.com/thexaero/open-parties-and-claims).
+An example implementation of this can be found e.g. [here](https://github.com/thexaero/open-parties-and-claims).
 
 </details>
 
@@ -149,9 +158,29 @@ A complete implementation of this can be found e.g. [here](https://github.com/th
 
 Just as with Forge itself, in-game configuration is not available in Forge Config Api Port by default. Instead, users will have to rely on third-party mods to offer that capability.
 
-Forge Config Api Port includes default support for the [Configured (Fabric)](https://www.curseforge.com/minecraft/mc-mods/configured-fabric) mod, which already is the most popular way of handling in-game configs on Forge. To use the configs in-game [Mod Menu](https://github.com/TerraformersMC/ModMenu) needs to be installed, too.
+Forge Config Api Port includes default support for and recommends the [Configured (Fabric)](https://www.curseforge.com/minecraft/mc-mods/configured-fabric) mod, which already is the most popular way of handling in-game configs on Forge. To use the configs in-game [Mod Menu](https://github.com/TerraformersMC/ModMenu) needs to be installed, too.
 
 Adding Configured and Mod Menu to your development environment is not a requirement, but highly recommended.
+```groovy
+repositories {
+    maven {
+        name = 'Curse Maven'
+        url = 'https://cursemaven.com'
+    }
+    maven {
+        name = 'Terraformers'
+        url = "https://maven.terraformersmc.com/"
+    }
+}
+
+dependencies {
+    // Configured
+    modImplementation "curse.maven:configured-fabric-667378:4166864"    // Configured version 2.0.2 for Minecraft 1.19.3
+
+    // Quality of Life Mods
+    modRuntimeOnly "com.terraformersmc:modmenu:5.0.2"
+}
+```
 
 </details>
 
