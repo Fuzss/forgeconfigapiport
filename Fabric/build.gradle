@@ -173,6 +173,7 @@ task remapPublishingJar(type: net.fabricmc.loom.task.RemapJarTask) {
 tasks.withType(Jar).configureEach {
     from rootProject.file("LICENSE-FORGE")
     from rootProject.file("LICENSE-NIGHT-CONFIG")
+    from rootProject.file("LICENSE-CONFIGURED")
     from rootProject.file("LICENSING.md")
     if (it != publishingJar) exclude 'publishing.fabric.mod.json'
 }
