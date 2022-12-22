@@ -5,14 +5,16 @@ A Minecraft mod. Downloads can be found on CurseForge.
 ![](https://i.imgur.com/bUAnw7w.png)
 
 ## ABOUT THE PROJECT
-**!!! Forge Config API Port is in no way affiliated with the Forge project !!!**
+**!!! Forge Config API Port is in no way affiliated with the Minecraft Forge project !!!**
 
-**The sole purpose of this library is to enable usage of the Forge config api on the Fabric mod loader. This is done in the hopes of removing one more obstacle for developers wishing to maintain their mods on both loaders.**
+**The sole purpose of this library is to enable usage of the Minecraft Forge config api on both Fabric and Quilt mod loaders. This is done in the hopes of removing one more obstacle for developers wishing to maintain their mods on various mod loaders.**
 
-This is a direct port from Forge, all package names are the same, so you don't even have to readjust imports when porting from Forge.
-As Fabric is a whole different mod loader, there obviously have to be some differences, even though they're quite small.
+This is a direct port from Minecraft Forge, all package names are the same, so you don't even have to readjust imports when porting from Forge.
+As Fabric and Quilt are very different mod loaders, there obviously have to be some differences, even though they're quite small.
 
-For more information regarding the licensing of this project check the [LICENSING.md](LICENSING.md) file.
+The main advantage of Forge Config Api Port over other config libraries lies in the fact that no additional library is required on Forge (since this very exact config api is built-in), only Fabric/Quilt needs this one library.
+
+For more information regarding the licensing of this project and different parts of it check the [LICENSING.md](LICENSING.md) file.
 
 ## DEVELOPER INFORMATION
 
@@ -35,14 +37,14 @@ dependencies {
 }
 ```
 
-When developing for both Forge and Fabric simultaneously using a multi-loader setup, Forge Config Api Port can also be included in the common project to provide all classes common to both loaders. Instead of the Fabric-specific version, simply include the common publication in your `build.gradle` file.
+When developing for both multiple mod loaders simultaneously using a multi-loader setup, Forge Config Api Port can also be included in the common project to provide all classes common to both loaders. Instead of the mod loader specific version, simply include the common publication in your `build.gradle` file.
 ```groovy
 modImplementation "fuzs.forgeconfigapiport:forgeconfigapiport-common:<modVersion>"
 ```
 
 **Versions of Forge Config Api Port for Minecraft before 1.19.3 are distributed using the `net.minecraftforge` Maven group instead of `fuzs.forgeconfigapiport`.**
 
-It is important to note, that there is a minor difference from the production jars released on CurseForge and Modrinth: Jars from this Maven do not have a dependency set on Night Config in `fabric.mod.json`. This is necessary as there is no proper way of getting Night Config to be recognized as a Fabric mod.
+It is important to note, that there is a minor difference from the production jars released on CurseForge and Modrinth: Jars from this Maven do not have a dependency set on Night Config in `fabric.mod.json`. This is necessary as there is no proper way of getting Night Config to be recognized as a Fabric/Quilt mod.
 
 With this in mind, when you plan to `include` Forge Config API Port as a Jar-in-Jar, absolutely make sure to set a proper dependency on Night Config within your own mod's `fabric.mod.json`, since Forge Config API Port won't have any set.
 ```json
@@ -104,7 +106,7 @@ To resolve this issue, manually add dependency overrides (check the [Fabric Wiki
 
 <details>
 
-**These instructions exist only to highlight differences between the Forge and Fabric implementation. It is assumed you are generally familiar with Forge's configs.**
+**These instructions exist only to highlight differences between the original Forge implementation and Forge Config Api Port. It is assumed you are generally familiar with Forge's configs.**
 
 #### Registering configs
 The recommended point for registering your configs is directly in your `ModInitializer::onInitialize` method.
@@ -121,12 +123,12 @@ void register(String modId, ModConfig.Type type, IConfigSpec<?> spec, String fil
 ```
 
 #### Config loading
-As Forge's mod loading process is split into multiple stages, configs aren't loaded immediately upon being registered. On Fabric though, no such mod loading stages exist. Therefore, Forge Config API Port loads all registered configs **immediately**.
+As Forge's mod loading process is split into multiple stages, configs aren't loaded immediately upon being registered. On Fabric/Quilt though, no such mod loading stages exist. Therefore, Forge Config API Port loads all registered configs **immediately**.
 
 #### Listening for config loading, reloading and unloading
-Forge's `net.minecraftforge.fml.event.config.ModConfigEvent.Loading` and `net.minecraftforge.fml.event.config.ModConfigEvent.Reloading` events are both adapted for Fabric's callback event style. They can be accessed from the `fuzs.forgeconfigapiport.api.config.v2.ModConfigEvents` class. Additionally, there is an event that fires when server configs are unloading. As on Forge, all these events provide is the config being handled.
+Forge's `net.minecraftforge.fml.event.config.ModConfigEvent.Loading` and `net.minecraftforge.fml.event.config.ModConfigEvent.Reloading` events are both adapted for Fabric's/Quilt's callback event style. They can be accessed from the `fuzs.forgeconfigapiport.api.config.v2.ModConfigEvents` class. Additionally, there is an event that fires when server configs are unloading. As on Forge, all these events provide is the config being handled.
 
-All mod config related events run on the ModLifecycle event bus instead of the primary event bus on Forge (this essentially means events do not run globally, but are instead only handed to the mod that initially registered a listener). As there is no mod specific event bus on Fabric, your mod id must be provided when registering a listener for a config callback to achieve the same behavior as on Forge, where the listener will only run for your mod.
+All mod config related events run on the ModLifecycle event bus instead of the primary event bus on Forge (this essentially means events do not run globally, but are instead only handed to the mod that initially registered a listener). As there is no mod specific event bus on Fabric/Quilt, your mod id must be provided when registering a listener for a config callback to achieve the same behavior as on Forge, where the listener will only run for your mod.
 
 As an example, a complete implementation of the reloading callback looks something like this:
 ```java
@@ -148,14 +150,17 @@ Respective config option: `forceGlobalServerConfigs = true`
 
 Of the three config types Forge supports (`CLIENT`, `COMMON` and `SERVER`), only two use the global config directory in `.minecraft/config/` to store respective contents. `SERVER` configs instead are stored separately per world, to allow different configs per world, very similar to vanilla Minecraft's data packs.
 
-Although this is an interesting concept, `SERVER` configs missing from the main config directory usually leads to much user confusion, and frustration, like when changed values are only applied to a local world instead of globally. Of course there are default configs, but that's just another annoying step for users aiming to edit `SERVER` configs on a global level.
+Although this is an interesting concept, `SERVER` configs missing from the main config directory usually leads to much user confusion, and frustration, like when changed values are only applied to a local world instead of globally. Of course there are default configs supported by Forge for this exact scenario, but that's just another annoying step for users aiming to edit `SERVER` configs on a global level.
 
 Therefore, by default, `SERVER` configs are handled as global configs stored inside the default config directory at `.minecraft/config/` by Forge Config Api Port. This means per world server configs are no longer possible. Other `SERVER` config exclusive features, mainly server-client-syncing are unchanged.
 
 #### Corrupted config files are deleted and recreated
 Respective config option: `recreateConfigsWhenParsingFails = true`
 
-Forge already tries to fix invalid config files to a certain extent, adding missing options and removing invalid ones. Unfortunately though, Forge does not handle corrupt config files, which then lead to a game crash on launch and require manual deletion from the user.
+Forge already tries to fix invalid config files to a certain extent, adding missing options and removing invalid ones. Unfortunately though, Forge does not handle corrupt config files, which then lead to a game crash on launch and require manual deletion from the user. This happens most of the time when the following exception is raised:
+```
+com.electronwill.nightconfig.core.io.ParsingException: Not enough data available
+```
 
 Forge Config Api Port automatically deletes corrupted config files and recreates them from their default value set.
 
@@ -168,7 +173,7 @@ Forge Config Api Port includes a command from Forge for opening config files fro
 
 The problem is though, this command uses custom command argument types not supported by vanilla Minecraft by default. Registering custom command argument types unfortunately leads to issues when Forge Config Api Port is installed on a dedicated server or LAN host, as it attempts to sync those argument types to clients, which are unable to understand them when Forge Config Api Port is not installed, preventing a connection to the server.
 
-Forge filters command argument types before sending them to the client, to make sure only supported argument types the client can understand are sent. Fabric does not do this. Therefore, on a dedicated server this issue is simply avoided by not registering the `/config` command (clicking on file links does not work in the server console anyway).
+Forge filters command argument types before sending them to the client, to make sure only supported argument types the client can understand are sent. Fabric/Quilt does not do this. Therefore, on a dedicated server this issue is simply avoided by not registering the `/config` command (clicking on file links does not work in the server console anyway).
 
 For LAN play though, the mentioned config option exists, to allow other clients without the mod to join. Note that changing this option requires a game restart!
 
@@ -178,14 +183,14 @@ For LAN play though, the mentioned config option exists, to allow other clients 
 
 <details>
 
-As the sole purpose of Forge Config Api Port is to allow for config parity on Forge and Fabric, it works especially great when developing your mod using a multi-loader workspace Gradle setup such as [this one](https://github.com/jaredlll08/MultiLoader-Template), arranged by [Jaredlll08](https://github.com/jaredlll08).
+As the sole purpose of Forge Config Api Port is to allow for config parity on Forge and Fabric/Quilt, it works especially great when developing your mod using a multi-loader workspace Gradle setup such as [this one](https://github.com/jaredlll08/MultiLoader-Template), arranged by [Jaredlll08](https://github.com/jaredlll08).
 
-Configs can be created and used within the common project without having to use any abstractions at all: Simply add Forge Config API Port to the common project (use the dedicated common publication so no Fabric related code makes its way into your common project!).
+Configs can be created and used within the common project without having to use any abstractions at all: Simply add Forge Config API Port to the common project (use the dedicated common publication so no mod loader specific code makes its way into your common project!).
 ```groovy
 modImplementation "fuzs.forgeconfigapiport:forgeconfigapiport-common:<modVersion>"
 ```
 
-As all class and package names are the same as Forge your code will compile on both Forge and Fabric without any issues. The only thing where you'll actually have to use mod loader specific code is when registering configs, that's all!
+As all class and package names are the same as Forge your code will compile on both Forge and Fabric/Quilt without any issues. The only thing where you'll actually have to use mod loader specific code is when registering configs, that's all!
 
 An example implementation of this can be found [here](https://github.com/thexaero/open-parties-and-claims).
 
@@ -223,3 +228,38 @@ dependencies {
 
 </details>
 
+### Config library alternatives to Forge's configs
+
+<details>
+
+Forge Config Api Port is really useful when porting a Forge mod to Fabric/Quilt (or maintaining a mod on multiple loaders) as the existing config implementation does not need any major adjustments, and also no new library dependency needs to be added to the Forge project.
+
+As with every library though, the Forge config system does have a number of shortcomings, such as:
+- Existence of three different config types with different functionalities that can be annoying to work with as a developer and easily become confusing for users
+- Handling of server config files per world, without easy access to the file, and a major effort when changing server config values globally (this is addressed by Forge Config Api Port by moving server configs to the common config directory in `.minecraft/config/`)
+- Lack of in-game configuration (possible via the third-party [Configured] mod though)
+- Lack annotation support when defining new config files
+
+So when starting on a brand-new mod project, it might be advisable to consider a completely different config library with more features than the Forge system available across all mod loaders. Here are some recommendations:
+
+| Project               | Forge | Fabric | Quilt | Minecraft Versions                 | Comments                                                                                                                                                        |
+|-----------------------|-------|--------|-------|------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Forge Config Api      | ✅     | ✅      | ✅     | 1.16, 1.17, 1.18, 1.19             | Fabric and Quilt supported provided by Forge Config Api Port. In-game config screens provided by the [Configured] mod.                                          |
+| [Spectre Lib]         | ✅     | ✅      | ✅     | 1.19                               | Not primarily a config library, implementation is very much based on Forge's configs. No in-game config screens.                                                |
+| [Pollen]              | ✅     | ✅      | ✅     | 1.16, 1.18                         | Not primarily a config library, implementation is very much based on Forge's configs. No in-game config screens.                                                |
+| [Cloth Config Api]    | ✅     | ✅      | ✅     | 1.14, 1.15, 1.16, 1.17, 1.18, 1.19 | Very extensive config library with annotation support, in-game config screens, and great api documentation.                                                     |
+| [Omega Config]        | ❌     | ✅      | ✅     | 1.18, 1.19                         | Config library with annotation support and in-game config screens.                                                                                              |
+| [Owo Lib]             | ❌     | ✅      | ✅     | 1.17, 1.18, 1.19                   | Not primarily a config library, with annotation support and the most beautiful in-game config screens (customizable via XML!). Also the best api documentation. |
+| [Midnight Lib]        | ✅     | ✅      | ✅     | 1.17, 1.18, 1.19                   | Great config library with in-game screens, also contains non-config related features though.                                                                    |
+| [YetAnotherConfigLib] | ❌     | ✅      | ✅     | 1.19                               | Great library with lots of features, in-game screens are heavily inspired by Sodium. Great api documentation.                                                   |
+
+</details>
+
+[Configured]: https://www.curseforge.com/minecraft/mc-mods/configured
+[Spectre Lib]: https://github.com/illusivesoulworks/spectrelib
+[Pollen]: https://www.curseforge.com/minecraft/mc-mods/pollen
+[Cloth Config Api]: https://www.curseforge.com/minecraft/mc-mods/cloth-config
+[Omega Config]: https://www.curseforge.com/minecraft/mc-mods/omega-config
+[Owo Lib]: https://www.curseforge.com/minecraft/mc-mods/owo-lib
+[Midnight Lib]: https://modrinth.com/mod/midnightlib
+[YetAnotherConfigLib]: https://github.com/isXander/YetAnotherConfigLib
