@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog].
 
+## [v5.0.1-1.19.3] - 2022-12-22
+### Fixed
+- Fixed Maven jar containing an unprocessed `fabric.mod.json`
+- Fixed optional mods missing from CurseForge and Modrinth publications
+
 ## [v5.0.0-1.19.3] - 2022-12-21
 This version includes major changes and refactors regarding the whole structure of Forge Config Api Port, most notably a reorganization into a multi-loader project (with separate publications for a common and Fabric Gradle project); as well as moving all classes and code not present on Forge to a separate domain (`fuzs.forgeconfigapiport`).
 ### Added

@@ -117,7 +117,7 @@ processResources {
     inputs.property "modFabricEnvironment", 	"${modFabricEnvironment}"
 
     // replace stuff in fabric.mod.json and pack.mcmeta
-    filesMatching ('fabric.mod.json') {
+    filesMatching (['fabric.mod.json', 'publishing.fabric.mod.json']) {
         expand (
                 'modId':                	"${modId}",
                 'modName':              	"${modName}",
