@@ -59,6 +59,6 @@ public final class FabricAbstractions implements CommonAbstractions {
 
     @Override
     public boolean recreateConfigsWhenParsingFails() {
-        return ForgeConfigApiPortConfig.INSTANCE.getValue("recreateConfigsWhenParsingFails", true);
+        return ForgeConfigApiPortConfig.INSTANCE.<Boolean>getValue("recreateConfigsWhenParsingFails");
     }
 }

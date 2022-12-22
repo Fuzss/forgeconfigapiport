@@ -27,8 +27,8 @@ version = "v${modVersion}-${minecraftVersion}-Forge"
 group = modMavenGroup
 
 minecraft {
-//    mappings channel: 'parchment', version: "${parchmentMappingsVersion}-${minecraftVersion}"
-    mappings channel: 'official', version: "${minecraftVersion}"
+    mappings channel: 'parchment', version: "${parchmentMappingsVersion}-${parchmentMinecraftVersion}"
+//    mappings channel: 'official', version: "${minecraftVersion}"
 
     runs {
         client {
@@ -160,32 +160,32 @@ processResources {
     inputs.property "minecraftVersion", "${minecraftVersion}"
     inputs.property "minPuzzlesVersion", "${minPuzzlesVersion}"
     inputs.property "packFormat", "${packFormat}"
-    inputs.property "modForgeDisplayTest", "${modForgeDisplayTest}"
+    inputs.property "modDisplayTest", "${modDisplayTest}"
 
     // replace stuff in mods.toml and pack.mcmeta
-    filesMatching ('META-INF/mods.toml') {
-        expand (
-                'modId':                "${modId}",
-                'modName':              "${modName}",
-                'modVersion':           "${modVersion}",
-                'modDescription':       "${modDescription}",
-                'modGroup':             project.group,
-                'modPageUrl':           "${modSourceUrl}",
-                'modUpdateUrl':         "${modUpdateUrl}",
-                'modIssueUrl':          "${modIssueUrl}",
-                'modAuthor':            "${modAuthor}",
-                'minFMLVersion':        "${minForgeVersion}".replaceAll("\\..*", ""),
-                'minForgeVersion':      "${minForgeVersion}",
-                'minecraftVersion':     "${minecraftVersion}",
-                'minPuzzlesVersion':    "${minPuzzlesVersion}",
-                'modForgeDisplayTest':  "${modForgeDisplayTest}"
+    filesMatching('META-INF/mods.toml') {
+        expand(
+                'modId': "${modId}",
+                'modName': "${modName}",
+                'modVersion': "${modVersion}",
+                'modDescription': "${modDescription}",
+                'modGroup': project.group,
+                'modPageUrl': "${modSourceUrl}",
+                'modUpdateUrl': "${modUpdateUrl}",
+                'modIssueUrl': "${modIssueUrl}",
+                'modAuthor': "${modAuthor}",
+                'minFMLVersion': "${minForgeVersion}".replaceAll("\\..*", ""),
+                'minForgeVersion': "${minForgeVersion}",
+                'minecraftVersion': "${minecraftVersion}",
+                'minPuzzlesVersion': "${minPuzzlesVersion}",
+                'modDisplayTest': "${modDisplayTest}"
         )
     }
 
-    filesMatching ('pack.mcmeta') {
-        expand (
-                'modDescription':       "${modDescription}",
-                "packFormat":           "${packFormat}"
+    filesMatching('pack.mcmeta') {
+        expand(
+                'modDescription': "${modDescription}",
+                "packFormat": "${packFormat}"
         )
     }
 }
@@ -208,7 +208,7 @@ jar.finalizedBy('reobfJar')
 
 publishing {
     publications {
-        mavenJava (MavenPublication) {
+        mavenJava(MavenPublication) {
             artifactId = "${modId}-forge"
             version = modVersion
             from components.java
@@ -279,7 +279,9 @@ jar.finalizedBy 'signJar'
 signJar.mustRunAfter 'reobfJar'
 
 curseforge {
-    if (!file('../CHANGELOG.md').canRead()) { throw new FileNotFoundException("Could not read changelog file") }
+    if (!file('../CHANGELOG.md').canRead()) {
+        throw new FileNotFoundException("Could not read changelog file")
+    }
     apiKey = project.hasProperty('curseApiToken') ? project.findProperty('curseApiToken') : ''
     project {
         id = projectCurseId
@@ -306,7 +308,9 @@ curseforge {
 }
 
 modrinth {
-    if (!file('../CHANGELOG.md').canRead()) { throw new FileNotFoundException("Could not read changelog file") }
+    if (!file('../CHANGELOG.md').canRead()) {
+        throw new FileNotFoundException("Could not read changelog file")
+    }
     token = project.hasProperty('modrinthApiToken') ? project.findProperty('modrinthApiToken') : ''
     projectId = projectModrinthId
     versionNumber = project.version
@@ -325,7 +329,10 @@ modrinth {
 //	debugMode = true
 }
 
-import groovy.json.*
+
+import groovy.json.JsonBuilder
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
 
 task copyJarToDir(type: Copy) {
     onlyIf { project.hasProperty('buildJarOutputDir') && project.hasProperty('uniqueBuildNumber') }
@@ -357,13 +364,15 @@ task refreshUpdateJson {
             def builder = new JsonBuilder()
             updateJson = builder {
                 homepage "${modSourceUrl}"
-                promos { "${projectGameVersions}".replaceAll(" ", "").split(",").each { version ->
-                    "${version}-latest" "${modVersion}"
-                    // alpha and beta releases will contain 'a' or 'b' char respectively, don't update recommended for those
-                    if ("${modVersion}".matches("[^a-zA-Z]+")) {
-                        "${version}-recommended" "${modVersion}"
+                promos {
+                    "${projectGameVersions}".replaceAll(" ", "").split(",").each { version ->
+                        "${version}-latest" "${modVersion}"
+                        // alpha and beta releases will contain 'a' or 'b' char respectively, don't update recommended for those
+                        if ("${modVersion}".matches("[^a-zA-Z]+")) {
+                            "${version}-recommended" "${modVersion}"
+                        }
                     }
-                } }
+                }
             }
         }
         def output = new JsonOutput()
@@ -372,4 +381,4 @@ task refreshUpdateJson {
 }
 
 build.finalizedBy project.tasks.copyJarToDir, rootProject.tasks.incrementBuildNumber
-[tasks.modrinth, tasks.curseforge].each {it.finalizedBy project.tasks.refreshUpdateJson}
+[tasks.modrinth, tasks.curseforge].each { it.finalizedBy project.tasks.refreshUpdateJson }

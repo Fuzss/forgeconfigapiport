@@ -5,23 +5,25 @@ import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.electronwill.nightconfig.core.file.FileNotFoundAction;
 import com.electronwill.nightconfig.core.io.ParsingException;
 import com.electronwill.nightconfig.core.io.WritingMode;
+import com.google.common.collect.ImmutableMap;
 import fuzs.forgeconfigapiport.impl.ForgeConfigAPIPort;
 import net.fabricmc.loader.api.FabricLoader;
 
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.Objects;
 
 public class ForgeConfigApiPortConfig {
     public static final ForgeConfigApiPortConfig INSTANCE;
     private static final String CONFIG_FILE_NAME = ForgeConfigAPIPort.MOD_ID + ".toml";
+    private static final Map<String, Object> CONFIG_VALUES = ImmutableMap.<String, Object>builder().put("defaultConfigsPath", "defaultconfigs").put("forceGlobalServerConfigs", true).put("disableConfigCommand", false).put("recreateConfigsWhenParsingFails", true).build();
     private static final ConfigSpec CONFIG_SPEC;
 
     static {
         CONFIG_SPEC = new ConfigSpec();
-        CONFIG_SPEC.define("defaultConfigsPath", "defaultconfigs");
-        CONFIG_SPEC.define("forceGlobalServerConfigs", true);
-        CONFIG_SPEC.define("disableConfigCommand", false);
-        CONFIG_SPEC.define("recreateConfigsWhenParsingFails", true);
+        for (Map.Entry<String, Object> entry : CONFIG_VALUES.entrySet()) {
+            CONFIG_SPEC.define(entry.getKey(), entry.getValue());
+        }
         INSTANCE = new ForgeConfigApiPortConfig();
     }
 
@@ -46,7 +48,11 @@ public class ForgeConfigApiPortConfig {
         this.configData.save();
     }
 
-    public <T> T getValue(String path, T defaultValue) {
-        return this.configData.<T>getOptional(path).orElse(defaultValue);
+    @SuppressWarnings("unchecked")
+    public <T> T getValue(String key) {
+        if (!CONFIG_VALUES.containsKey(key)) {
+            throw new IllegalArgumentException("%s is not a know config value key".formatted(key));
+        }
+        return this.configData.<T>getOptional(key).orElse((T) CONFIG_VALUES.get(key));
     }
 }
