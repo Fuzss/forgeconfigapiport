@@ -16,7 +16,7 @@ For more information regarding the licensing of this project check the [LICENSIN
 
 ## DEVELOPER INFORMATION
 
-### Adding to your workspace
+### Adding Forge Config Api Port to your Gradle workspace
 
 <details>
 
@@ -96,13 +96,15 @@ To resolve this issue, manually add dependency overrides (check the [Fabric Wiki
 }
 ```
 
-**Also don't forget to manually add this file to your VCS, since the whole `run` directory is usually ignored by default.**
+**Also don't forget to manually add this file to your VCS, since the whole `run` directory is usually ignored by default. A dedicated common publication does not exist for these versions.**
 
 </details>
 
 ### Working with Forge Config API Port
 
 <details>
+
+**These instructions exist only to highlight differences between the Forge and Fabric implementation. It is assumed you are generally familiar with Forge's configs.**
 
 #### Registering configs
 The recommended point for registering your configs is directly in your `ModInitializer::onInitialize` method.
@@ -135,6 +137,39 @@ ModConfigEvents.reloading(<modId>).register((ModConfig config) -> {
 
 </details>
 
+### Other differences from Forge in Forge Config Api Port
+
+Apart from the obviously necessary differences in implementation details from Forge mentioned above, Forge Config Api Port additionally includes minor tweaks to certain aspects of the config system. These tweaks are optional via a separate config file (found at `.minecraft/config/forgeconfigapiport.toml`) and only concern the implementation of certain features, they do **NOT** result in changes to public facing code.
+
+#### Server configs are global by default
+Respective config option: `forceGlobalServerConfigs = true`
+
+Of the three config types Forge supports (`CLIENT`, `COMMON` and `SERVER`), only two use the global config directory in `.minecraft/config/` to store respective contents. `SERVER` configs instead are stored separately per world, to allow different configs per world, very similar to vanilla Minecraft's data packs.
+
+Although this is an interesting concept, `SERVER` configs missing from the main config directory usually leads to much user confusion, and frustration, like when changed values are only applied to a local world instead of globally. Of course there are default configs, but that's just another annoying step for users aiming to edit `SERVER` configs on a global level.
+
+Therefore, by default, `SERVER` configs are handled as global configs stored inside the default config directory at `.minecraft/config/` by Forge Config Api Port. This means per world server configs are no longer possible. Other `SERVER` config exclusive features, mainly server-client-syncing are unchanged.
+
+#### Corrupted config files are deleted and recreated
+Respective config option: `recreateConfigsWhenParsingFails = true`
+
+Forge already tries to fix invalid config files to a certain extent, adding missing options and removing invalid ones. Unfortunately though, Forge does not handle corrupt config files, which then lead to a game crash on launch and require manual deletion from the user.
+
+Forge Config Api Port automatically deletes corrupted config files and recreates them from their default value set.
+
+**This feature is currently experimental, as it is still being tested how well this option works with mod packs that have a pre-configured config set, where restoring a config to the mod's default values could break part of the user experience.**
+
+#### The `/config` command can be disabled
+Respective config option: `disableConfigCommand = false`
+
+Forge Config Api Port includes a command from Forge for opening config files from in-game (in a separate editor).
+
+The problem is though, this command uses custom command argument types not supported by vanilla Minecraft by default. Registering custom command argument types unfortunately leads to issues when Forge Config Api Port is installed on a dedicated server or LAN host, as it attempts to sync those argument types to clients, which are unable to understand them when Forge Config Api Port is not installed, preventing a connection to the server.
+
+Forge filters command argument types before sending them to the client, to make sure only supported argument types the client can understand are sent. Fabric does not do this. Therefore, on a dedicated server this issue is simply avoided by not registering the `/config` command (clicking on file links does not work in the server console anyway).
+
+For LAN play though, the mentioned config option exists, to allow other clients without the mod to join. Note that changing this option requires a game restart!
+
 ### Forge Config API Port in a multi-loader workspace
 
 <details>
@@ -148,7 +183,7 @@ modImplementation "fuzs.forgeconfigapiport:forgeconfigapiport-common:<modVersion
 
 As all class and package names are the same as Forge your code will compile on both Forge and Fabric without any issues. The only thing where you'll actually have to use mod loader specific code is when registering configs, that's all!
 
-An example implementation of this can be found e.g. [here](https://github.com/thexaero/open-parties-and-claims).
+An example implementation of this can be found [here](https://github.com/thexaero/open-parties-and-claims).
 
 </details>
 
@@ -158,9 +193,9 @@ An example implementation of this can be found e.g. [here](https://github.com/th
 
 Just as with Forge itself, in-game configuration is not available in Forge Config Api Port by default. Instead, users will have to rely on third-party mods to offer that capability.
 
-Forge Config Api Port includes default support for and recommends the [Configured (Fabric)](https://www.curseforge.com/minecraft/mc-mods/configured-fabric) mod, which already is the most popular way of handling in-game configs on Forge. To use the configs in-game [Mod Menu](https://github.com/TerraformersMC/ModMenu) needs to be installed, too.
+Forge Config Api Port includes default support for and recommends the [Configured (Fabric)](https://www.curseforge.com/minecraft/mc-mods/configured-fabric) mod, which already is the most popular way of handling in-game configs on Forge. To use the configs provided by Configured in-game [Mod Menu](https://github.com/TerraformersMC/ModMenu) needs to be installed, too.
 
-Adding Configured and Mod Menu to your development environment is not a requirement, but highly recommended.
+Adding Configured and Mod Menu to your workspace is not a requirement, but highly recommended.
 ```groovy
 repositories {
     maven {
