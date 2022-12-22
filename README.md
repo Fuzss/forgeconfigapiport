@@ -238,13 +238,13 @@ As with every library though, the Forge config system does have a number of shor
 - Existence of three different config types with different functionalities that can be annoying to work with as a developer and easily become confusing for users
 - Handling of server config files per world, without easy access to the file, and a major effort when changing server config values globally (this is addressed by Forge Config Api Port by moving server configs to the common config directory in `.minecraft/config/`)
 - Lack of in-game configuration (possible via the third-party [Configured] mod though)
-- Lack annotation support when defining new config files
+- Lack of annotation support when defining new config files
 
-So when starting on a brand-new mod project, it might be advisable to consider a completely different config library with more features than the Forge system available across all mod loaders. Here are some recommendations:
+So when starting on a brand-new mod project, it might be advisable to consider a completely different config library with more features than the Forge system has. Here is an overview with some recommendations:
 
 | Project               | Forge | Fabric | Quilt | Minecraft Versions                 | Comments                                                                                                                                                        |
 |-----------------------|-------|--------|-------|------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Forge Config Api      | ✅     | ✅      | ✅     | 1.16, 1.17, 1.18, 1.19             | Fabric and Quilt supported provided by Forge Config Api Port. In-game config screens provided by the [Configured] mod.                                          |
+| Forge Config Api      | ✅     | ✅      | ✅     | 1.16, 1.17, 1.18, 1.19             | Fabric and Quilt support provided by Forge Config Api Port. In-game config screens provided by the [Configured] mod.                                            |
 | [Spectre Lib]         | ✅     | ✅      | ✅     | 1.19                               | Not primarily a config library, implementation is very much based on Forge's configs. No in-game config screens.                                                |
 | [Pollen]              | ✅     | ✅      | ✅     | 1.16, 1.18                         | Not primarily a config library, implementation is very much based on Forge's configs. No in-game config screens.                                                |
 | [Cloth Config Api]    | ✅     | ✅      | ✅     | 1.14, 1.15, 1.16, 1.17, 1.18, 1.19 | Very extensive config library with annotation support, in-game config screens, and great api documentation.                                                     |

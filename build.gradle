@@ -23,10 +23,10 @@ subprojects {
             name = 'Jared'
             url = 'https://maven.blamejared.com/'
         }
-        maven {
-            name = 'Jitpack'
-            url = 'https://jitpack.io'
-        }
+//        maven {
+//            name = 'Jitpack'
+//            url = 'https://jitpack.io'
+//        }
         maven {
             name = 'Shedaniel'
             url = 'https://maven.shedaniel.me/'
@@ -50,6 +50,22 @@ subprojects {
         maven {
             name = "ModMaven"
             url = "https://modmaven.dev"
+        }
+        maven {
+            name = "Modmuss"
+            url = "https://maven.modmuss50.me/"
+        }
+        maven {
+            name = 'Terraformers'
+            url = "https://maven.terraformersmc.com/"
+        }
+        maven {
+            name = "ladysnake"
+            url = 'https://ladysnake.jfrog.io/artifactory/mods'
+        }
+        maven {
+            name = "jamieswhiteshirt"
+            url = "https://maven.jamieswhiteshirt.com/libs-release/"
         }
         flatDir {
             dirs 'libs'

@@ -1,0 +1,87 @@
+{
+	"schema_version": 1,
+	"quilt_loader": {
+
+		"group": "${modGroup}",
+		"id": "${modId}",
+		"version": "${modVersion}",
+
+		"entrypoints": {
+			"init": [
+				"${modGroup}.impl.ForgeConfigAPIPortQuilt"
+			],
+			"client_init": [
+				"${modGroup}.impl.client.ForgeConfigAPIPortQuiltClient"
+			]
+		},
+
+		"depends": [
+			{
+				"id": "quilt_loader",
+				"version": ">=${minQuiltVersion}"
+			},
+			{
+				"id": "quilt_base",
+				"version": ">=${minQSLVersion}"
+			},
+			{
+				"id": "com_electronwill_night-config_core",
+				"version": "*"
+			},
+			{
+				"id": "com_electronwill_night-config_toml",
+				"version": "*"
+			},
+			{
+				"id": "minecraft",
+				"version": "${minecraftVersion}"
+			},
+			{
+				"id": "java",
+				"version": ">=17"
+			}
+		],
+
+		"repositories": [
+			"https://raw.githubusercontent.com/Fuzss/modresources/main/maven/"
+		],
+
+		"intermediate_mappings": "net.fabricmc:intermediary",
+
+		"metadata": {
+			"name": "${modName}",
+			"description": "${modDescription}",
+			"contributors": {
+				"${modAuthor}": "Owner"
+			},
+			"contact": {
+				"homepage": "${modPageUrl}",
+				"issues": "${modIssueUrl}",
+				"sources": "${modPageUrl}"
+			},
+			"license": "MPL-2",
+			"icon": "mod_logo.png"
+		},
+
+	},
+
+	"mixins": [
+		"${modId}.quilt.mixins.json"
+	],
+
+	"minecraft": {
+		"environment": "${modEnvironment}"
+	},
+
+	"modmenu": {
+		"badges": [
+			"library"
+		]
+	},
+
+	"configured": {
+		"providers": [
+			"${modGroup}.impl.integration.configured.ForgeConfigProvider"
+		]
+	}
+}

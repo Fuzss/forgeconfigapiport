@@ -35,12 +35,12 @@ public final class ForgeConfigPathsImpl implements ForgeConfigPaths {
 
     @Override
     public boolean forceGlobalServerConfigs() {
-        return ForgeConfigApiPortConfig.INSTANCE.getValue("forceGlobalServerConfigs", true);
+        return ForgeConfigApiPortConfig.INSTANCE.<Boolean>getValue("forceGlobalServerConfigs");
     }
 
     @Override
     public Path getDefaultConfigsPath() {
-        Path defaultConfigs = FabricLoader.getInstance().getGameDir().resolve(ForgeConfigApiPortConfig.INSTANCE.getValue("defaultConfigsPath", "defaultconfigs"));
+        Path defaultConfigs = FabricLoader.getInstance().getGameDir().resolve(ForgeConfigApiPortConfig.INSTANCE.<String>getValue("defaultConfigsPath"));
         getOrCreateDirectory(defaultConfigs, "default configs directory");
         return defaultConfigs;
     }

@@ -13,6 +13,7 @@ import java.util.Optional;
  */
 @SuppressWarnings("unchecked")
 public class ReflectionHelper {
+
     /**
      * @param clazz clazz to get field from
      * @param name field name
