@@ -139,6 +139,8 @@ ModConfigEvents.reloading(<modId>).register((ModConfig config) -> {
 
 ### Other differences from Forge in Forge Config Api Port
 
+<details>
+
 Apart from the obviously necessary differences in implementation details from Forge mentioned above, Forge Config Api Port additionally includes minor tweaks to certain aspects of the config system. These tweaks are optional via a separate config file (found at `.minecraft/config/forgeconfigapiport.toml`) and only concern the implementation of certain features, they do **NOT** result in changes to public facing code.
 
 #### Server configs are global by default
@@ -169,6 +171,8 @@ The problem is though, this command uses custom command argument types not suppo
 Forge filters command argument types before sending them to the client, to make sure only supported argument types the client can understand are sent. Fabric does not do this. Therefore, on a dedicated server this issue is simply avoided by not registering the `/config` command (clicking on file links does not work in the server console anyway).
 
 For LAN play though, the mentioned config option exists, to allow other clients without the mod to join. Note that changing this option requires a game restart!
+
+</details>
 
 ### Forge Config API Port in a multi-loader workspace
 
