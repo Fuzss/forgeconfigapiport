@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog].
 
+## [v5.0.3-1.19.3] - 2022-12-23
+### Fixed
+- Fixed invalid mixin file reference in jar published to Maven
+
 ## [v5.0.2-1.19.3] - 2022-12-23
 ### Changed
 - Some internal restructuring to move more code to the common project, to allow for easier Quilt support when it's ready
