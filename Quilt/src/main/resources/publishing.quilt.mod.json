@@ -25,14 +25,6 @@
 				"version": ">=${minQSLVersion}"
 			},
 			{
-				"id": "com_electronwill_night-config_core",
-				"version": "*"
-			},
-			{
-				"id": "com_electronwill_night-config_toml",
-				"version": "*"
-			},
-			{
 				"id": "minecraft",
 				"version": "${minecraftVersion}"
 			},
@@ -59,29 +51,17 @@
 				"issues": "${modIssueUrl}",
 				"sources": "${modPageUrl}"
 			},
-			"license": "MPL-2",
+			"license": "MPL-2.0",
 			"icon": "mod_logo.png"
-		},
+		}
 
 	},
 
 	"mixins": [
-		"${modId}.quilt.mixins.json"
+		"${modId}.common.mixins.json"
 	],
 
 	"minecraft": {
 		"environment": "${modEnvironment}"
-	},
-
-	"modmenu": {
-		"badges": [
-			"library"
-		]
-	},
-
-	"configured": {
-		"providers": [
-			"${modGroup}.impl.integration.configured.ForgeConfigProvider"
-		]
 	}
 }

@@ -26,25 +26,24 @@ public class ModConfig {
     private CommentedConfig configData;
     private Callable<Void> saveHandler;
 
-    // Forge Config API Port: replace ModContainer with mod id
+    // Forge Config API Port: replace ModContainer with mod id, marked as internal for common project as no mod id constructor exists on Forge
     @ApiStatus.Internal
     public ModConfig(final Type type, final IConfigSpec<?> spec, String modId, final String fileName) {
         this.type = type;
         this.spec = spec;
         this.fileName = fileName;
-        // Forge Config API Port: replace ModContainer with mod id
+        // Forge Config API Port: replace ModContainer with mod id, also additional check mod exists
+        if (!CommonAbstractions.INSTANCE.isModLoaded(modId)) throw new IllegalArgumentException("No mod with mod id %s".formatted(modId));
         this.modId = modId;
         this.configHandler = ConfigFileTypeHandler.TOML;
         ConfigTracker.INSTANCE.trackConfig(this);
     }
 
-    // Forge Config API Port: replace ModContainer with mod id
+    // Forge Config API Port: replace ModContainer with mod id, marked as internal for common project as no mod id constructor exists on Forge
     @ApiStatus.Internal
     public ModConfig(final Type type, final IConfigSpec<?> spec, String modId) {
         this(type, spec, modId, defaultConfigName(type, modId));
     }
-
-    // Forge Config API Port: removed second constructor, as it relies on ModContainer which is only available in Fabric implementation
 
     static String defaultConfigName(Type type, String modId) {
         // config file name would be "forge-client.toml" and "forge-server.toml"

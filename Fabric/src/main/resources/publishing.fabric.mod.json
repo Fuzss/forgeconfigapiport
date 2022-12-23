@@ -14,7 +14,7 @@
     "sources": "${modPageUrl}"
   },
 
-  "license": "MPL-2",
+  "license": "MPL-2.0",
   "icon": "mod_logo.png",
 
   "environment": "${modEnvironment}",

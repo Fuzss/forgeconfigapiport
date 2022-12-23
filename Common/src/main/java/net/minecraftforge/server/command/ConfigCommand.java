@@ -8,6 +8,7 @@ package net.minecraftforge.server.command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
+import fuzs.forgeconfigapiport.impl.core.CommonAbstractions;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.ChatFormatting;
@@ -31,7 +32,8 @@ public class ConfigCommand {
             return Commands.literal("showfile").
                     requires(cs->cs.hasPermission(0)).
                     then(Commands.argument("mod", ModIdArgument.modIdArgument()).
-                            then(Commands.argument("type", EnumArgument.enumArgument(ModConfig.Type.class)).
+                    // Forge Config Api Port: allow using built-in quilt enum argument type
+                            then(Commands.argument("type", CommonAbstractions.INSTANCE.makeEnumArgumentType(ModConfig.Type.class)).
                             executes(ShowFile::showFile)
                     )
             );

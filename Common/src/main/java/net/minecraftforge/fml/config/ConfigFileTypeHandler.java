@@ -28,7 +28,7 @@ public class ConfigFileTypeHandler {
     private static final Logger LOGGER = LogUtils.getLogger();
     static ConfigFileTypeHandler TOML = new ConfigFileTypeHandler();
     // Forge Config Api Port: adapted for Fabric
-    private static final Path defaultConfigPath = CommonAbstractions.INSTANCE.getDefaultConfigsPath();
+    private static final Path defaultConfigPath = CommonAbstractions.INSTANCE.getDefaultConfigsDirectory();
 
     public Function<ModConfig, CommentedFileConfig> reader(Path configBasePath) {
         return (c) -> {

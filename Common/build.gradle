@@ -57,26 +57,48 @@ processResources {
     duplicatesStrategy DuplicatesStrategy.INCLUDE
 
     // this will ensure that this task is redone when a value changes
-    inputs.property "modId", 					"${modId}"
-    inputs.property "modVersion", 				"${modVersion}"
-    inputs.property "modGroup", 				project.group
-    inputs.property "modDescription", 			"${modDescription}"
-    inputs.property "packFormat", 				"${packFormat}"
+    inputs.property "modId", "${modId}"
+    inputs.property "modName", "${modName}"
+    inputs.property "modVersion", "${modVersion}"
+    inputs.property "modDescription", "${modDescription}"
+    inputs.property "modGroup", project.group
+    inputs.property "modPageUrl", "${modSourceUrl}"
+    inputs.property "modIssueUrl", "${modIssueUrl}"
+    inputs.property "modAuthor", "${modAuthor}"
+    inputs.property "minQuiltVersion", "${minQuiltVersion}"
+    inputs.property "minQSLVersion", "${minQSLVersion}"
+    inputs.property "minecraftVersion", "${minecraftVersion}"
+    inputs.property "minPuzzlesVersion", "${minPuzzlesVersion}"
+    inputs.property "packFormat", "${packFormat}"
+    inputs.property "mainEntryPoint", "${project.group}.${rootProject.name}Quilt"
+    inputs.property "clientEntryPoint", "${project.group}.client.${rootProject.name}QuiltClient"
+    inputs.property "modEnvironment", "${modEnvironment}"
 
-    // replace stuff in fabric.mod.json and pack.mcmeta
-    filesMatching ('quilt.mod.json') {
-        expand (
-                'modId':                	"${modId}",
-                'modVersion':           	"${modVersion}",
-                'modGroup':             	project.group
+    // replace stuff in quilt.mod.json and pack.mcmeta
+    filesMatching(['quilt.mod.json', 'publishing.quilt.mod.json']) {
+        expand(
+                'modId': "${modId}",
+                'modName': "${modName}",
+                'modVersion': "${modVersion}",
+                'modDescription': "${modDescription}",
+                'modGroup': project.group,
+                'modPageUrl': "${modSourceUrl}",
+                'modIssueUrl': "${modIssueUrl}",
+                'modAuthor': "${modAuthor}",
+                'minQuiltVersion': "${minQuiltVersion}",
+                'minQSLVersion': "${minQSLVersion}",
+                'minecraftVersion': "${minecraftVersion}",
+                "minPuzzlesVersion": "${minPuzzlesVersion}",
+                "mainEntryPoint": "${project.group}.${rootProject.name}Quilt",
+                "clientEntryPoint": "${project.group}.client.${rootProject.name}QuiltClient",
+                "modEnvironment": "${modEnvironment}"
         )
     }
 
-    // replace stuff in pack.mcmeta
-    filesMatching ('pack.mcmeta') {
-        expand (
-                'modDescription':       "${modDescription}",
-                "packFormat":           "${packFormat}"
+    filesMatching('pack.mcmeta') {
+        expand(
+                'modDescription': "${modDescription}",
+                "packFormat": "${packFormat}"
         )
     }
 }

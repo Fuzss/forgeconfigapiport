@@ -1,43 +1,41 @@
 package fuzs.forgeconfigapiport.impl;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import fuzs.forgeconfigapiport.api.config.v2.ForgeConfigPaths;
-import fuzs.forgeconfigapiport.api.config.v2.ForgeConfigRegistry;
 import fuzs.forgeconfigapiport.impl.config.ForgeConfigApiPortConfig;
 import fuzs.forgeconfigapiport.impl.network.config.ConfigSync;
 import net.fabricmc.api.EnvType;
-import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.command.v2.ArgumentTypeRegistry;
-import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
-import net.fabricmc.fabric.api.networking.v1.ServerLoginConnectionEvents;
-import net.fabricmc.fabric.api.networking.v1.ServerLoginNetworking;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.synchronization.SingletonArgumentInfo;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.config.ConfigTracker;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.server.command.ConfigCommand;
-import net.minecraftforge.server.command.EnumArgument;
 import net.minecraftforge.server.command.ModIdArgument;
 import org.apache.commons.lang3.tuple.Pair;
+import org.quiltmc.loader.api.ModContainer;
+import org.quiltmc.loader.api.minecraft.MinecraftQuiltLoader;
+import org.quiltmc.qsl.base.api.entrypoint.ModInitializer;
+import org.quiltmc.qsl.command.api.CommandRegistrationCallback;
+import org.quiltmc.qsl.command.api.ServerArgumentType;
+import org.quiltmc.qsl.lifecycle.api.event.ServerLifecycleEvents;
+import org.quiltmc.qsl.networking.api.PacketByteBufs;
+import org.quiltmc.qsl.networking.api.ServerLoginConnectionEvents;
+import org.quiltmc.qsl.networking.api.ServerLoginNetworking;
 
 import java.util.List;
 
-public class ForgeConfigAPIPortFabric implements ModInitializer {
+public class ForgeConfigAPIPortQuilt implements ModInitializer {
 
     @Override
-    public void onInitialize() {
+    public void onInitialize(ModContainer mod) {
         registerServerLoginNetworking();
         registerArgumentTypes();
         registerHandlers();
-        ForgeConfigRegistry.INSTANCE.register(ForgeConfigAPIPort.MOD_ID, ModConfig.Type.SERVER, new ForgeConfigSpec.Builder().comment("dummy").define("so_stupid", true).next().build());
     }
 
     private static void registerServerLoginNetworking() {
@@ -52,25 +50,22 @@ public class ForgeConfigAPIPortFabric implements ModInitializer {
         ServerLoginNetworking.registerGlobalReceiver(ConfigSync.ESTABLISH_MODDED_CONNECTION_CHANNEL, (server, handler, understood, buf, synchronizer, responseSender) -> ConfigSync.onEstablishModdedConnection(server, handler, understood, buf));
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
     private static void registerArgumentTypes() {
-        // Fabric does not filter custom command argument types when syncing them to clients, therefore vanilla clients and
-        // clients without this mod will be unable to connect to a server with Forge Config Api Port installed
-        // So we disable the command on servers (it does not work anyway as the file name is not clickable in the server console),
-        // and allow for disabling the command on dedicated clients via the config to support LAN hosting in a similar scenario
-        if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {
+        if (MinecraftQuiltLoader.getEnvironmentType() == EnvType.CLIENT) {
+            // this should work on Quilt even with vanilla clients, but couldn't test yet
             if (!ForgeConfigApiPortConfig.INSTANCE.<Boolean>getValue("disableConfigCommand")) {
-                ArgumentTypeRegistry.registerArgumentType(new ResourceLocation(ForgeConfigAPIPort.MOD_ID, "enum"), EnumArgument.class, new EnumArgument.Info());
-                ArgumentTypeRegistry.registerArgumentType(new ResourceLocation(ForgeConfigAPIPort.MOD_ID, "modid"), ModIdArgument.class, SingletonArgumentInfo.contextFree(ModIdArgument::modIdArgument));
+                ServerArgumentType.register(new ResourceLocation(ForgeConfigAPIPort.MOD_ID, "modid"), ModIdArgument.class, SingletonArgumentInfo.contextFree(ModIdArgument::modIdArgument), originalArg -> {
+                    return StringArgumentType.word();
+                });
             }
         }
     }
 
     private static void registerHandlers() {
-        ServerLifecycleEvents.SERVER_STARTING.register(server -> {
+        ServerLifecycleEvents.STARTING.register(server -> {
             ConfigTracker.INSTANCE.loadConfigs(ModConfig.Type.SERVER, ForgeConfigPaths.INSTANCE.getServerConfigDirectory(server));
         });
-        ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
+        ServerLifecycleEvents.STOPPED.register(server -> {
             ConfigTracker.INSTANCE.unloadConfigs(ModConfig.Type.SERVER, ForgeConfigPaths.INSTANCE.getServerConfigDirectory(server));
         });
         CommandRegistrationCallback.EVENT.register((CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext registryAccess, Commands.CommandSelection environment) -> {

@@ -1,6 +1,8 @@
 package fuzs.forgeconfigapiport.impl.core;
 
+import com.mojang.brigadier.arguments.ArgumentType;
 import fuzs.forgeconfigapiport.impl.util.ServiceProviderUtil;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.fml.config.ModConfig;
 
 import java.nio.file.Path;
@@ -17,13 +19,19 @@ public interface CommonAbstractions {
 
     Stream<String> getAllModIds();
 
-    Path getClientConfigPath();
+    Path getClientConfigDirectory();
 
-    Path getCommonConfigPath();
+    Path getCommonConfigDirectory();
 
-    Path getDefaultConfigsPath();
+    Path getDefaultConfigsDirectory();
 
     boolean isDevelopmentEnvironment();
 
-    boolean recreateConfigsWhenParsingFails();
+    Path getConfigDirectory();
+
+    FriendlyByteBuf createFriendlyByteBuf();
+
+    <T extends Enum<T>> ArgumentType<?> makeEnumArgumentType(Class<T> enumClass);
+
+    boolean isModLoaded(String modId);
 }
