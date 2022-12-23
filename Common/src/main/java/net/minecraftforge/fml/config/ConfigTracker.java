@@ -51,9 +51,9 @@ public class ConfigTracker {
     private void loadTrackedConfig(ModConfig config) {
         // unlike on forge there isn't really more than one loading stage for mods on fabric, therefore we load configs immediately
         if (config.getType() == ModConfig.Type.CLIENT) {
-            openConfig(config, CommonAbstractions.INSTANCE.getClientConfigPath());
+            openConfig(config, CommonAbstractions.INSTANCE.getClientConfigDirectory());
         } else if (config.getType() == ModConfig.Type.COMMON) {
-            openConfig(config, CommonAbstractions.INSTANCE.getCommonConfigPath());
+            openConfig(config, CommonAbstractions.INSTANCE.getCommonConfigDirectory());
         }
         // server configs are not handled here, they are all loaded at once when a world is loaded
     }

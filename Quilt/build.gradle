@@ -24,10 +24,10 @@ dependencies {
 
     // Quilt
     modImplementation "org.quiltmc:quilt-loader:${quiltVersion}"
-    modCompileOnly("org.quiltmc:qsl:${qslVersion}") {
+    modImplementation("org.quiltmc:qsl:${qslVersion}") {
         exclude group: "net.fabricmc"
     }
-    modRuntimeOnly("org.quiltmc:qsl:${qslVersion}")     // include fabric portion add runtime for running fabric mods
+    modRuntimeOnly("org.quiltmc.quilted-fabric-api:quilted-fabric-api:5.0.0-alpha.5+0.68.1-1.19.3")
 
     // Config Dependencies
     implementation(include('com.electronwill.night-config:core:3.6.5'))
@@ -66,10 +66,7 @@ loom {
 }
 
 processResources {
-    from(project(":Common").sourceSets.main.resources) {
-        // we need to have this in common so that in a non-production environment the common jar is correctly deobfuscated
-        exclude("quilt.mod.json")
-    }
+    from(project(":Common").sourceSets.main.resources)
     from(project(":Forge").file('src/generated/resources')) {
         exclude('.cache/')
     }
@@ -90,8 +87,8 @@ processResources {
     inputs.property "modPageUrl", "${modSourceUrl}"
     inputs.property "modIssueUrl", "${modIssueUrl}"
     inputs.property "modAuthor", "${modAuthor}"
-    inputs.property "minFabricVersion", "${minFabricVersion}"
-    inputs.property "minFabricApiVersion", "${minFabricApiVersion}"
+    inputs.property "minQuiltVersion", "${minQuiltVersion}"
+    inputs.property "minQSLVersion", "${minQSLVersion}"
     inputs.property "minecraftVersion", "${minecraftVersion}"
     inputs.property "minPuzzlesVersion", "${minPuzzlesVersion}"
     inputs.property "packFormat", "${packFormat}"
@@ -110,12 +107,12 @@ processResources {
                 'modPageUrl': "${modSourceUrl}",
                 'modIssueUrl': "${modIssueUrl}",
                 'modAuthor': "${modAuthor}",
-                'minFabricVersion': "${minFabricVersion}",
-                'minFabricApiVersion': "${minFabricApiVersion}",
+                'minQuiltVersion': "${minQuiltVersion}",
+                'minQSLVersion': "${minQSLVersion}",
                 'minecraftVersion': "${minecraftVersion}",
                 "minPuzzlesVersion": "${minPuzzlesVersion}",
-                "mainEntryPoint": "${project.group}.${rootProject.name}Fabric",
-                "clientEntryPoint": "${project.group}.client.${rootProject.name}FabricClient",
+                "mainEntryPoint": "${project.group}.${rootProject.name}Quilt",
+                "clientEntryPoint": "${project.group}.client.${rootProject.name}QuiltClient",
                 "modEnvironment": "${modEnvironment}"
         )
     }
@@ -173,7 +170,7 @@ publishing {
             artifact sourcesJar
             artifact javadocJar
             pom {
-                name = "${modName} [Fabric]"
+                name = "${modName} [Quilt]"
                 description = "${modDescription}"
                 url = "${modSourceUrl}"
                 scm {

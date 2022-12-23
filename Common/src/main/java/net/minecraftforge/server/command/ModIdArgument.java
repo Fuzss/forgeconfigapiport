@@ -33,7 +33,7 @@ public class ModIdArgument implements ArgumentType<String> {
 
     @Override
     public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
-        // Forge Config API Port: get all mod ids on Fabric
+        // Forge Config API Port: get all mod ids on Fabric/Quilt
         return SharedSuggestionProvider.suggest(CommonAbstractions.INSTANCE.getAllModIds(), builder);
     }
 

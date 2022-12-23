@@ -18,18 +18,6 @@ public interface ForgeConfigPaths {
      * The directory where client configs are stored at.
      *
      * @return client config path
-     *
-     * @deprecated renamed to {@link #getClientConfigDirectory()}
-     */
-    @Deprecated(forRemoval = true)
-    default Path getClientConfigPath() {
-        return this.getClientConfigDirectory();
-    }
-
-    /**
-     * The directory where client configs are stored at.
-     *
-     * @return client config path
      */
     Path getClientConfigDirectory();
 
@@ -37,35 +25,8 @@ public interface ForgeConfigPaths {
      * The directory where common configs are stored at.
      *
      * @return common config path
-     *
-     * @deprecated renamed to {@link #getCommonConfigDirectory()}
-     */
-    @Deprecated(forRemoval = true)
-    default Path getCommonConfigPath() {
-        return this.getCommonConfigDirectory();
-    }
-
-    /**
-     * The directory where common configs are stored at.
-     *
-     * @return common config path
      */
     Path getCommonConfigDirectory();
-
-    /**
-     * The directory where server configs are stored at. By default, this is inside the world directory instead of the common <code>.minecraft/config/</code> directory.
-     * <p>Forge Config Api Port has a config setting (which is not present in Forge itself) to load server configs from the common directory instead.
-     * This method will always provide the directory that is currently set via the Forge Config Api Port config.
-     *
-     * @param server the current {@link MinecraftServer}
-     * @return server config path
-     *
-     * @deprecated renamed to {@link #getServerConfigDirectory(MinecraftServer)}
-     */
-    @Deprecated(forRemoval = true)
-    default Path getServerConfigPath(final MinecraftServer server) {
-        return this.getServerConfigDirectory(server);
-    }
 
     /**
      * The directory where server configs are stored at. By default, this is inside the world directory instead of the common <code>.minecraft/config/</code> directory.
@@ -84,21 +45,6 @@ public interface ForgeConfigPaths {
      * @return are server configs stored in the global <code>.minecraft/config/</code> directory
      */
     boolean forceGlobalServerConfigs();
-
-    /**
-     * Path where default configs are stored, by default inside of <code>.minecraft/defaultconfigs</code>.
-     * <p>This path is configurable via the Forge Config Api Port config.
-     * <p>Default configs are mainly intended for server configs to allow pre-configured configs to be applied to every
-     * newly created world (since server configs are handled per world). This mechanic also applies to other config types (although they are only created once).
-     *
-     * @return default configs path
-     *
-     * @deprecated renamed to {@link #getDefaultConfigsDirectory()}
-     */
-    @Deprecated(forRemoval = true)
-    default Path getDefaultConfigsPath() {
-        return this.getDefaultConfigsDirectory();
-    }
 
     /**
      * Path where default configs are stored, by default inside of <code>.minecraft/defaultconfigs</code>.

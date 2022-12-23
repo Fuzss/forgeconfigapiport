@@ -7,7 +7,7 @@ import com.electronwill.nightconfig.core.io.ParsingException;
 import com.electronwill.nightconfig.core.io.WritingMode;
 import com.google.common.collect.ImmutableMap;
 import fuzs.forgeconfigapiport.impl.ForgeConfigAPIPort;
-import net.fabricmc.loader.api.FabricLoader;
+import fuzs.forgeconfigapiport.impl.core.CommonAbstractions;
 
 import java.nio.file.Path;
 import java.util.Map;
@@ -30,7 +30,7 @@ public class ForgeConfigApiPortConfig {
     private CommentedFileConfig configData;
 
     private ForgeConfigApiPortConfig() {
-        this.loadFrom(FabricLoader.getInstance().getConfigDir().resolve(CONFIG_FILE_NAME));
+        this.loadFrom(CommonAbstractions.INSTANCE.getConfigDirectory().resolve(CONFIG_FILE_NAME));
     }
 
     // copied from FML config

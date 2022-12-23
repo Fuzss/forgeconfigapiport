@@ -3,9 +3,9 @@ package fuzs.forgeconfigapiport.impl.config;
 import fuzs.forgeconfigapiport.api.config.v2.ForgeConfigPaths;
 import fuzs.forgeconfigapiport.impl.ForgeConfigAPIPort;
 import fuzs.forgeconfigapiport.mixin.accessor.LevelResourceAccessor;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.storage.LevelResource;
+import org.quiltmc.loader.api.QuiltLoader;
 
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
@@ -41,17 +41,17 @@ public final class ForgeConfigPathsImpl implements ForgeConfigPaths {
 
     @Override
     public Path getClientConfigDirectory() {
-        return FabricLoader.getInstance().getConfigDir();
+        return QuiltLoader.getConfigDir();
     }
 
     @Override
     public Path getCommonConfigDirectory() {
-        return FabricLoader.getInstance().getConfigDir();
+        return QuiltLoader.getConfigDir();
     }
 
     @Override
     public Path getServerConfigDirectory(final MinecraftServer server) {
-        if (this.forceGlobalServerConfigs()) return FabricLoader.getInstance().getConfigDir();
+        if (this.forceGlobalServerConfigs()) return QuiltLoader.getConfigDir();
         final Path serverConfig = server.getWorldPath(SERVER_CONFIG_LEVEL_RESOURCE);
         getOrCreateDirectory(serverConfig, "server config directory");
         return serverConfig;
@@ -64,7 +64,7 @@ public final class ForgeConfigPathsImpl implements ForgeConfigPaths {
 
     @Override
     public Path getDefaultConfigsDirectory() {
-        Path defaultConfigs = FabricLoader.getInstance().getGameDir().resolve(ForgeConfigApiPortConfig.INSTANCE.<String>getValue("defaultConfigsPath"));
+        Path defaultConfigs = QuiltLoader.getGameDir().resolve(ForgeConfigApiPortConfig.INSTANCE.<String>getValue("defaultConfigsPath"));
         getOrCreateDirectory(defaultConfigs, "default configs directory");
         return defaultConfigs;
     }
