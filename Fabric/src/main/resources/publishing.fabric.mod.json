@@ -27,7 +27,7 @@
     ]
   },
   "mixins": [
-    "${modId}.fabric.mixins.json"
+    "${modId}.common.mixins.json"
   ],
 
   "depends": {
