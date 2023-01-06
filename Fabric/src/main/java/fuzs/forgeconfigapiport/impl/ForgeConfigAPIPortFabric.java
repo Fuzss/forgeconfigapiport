@@ -9,6 +9,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.ArgumentTypeRegistry;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerLoginConnectionEvents;
@@ -67,7 +68,9 @@ public class ForgeConfigAPIPortFabric implements ModInitializer {
     }
 
     private static void registerHandlers() {
-        ServerLifecycleEvents.SERVER_STARTING.register(server -> {
+        var phase = new ResourceLocation(ForgeConfigAPIPort.MOD_ID, "before_start");
+        ServerLifecycleEvents.SERVER_STARTING.addPhaseOrdering(phase, Event.DEFAULT_PHASE);
+        ServerLifecycleEvents.SERVER_STARTING.register(phase, server -> {
             ConfigTracker.INSTANCE.loadConfigs(ModConfig.Type.SERVER, ForgeConfigPaths.INSTANCE.getServerConfigDirectory(server));
         });
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
