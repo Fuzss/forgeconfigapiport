@@ -20,6 +20,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.quiltmc.loader.api.ModContainer;
 import org.quiltmc.loader.api.minecraft.MinecraftQuiltLoader;
 import org.quiltmc.qsl.base.api.entrypoint.ModInitializer;
+import org.quiltmc.qsl.base.api.event.Event;
 import org.quiltmc.qsl.command.api.CommandRegistrationCallback;
 import org.quiltmc.qsl.command.api.ServerArgumentType;
 import org.quiltmc.qsl.lifecycle.api.event.ServerLifecycleEvents;
@@ -30,6 +31,8 @@ import org.quiltmc.qsl.networking.api.ServerLoginNetworking;
 import java.util.List;
 
 public class ForgeConfigAPIPortQuilt implements ModInitializer {
+    private static final ResourceLocation BEFORE_PHASE = new ResourceLocation(ForgeConfigAPIPort.MOD_ID, "before");
+    private static final ResourceLocation AFTER_PHASE = new ResourceLocation(ForgeConfigAPIPort.MOD_ID, "after");
 
     @Override
     public void onInitialize(ModContainer mod) {
@@ -62,10 +65,12 @@ public class ForgeConfigAPIPortQuilt implements ModInitializer {
     }
 
     private static void registerHandlers() {
-        ServerLifecycleEvents.STARTING.register(server -> {
+        ServerLifecycleEvents.STARTING.addPhaseOrdering(BEFORE_PHASE, Event.DEFAULT_PHASE);
+        ServerLifecycleEvents.STARTING.register(BEFORE_PHASE, server -> {
             ConfigTracker.INSTANCE.loadConfigs(ModConfig.Type.SERVER, ForgeConfigPaths.INSTANCE.getServerConfigDirectory(server));
         });
-        ServerLifecycleEvents.STOPPED.register(server -> {
+        ServerLifecycleEvents.STOPPED.addPhaseOrdering(Event.DEFAULT_PHASE, AFTER_PHASE);
+        ServerLifecycleEvents.STOPPED.register(AFTER_PHASE, server -> {
             ConfigTracker.INSTANCE.unloadConfigs(ModConfig.Type.SERVER, ForgeConfigPaths.INSTANCE.getServerConfigDirectory(server));
         });
         CommandRegistrationCallback.EVENT.register((CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext registryAccess, Commands.CommandSelection environment) -> {

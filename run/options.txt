@@ -1,5 +1,6 @@
-version:3105
+version:3218
 autoJump:false
+operatorItemsTab:true
 autoSuggestions:true
 chatColors:true
 chatLinks:true
@@ -33,11 +34,11 @@ guiScale:5
 particles:0
 maxFps:120
 graphicsMode:1
-ao:2
+ao:true
 prioritizeChunkUpdates:0
 biomeBlendRadius:2
 renderClouds:"true"
-resourcePacks:["Fabric Mods"]
+resourcePacks:["fabric"]
 incompatibleResourcePacks:[]
 lastServer:
 lang:en_us
@@ -75,8 +76,9 @@ hideBundleTutorial:false
 syncChunkWrites:false
 showAutosaveIndicator:true
 allowServerListing:true
-chatPreview:true
 onlyShowSecureChat:false
+panoramaScrollSpeed:1.0
+telemetryOptInExtra:false
 key_key.attack:key.mouse.left
 key_key.use:key.mouse.right
 key_key.forward:key.keyboard.w
@@ -111,6 +113,8 @@ key_key.hotbar.6:key.keyboard.6
 key_key.hotbar.7:key.keyboard.7
 key_key.hotbar.8:key.keyboard.8
 key_key.hotbar.9:key.keyboard.9
+key_key.modmenu.open_menu:key.keyboard.unknown
+key_key.configured.open_mod_list:key.keyboard.unknown
 soundCategory_master:0.3462076
 soundCategory_music:0.0
 soundCategory_record:1.0

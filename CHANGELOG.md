@@ -3,6 +3,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog].
 
+## [v5.0.4-1.19.3] - 2023-01-07
+### Changed
+- Server configs are now loaded before everything else in Fabric's `ServerLifecycleEvents#SERVER_STARTING` callback, and are unloaded after everything in `ServerLifecycleEvents#SERVER_STOPPED` via custom event phases (thanks to [SquidDev](https://github.com/SquidDev)!)
+- Sources are once again published to CurseForge and Modrinth
+### Fixed
+- Removed test config accidentally included with the last release
+
 ## [v5.0.3-1.19.3] - 2022-12-23
 ### Fixed
 - Fixed invalid mixin file reference in jar published to Maven

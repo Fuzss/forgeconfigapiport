@@ -2,7 +2,6 @@ package fuzs.forgeconfigapiport.impl;
 
 import com.mojang.brigadier.CommandDispatcher;
 import fuzs.forgeconfigapiport.api.config.v2.ForgeConfigPaths;
-import fuzs.forgeconfigapiport.api.config.v2.ForgeConfigRegistry;
 import fuzs.forgeconfigapiport.impl.config.ForgeConfigApiPortConfig;
 import fuzs.forgeconfigapiport.impl.network.config.ConfigSync;
 import net.fabricmc.api.EnvType;
@@ -21,7 +20,6 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.synchronization.SingletonArgumentInfo;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.config.ConfigTracker;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.server.command.ConfigCommand;
@@ -32,13 +30,14 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.util.List;
 
 public class ForgeConfigAPIPortFabric implements ModInitializer {
+    private static final ResourceLocation BEFORE_PHASE = new ResourceLocation(ForgeConfigAPIPort.MOD_ID, "before");
+    private static final ResourceLocation AFTER_PHASE = new ResourceLocation(ForgeConfigAPIPort.MOD_ID, "after");
 
     @Override
     public void onInitialize() {
         registerServerLoginNetworking();
         registerArgumentTypes();
         registerHandlers();
-        ForgeConfigRegistry.INSTANCE.register(ForgeConfigAPIPort.MOD_ID, ModConfig.Type.SERVER, new ForgeConfigSpec.Builder().comment("dummy").define("so_stupid", true).next().build());
     }
 
     private static void registerServerLoginNetworking() {
@@ -68,12 +67,12 @@ public class ForgeConfigAPIPortFabric implements ModInitializer {
     }
 
     private static void registerHandlers() {
-        var phase = new ResourceLocation(ForgeConfigAPIPort.MOD_ID, "before_start");
-        ServerLifecycleEvents.SERVER_STARTING.addPhaseOrdering(phase, Event.DEFAULT_PHASE);
-        ServerLifecycleEvents.SERVER_STARTING.register(phase, server -> {
+        ServerLifecycleEvents.SERVER_STARTING.addPhaseOrdering(BEFORE_PHASE, Event.DEFAULT_PHASE);
+        ServerLifecycleEvents.SERVER_STARTING.register(BEFORE_PHASE, server -> {
             ConfigTracker.INSTANCE.loadConfigs(ModConfig.Type.SERVER, ForgeConfigPaths.INSTANCE.getServerConfigDirectory(server));
         });
-        ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
+        ServerLifecycleEvents.SERVER_STOPPED.addPhaseOrdering(Event.DEFAULT_PHASE, AFTER_PHASE);
+        ServerLifecycleEvents.SERVER_STOPPED.register(AFTER_PHASE, server -> {
             ConfigTracker.INSTANCE.unloadConfigs(ModConfig.Type.SERVER, ForgeConfigPaths.INSTANCE.getServerConfigDirectory(server));
         });
         CommandRegistrationCallback.EVENT.register((CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext registryAccess, Commands.CommandSelection environment) -> {
