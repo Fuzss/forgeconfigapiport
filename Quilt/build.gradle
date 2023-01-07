@@ -246,7 +246,7 @@ curseforge {
                 optionalDependency 'configured-fabric'
             }
         }
-//        addArtifact sourcesJar
+        addArtifact sourcesJar
     }
     options {
 //        debug = true
@@ -270,7 +270,7 @@ modrinth {
         gameVersions.add it.trim()
     }
     loaders.add 'quilt'
-//    additionalFiles.add file("${project.buildDir}/libs/${project.archivesBaseName}-${project.version}-sources.jar")
+    additionalFiles.add file("${project.buildDir}/libs/${project.archivesBaseName}-${project.version}-sources.jar")
     dependencies {
         required.project 'qsl'
 //        required.project 'forge-config-api-port'
