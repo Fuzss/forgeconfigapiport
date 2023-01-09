@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog].
 
+## [v4.2.10-1.19.2] - 2023-01-09
+### Fixed
+- Update `fuzs.forgeconfigapiport.impl.util.ReflectionHelper` to fix crash with the Configured mod when editing a value that does not have a valid `net.minecraftforge.common.ForgeConfigSpec$Range`
+
 ## [v4.2.9-1.19.2] - 2022-12-07
 ### Fixed
 - Fixed maven publication depending on Night Config as a mod at runtime

@@ -175,13 +175,13 @@ public class ForgeValue<T> implements IConfigValue<T>
         {
             try
             {
-                // Forge Config API Port: use own reflection helper class
-                Optional<Object> range = ReflectionHelper.get(ReflectionHelper.getDeclaredField(ForgeConfigSpec.ValueSpec.class, "range"), this.valueSpec);
+                // Forge Config API Port: replace Forge's ObfuscationReflectionHelper with custom ReflectionHelper implementation
+                Optional<Object> range = ReflectionHelperV2.getValue(ForgeConfigSpec.ValueSpec.class, "range", this.valueSpec);
                 if(range.isPresent())
                 {
                     Class rangeClass = Class.forName("net.minecraftforge.common.ForgeConfigSpec$Range");
-                    Object min = ReflectionHelper.get(ReflectionHelper.getDeclaredField(rangeClass, "min"), range.get()).get();
-                    Object max = ReflectionHelper.get(ReflectionHelper.getDeclaredField(rangeClass, "max"), range.get()).get();
+                    Object min = ReflectionHelperV2.getValue(rangeClass, "min", range.get()).get();
+                    Object max = ReflectionHelperV2.getValue(rangeClass, "max", range.get()).get();
                     this.range = Pair.of((T) min, (T) max);
                     return;
                 }
