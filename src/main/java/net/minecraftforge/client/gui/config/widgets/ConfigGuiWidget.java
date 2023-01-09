@@ -10,6 +10,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Checkbox;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.TooltipAccessor;
 import net.minecraft.client.gui.components.events.ContainerEventHandler;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
@@ -18,6 +19,7 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraftforge.client.gui.widget.ColoredEditBox;
 import net.minecraftforge.client.gui.widget.DynamicCheckbox;
 import net.minecraftforge.common.ForgeConfigSpec;
@@ -33,7 +35,7 @@ import java.util.function.Function;
  * Abstract class which describes an input widget that is displayed in a config gui screen.
  * Consider this a mini gui screen that is displayed next to a label of the config entry.
  */
-public abstract class ConfigGuiWidget implements ContainerEventHandler, NarratableEntry
+public abstract class ConfigGuiWidget implements ContainerEventHandler, TooltipAccessor, NarratableEntry
 {
     @Nullable
     private GuiEventListener focused;
@@ -282,8 +284,15 @@ public abstract class ConfigGuiWidget implements ContainerEventHandler, Narratab
                            final int maxHeight, final int mouseX, final int mouseY, final boolean isHovered,
                            final float partialTick)
         {
-            this.checkbox.setPosition(left + Math.max((maxWidth - this.checkbox.getWidth()) / 2, 0), top);
+            this.checkbox.x = left + Math.max((maxWidth - this.checkbox.getWidth()) / 2, 0);
+            this.checkbox.y = top;
             this.checkbox.render(poseStack, mouseX, mouseY, partialTick);
+        }
+
+        @Override
+        public @NotNull List<FormattedCharSequence> getTooltip()
+        {
+            return Collections.emptyList();
         }
 
         @Override
@@ -363,8 +372,15 @@ public abstract class ConfigGuiWidget implements ContainerEventHandler, Narratab
             this.enumButton.setWidth(maxWidth);
             // Forge Config API Port: Fabric needs an accessor (not going to get into interface injection just for this lol)
             ((AbstractWidgetAccessor) this.enumButton).setHeight(maxHeight);
-            this.enumButton.setPosition(left, top);
+            this.enumButton.x = left;
+            this.enumButton.y = top;
             this.enumButton.render(poseStack, mouseX, mouseY, partialTick);
+        }
+
+        @Override
+        public @NotNull List<FormattedCharSequence> getTooltip()
+        {
+            return this.enumButton.getTooltip();
         }
 
         @Override
@@ -437,7 +453,8 @@ public abstract class ConfigGuiWidget implements ContainerEventHandler, Narratab
             this.editBox.setWidth(maxWidth - 4);
             // Forge Config API Port: Fabric needs an accessor (not going to get into interface injection just for this lol)
             ((AbstractWidgetAccessor) this.editBox).setHeight(maxHeight);
-            this.editBox.setPosition(left + 2, top);
+            this.editBox.x = left + 2;
+            this.editBox.y = top;
             this.editBox.render(poseStack, mouseX, mouseY, partialTick);
         }
 
@@ -446,6 +463,12 @@ public abstract class ConfigGuiWidget implements ContainerEventHandler, Narratab
         public List<? extends NarratableEntry> narratables()
         {
             return Collections.singletonList(this.editBox);
+        }
+
+        @Override
+        public @NotNull List<FormattedCharSequence> getTooltip()
+        {
+            return Collections.emptyList();
         }
 
         @Override

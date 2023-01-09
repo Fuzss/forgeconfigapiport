@@ -24,10 +24,10 @@ public class ColoredEditBox extends EditBox {
         // Forge does this via an ASM patch, this works alright too though by drawing over the border again
         if (this.isVisible() && this.bordered) {
             int i = this.isFocused() ? getBorderColorFocused() : getBorderColor();
-            fill(poseStack, getX() - 1, getY() - 1, getX() + this.width + 1, getY(), i);
-            fill(poseStack, getX() - 1, getY() - 1, getX(), getY() + this.height + 1, i);
-            fill(poseStack, getX() + this.width, getY() - 1, getX() + this.width + 1, getY() + this.height + 1, i);
-            fill(poseStack, getX() - 1, getY() + this.height, getX() + this.width + 1, getY() + this.height + 1, i);
+            fill(poseStack, this.x - 1, this.y - 1, this.x + this.width + 1, this.y, i);
+            fill(poseStack, this.x - 1, this.y - 1, this.x, this.y + this.height + 1, i);
+            fill(poseStack, this.x + this.width, this.y - 1, this.x + this.width + 1, this.y + this.height + 1, i);
+            fill(poseStack, this.x - 1, this.y + this.height, this.x + this.width + 1, this.y + this.height + 1, i);
         }
     }
 

@@ -38,10 +38,10 @@ dependencies {
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${fabricApiVersion}"
 
 	// Mod Menu
-	modImplementation "com.terraformersmc:modmenu:5.0.2"
+	modImplementation "com.terraformersmc:modmenu:4.0.6"
 
 	// Configured
-	modImplementation "curse.maven:configured-fabric-667378:4166864"
+	modImplementation "curse.maven:configured-fabric-667378:4010582"
 
 	// Config Dependencies
 	implementation(include('com.electronwill.night-config:core:3.6.5'))
@@ -228,7 +228,7 @@ publishing {
 
 curseforge {
 	if (!file('CHANGELOG.md').canRead()) { throw new FileNotFoundException("Could not read changelog file") }
-	apiKey = project.findProperty('curseApiToken') ?: ""
+	apiKey = project.findProperty('curseApiToken')
 	project {
 		id = projectCurseId
 		changelogType = 'markdown'
