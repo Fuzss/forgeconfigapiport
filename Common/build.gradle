@@ -141,7 +141,7 @@ publishing {
                 pom.withXml {
                     asNode().dependencies.dependency.each { dep ->
                         // use this approach to make excluding dependencies from Curse Maven more convenient
-                        if ([].stream().anyMatch(mod -> "${dep.groupId.last().value().last()}:${dep.artifactId.last().value().last()}".startsWith(mod))) {
+                        if (["org.ow2.asm:asm", "org.spongepowered:mixin"].stream().anyMatch(mod -> "${dep.groupId.last().value().last()}:${dep.artifactId.last().value().last()}".startsWith(mod))) {
                             assert dep.parent().remove(dep)
                         }
                     }
