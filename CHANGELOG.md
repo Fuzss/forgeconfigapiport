@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog].
 
+## [v5.0.6-1.19.3] - 2023-01-09
+### Fixed
+- Fixed faulty Fabric maven publication from previous release
+
 ## [v5.0.5-1.19.3] - 2023-01-09
 ### Fixed
 - Update `fuzs.forgeconfigapiport.impl.util.ReflectionHelper` to fix crash with the Configured mod when editing a value that does not have a valid `net.minecraftforge.common.ForgeConfigSpec$Range`
