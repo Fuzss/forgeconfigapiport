@@ -10,14 +10,12 @@ import com.electronwill.nightconfig.core.CommentedConfig;
 import com.electronwill.nightconfig.core.UnmodifiableConfig;
 import com.electronwill.nightconfig.core.file.FileConfig;
 import com.google.common.collect.ImmutableList;
-import fuzs.forgeconfigapiport.impl.util.ReflectionHelper;
+import fuzs.forgeconfigapiport.impl.util.ReflectionHelperV2;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.config.ModConfig;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nullable;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,8 +24,6 @@ import java.util.List;
  */
 public class ForgeConfigHelper
 {
-    private static final Method MOD_CONFIG_SET_CONFIG_DATA = ReflectionHelper.getDeclaredMethod(ModConfig.class, "setConfigData", CommentedConfig.class);
-
     /**
      * Gathers all the Forge config values with a deep search. Used for resetting defaults
      */
@@ -66,17 +62,11 @@ public class ForgeConfigHelper
      */
     public static void setForgeConfigData(ModConfig config, @Nullable CommentedConfig configData)
     {
-        try
+        // Forge Config API Port: replace Forge's ObfuscationReflectionHelper with custom ReflectionHelper implementation
+        ReflectionHelperV2.invokeMethod(ModConfig.class, "setConfigData", new Class[]{CommentedConfig.class}, config, new Object[]{configData});
+        if(configData instanceof FileConfig)
         {
-            MOD_CONFIG_SET_CONFIG_DATA.invoke(config, configData);
-            if(configData instanceof FileConfig)
-            {
-                config.save();
-            }
-        }
-        catch(InvocationTargetException | IllegalAccessException e)
-        {
-            e.printStackTrace();
+            config.save();
         }
     }
 

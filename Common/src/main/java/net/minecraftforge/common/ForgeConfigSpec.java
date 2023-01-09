@@ -336,7 +336,8 @@ public class ForgeConfigSpec extends UnmodifiableConfigWrapper<UnmodifiableConfi
             return defineInList(path, () -> defaultValue, acceptableValues);
         }
         public <T> ConfigValue<T> defineInList(List<String> path, Supplier<T> defaultSupplier, Collection<? extends T> acceptableValues) {
-            return define(path, defaultSupplier, acceptableValues::contains);
+            // Forge Config API Port: add null check, some immutable collection implementations (like List::of) throw a NullPointerException here
+            return define(path, defaultSupplier, o -> o != null && acceptableValues.contains(o));
         }
         public <T> ConfigValue<List<? extends T>> defineList(String path, List<? extends T> defaultValue, Predicate<Object> elementValidator) {
             return defineList(split(path), defaultValue, elementValidator);

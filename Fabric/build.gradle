@@ -32,6 +32,7 @@ repositories {
 }
 
 dependencies {
+    implementation project(path: ':Common')
     // Include Common Project
     compileOnly project(":Common")
 

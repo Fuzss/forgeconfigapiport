@@ -7,13 +7,11 @@ package fuzs.forgeconfigapiport.impl.integration.configured;
 
 import com.mrcrayfish.configured.api.IConfigProvider;
 import com.mrcrayfish.configured.api.IModConfig;
-import fuzs.forgeconfigapiport.impl.util.ReflectionHelper;
 import net.fabricmc.loader.api.ModContainer;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.config.ConfigTracker;
 import net.minecraftforge.fml.config.ModConfig;
 
-import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;

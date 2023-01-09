@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog].
 
+## [v5.0.5-1.19.3] - 2023-01-09
+### Fixed
+- Update `fuzs.forgeconfigapiport.impl.util.ReflectionHelper` to fix crash with the Configured mod when editing a value that does not have a valid `net.minecraftforge.common.ForgeConfigSpec$Range`
+
 ## [v5.0.4-1.19.3] - 2023-01-07
 ### Changed
 - Server configs are now loaded before everything else in Fabric's `ServerLifecycleEvents#SERVER_STARTING` callback, and are unloaded after everything in `ServerLifecycleEvents#SERVER_STOPPED` via custom event phases (thanks to [SquidDev](https://github.com/SquidDev)!)
