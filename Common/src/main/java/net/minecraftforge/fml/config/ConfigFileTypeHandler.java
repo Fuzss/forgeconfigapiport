@@ -47,8 +47,15 @@ public class ConfigFileTypeHandler {
                     writingMode(WritingMode.REPLACE).
                     build();
             LOGGER.debug(CONFIG, "Built TOML config for {}", configPath.toString());
-            // Forge Config API Port: wrap config loading to better handle com.electronwill.nightconfig.core.io.ParsingException: Not enough data available
-            ConfigLoadingUtil.tryLoadConfigFile(c, configData);
+            try
+            {
+                // Forge Config API Port: wrap config loading to better handle com.electronwill.nightconfig.core.io.ParsingException: Not enough data available
+                ConfigLoadingUtil.tryLoadConfigFile(configData);
+            }
+            catch (ParsingException ex)
+            {
+                throw new ConfigLoadingException(c, ex);
+            }
             LOGGER.debug(CONFIG, "Loaded TOML config file {}", configPath.toString());
             try {
                 FileWatcher.defaultInstance().addWatch(configPath, new ConfigWatcher(c, configData, Thread.currentThread().getContextClassLoader()));
@@ -133,7 +140,7 @@ public class ConfigFileTypeHandler {
                 try
                 {
                     // Forge Config API Port: wrap config loading to better handle com.electronwill.nightconfig.core.io.ParsingException: Not enough data available
-                    ConfigLoadingUtil.tryLoadConfigFile(modConfig, commentedFileConfig);
+                    ConfigLoadingUtil.tryLoadConfigFile(commentedFileConfig);
                     if(!this.modConfig.getSpec().isCorrect(commentedFileConfig))
                     {
                         LOGGER.warn(CONFIG, "Configuration file {} is not correct. Correcting", commentedFileConfig.getFile().getAbsolutePath());
@@ -154,9 +161,7 @@ public class ConfigFileTypeHandler {
         }
     }
 
-    // Forge Config API Port: turned public to be available for util class
-    @ApiStatus.Internal
-    public static class ConfigLoadingException extends RuntimeException
+    private static class ConfigLoadingException extends RuntimeException
     {
         public ConfigLoadingException(ModConfig config, Exception cause)
         {

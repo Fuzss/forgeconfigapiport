@@ -2,11 +2,7 @@ package fuzs.forgeconfigapiport.impl.util;
 
 import java.util.ServiceLoader;
 
-public final class ServiceProviderUtil {
-
-    private ServiceProviderUtil() {
-
-    }
+public class ServiceProviderUtil {
 
     public static <T> T loadServiceProvider(Class<T> clazz) {
         return ServiceLoader.load(clazz)
