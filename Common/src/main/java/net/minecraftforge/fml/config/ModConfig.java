@@ -20,13 +20,14 @@ public class ModConfig {
     private final Type type;
     private final IConfigSpec<?> spec;
     private final String fileName;
-    // Forge Config API Port: move ModContainer to Fabric implementation
+    // Forge Config API Port: replace ModContainer with mod id
     private final String modId;
     private final ConfigFileTypeHandler configHandler;
     private CommentedConfig configData;
     private Callable<Void> saveHandler;
 
     // Forge Config API Port: replace ModContainer with mod id, marked as internal for common project as no mod id constructor exists on Forge
+    // It's ok to use this constructor in a Fabric project, just don't use it in common, that's what the annotation is for
     @ApiStatus.Internal
     public ModConfig(final Type type, final IConfigSpec<?> spec, String modId, final String fileName) {
         this.type = type;
@@ -40,6 +41,7 @@ public class ModConfig {
     }
 
     // Forge Config API Port: replace ModContainer with mod id, marked as internal for common project as no mod id constructor exists on Forge
+    // It's ok to use this constructor in a Fabric project, just don't use it in common, that's what the annotation is for
     @ApiStatus.Internal
     public ModConfig(final Type type, final IConfigSpec<?> spec, String modId) {
         this(type, spec, modId, defaultConfigName(type, modId));
