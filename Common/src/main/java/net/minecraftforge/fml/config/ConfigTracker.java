@@ -7,6 +7,7 @@ package net.minecraftforge.fml.config;
 
 import com.electronwill.nightconfig.core.CommentedConfig;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
+import com.electronwill.nightconfig.core.file.FileConfig;
 import com.mojang.logging.LogUtils;
 import fuzs.forgeconfigapiport.impl.core.CommonAbstractions;
 import org.jetbrains.annotations.ApiStatus;
@@ -113,14 +114,7 @@ public class ConfigTracker {
     // It's ok to use this in a Fabric/Quilt project, just don't use it in Common, that's what the annotation is for
     @ApiStatus.Internal
     public List<String> getConfigFileNames(String modId, ModConfig.Type type) {
-        return Optional.ofNullable(this.configsByMod.get(modId)).map(t -> t.get(type)).map(t -> t.stream().map(ModConfig::getFullPath).map(Object::toString).toList()).orElse(List.of());
-    }
-
-    // Forge Config API Port: helper method for better /config command, does not exist on Forge, therefore marked as internal
-    // It's ok to use this in a Fabric/Quilt project, just don't use it in Common, that's what the annotation is for
-    @ApiStatus.Internal
-    public boolean hasConfigFiles(String modId) {
-        return this.configsByMod.containsKey(modId);
+        return Optional.ofNullable(this.configsByMod.get(modId)).map(map -> map.get(type)).map(configs -> configs.stream().filter(config -> config.getConfigData() instanceof FileConfig).map(ModConfig::getFullPath).map(Object::toString).toList()).orElse(List.of());
     }
 
     public Map<ModConfig.Type, Set<ModConfig>> configSets() {

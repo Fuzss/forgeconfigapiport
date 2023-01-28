@@ -9,6 +9,7 @@ import com.electronwill.nightconfig.core.CommentedConfig;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.electronwill.nightconfig.toml.TomlFormat;
 import fuzs.forgeconfigapiport.impl.core.CommonAbstractions;
+import net.minecraft.util.StringRepresentable;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.io.ByteArrayInputStream;
@@ -106,7 +107,8 @@ public class ModConfig {
         }
     }
 
-    public enum Type {
+    // Forge Config API Port: implements StringRepresentable to allow using vanilla argument type for /config
+    public enum Type implements StringRepresentable {
         /**
          * Common mod config for configuration that needs to be loaded on both environments.
          * Loaded on both servers and clients.
@@ -139,6 +141,14 @@ public class ModConfig {
 
         public String extension() {
             return this.name().toLowerCase(Locale.ROOT);
+        }
+
+        // Forge Config API Port: implements StringRepresentable to allow using vanilla argument type for /config
+        // It's ok to use this in a Fabric/Quilt project, just don't use it in Common, that's what the annotation is for
+        @ApiStatus.Internal
+        @Override
+        public String getSerializedName() {
+            return this.extension();
         }
     }
 }

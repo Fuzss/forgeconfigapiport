@@ -4,7 +4,6 @@ import com.mojang.brigadier.CommandDispatcher;
 import fuzs.forgeconfigapiport.impl.network.client.config.ConfigSyncClient;
 import fuzs.forgeconfigapiport.impl.network.config.ConfigSync;
 import fuzs.forgeconfigapiport.impl.client.commands.ConfigCommand;
-import fuzs.forgeconfigapiport.impl.client.commands.arguments.EnumArgument;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
@@ -26,7 +25,7 @@ public class ForgeConfigAPIPortFabricClient implements ClientModInitializer {
 
     private static void registerHandlers() {
         ClientCommandRegistrationCallback.EVENT.register((CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) -> {
-            ConfigCommand.register(dispatcher, EnumArgument::enumArgument, FabricClientCommandSource::sendFeedback);
+            ConfigCommand.register(dispatcher, FabricClientCommandSource::sendFeedback);
         });
     }
 }

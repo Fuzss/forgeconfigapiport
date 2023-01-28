@@ -1,7 +1,6 @@
 package fuzs.forgeconfigapiport.impl;
 
 import fuzs.forgeconfigapiport.api.config.v2.ForgeConfigPaths;
-import fuzs.forgeconfigapiport.api.config.v2.ForgeConfigRegistry;
 import fuzs.forgeconfigapiport.impl.network.config.ConfigSync;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.Event;
@@ -11,7 +10,6 @@ import net.fabricmc.fabric.api.networking.v1.ServerLoginConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerLoginNetworking;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.config.ConfigTracker;
 import net.minecraftforge.fml.config.ModConfig;
 import org.apache.commons.lang3.tuple.Pair;
@@ -26,8 +24,6 @@ public class ForgeConfigAPIPortFabric implements ModInitializer {
     public void onInitialize() {
         registerMessages();
         registerHandlers();
-        ForgeConfigRegistry.INSTANCE.register(ForgeConfigAPIPort.MOD_ID, ModConfig.Type.COMMON, new ForgeConfigSpec.Builder().comment("testing").define("value", true).next().build(), "config1.toml");
-        ForgeConfigRegistry.INSTANCE.register(ForgeConfigAPIPort.MOD_ID, ModConfig.Type.COMMON, new ForgeConfigSpec.Builder().comment("testing").define("value", true).next().build(), "config2.toml");
     }
 
     private static void registerMessages() {
