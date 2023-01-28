@@ -9,6 +9,8 @@ import com.electronwill.nightconfig.core.CommentedConfig;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.mojang.logging.LogUtils;
 import fuzs.forgeconfigapiport.impl.core.CommonAbstractions;
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
@@ -23,7 +25,8 @@ public class ConfigTracker {
     public static final ConfigTracker INSTANCE = new ConfigTracker();
     private final ConcurrentHashMap<String, ModConfig> fileMap;
     private final EnumMap<ModConfig.Type, Set<ModConfig>> configSets;
-    private final ConcurrentHashMap<String, Map<ModConfig.Type, ModConfig>> configsByMod;
+    // Forge Config API Port: store a collection of mod configs since mods with multiple configs for the same type are supported
+    private final ConcurrentHashMap<String, Map<ModConfig.Type, Collection<ModConfig>>> configsByMod;
 
     private ConfigTracker() {
         this.fileMap = new ConcurrentHashMap<>();
@@ -42,7 +45,8 @@ public class ConfigTracker {
         }
         this.fileMap.put(config.getFileName(), config);
         this.configSets.get(config.getType()).add(config);
-        this.configsByMod.computeIfAbsent(config.getModId(), (k)->new EnumMap<>(ModConfig.Type.class)).put(config.getType(), config);
+        // Forge Config API Port: store a collection of mod configs since mods with multiple configs for the same type are supported
+        this.configsByMod.computeIfAbsent(config.getModId(), (k)->new EnumMap<>(ModConfig.Type.class)).computeIfAbsent(config.getType(), type -> new ArrayList<>()).add(config);
         LOGGER.debug(CONFIG, "Config file {} for {} tracking", config.getFileName(), config.getModId());
         loadTrackedConfig(config);  // Forge Config API Port: load configs immediately
     }
@@ -98,9 +102,25 @@ public class ConfigTracker {
         });
     }
 
+    @Nullable
     public String getConfigFileName(String modId, ModConfig.Type type) {
-        return Optional.ofNullable(configsByMod.getOrDefault(modId, Collections.emptyMap()).getOrDefault(type, null)).
-                map(ModConfig::getFullPath).map(Object::toString).orElse(null);
+        // Forge Config API Port: support mods with multiple configs for the same type
+        List<String> fileNames = this.getConfigFileNames(modId, type);
+        return fileNames.isEmpty() ? null : fileNames.get(0);
+    }
+
+    // Forge Config API Port: support mods with multiple configs for the same type, does not exist on Forge, therefore marked as internal
+    // It's ok to use this in a Fabric/Quilt project, just don't use it in Common, that's what the annotation is for
+    @ApiStatus.Internal
+    public List<String> getConfigFileNames(String modId, ModConfig.Type type) {
+        return Optional.ofNullable(this.configsByMod.get(modId)).map(t -> t.get(type)).map(t -> t.stream().map(ModConfig::getFullPath).map(Object::toString).toList()).orElse(List.of());
+    }
+
+    // Forge Config API Port: helper method for better /config command, does not exist on Forge, therefore marked as internal
+    // It's ok to use this in a Fabric/Quilt project, just don't use it in Common, that's what the annotation is for
+    @ApiStatus.Internal
+    public boolean hasConfigFiles(String modId) {
+        return this.configsByMod.containsKey(modId);
     }
 
     public Map<ModConfig.Type, Set<ModConfig>> configSets() {

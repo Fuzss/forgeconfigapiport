@@ -1,14 +1,10 @@
 package fuzs.forgeconfigapiport.impl.core;
 
-import com.mojang.brigadier.arguments.ArgumentType;
 import fuzs.forgeconfigapiport.api.config.v2.ForgeConfigPaths;
 import fuzs.forgeconfigapiport.api.config.v2.ModConfigEvents;
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.api.fml.event.config.ModConfigEvent;
 import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.server.command.EnumArgument;
 
 import java.nio.file.Path;
 import java.util.stream.Stream;
@@ -63,16 +59,6 @@ public final class FabricAbstractions implements CommonAbstractions {
     @Override
     public Path getConfigDirectory() {
         return FabricLoader.getInstance().getConfigDir();
-    }
-
-    @Override
-    public FriendlyByteBuf createFriendlyByteBuf() {
-        return PacketByteBufs.create();
-    }
-
-    @Override
-    public <T extends Enum<T>> ArgumentType<?> makeEnumArgumentType(Class<T> enumClass) {
-        return EnumArgument.enumArgument(enumClass);
     }
 
     @Override

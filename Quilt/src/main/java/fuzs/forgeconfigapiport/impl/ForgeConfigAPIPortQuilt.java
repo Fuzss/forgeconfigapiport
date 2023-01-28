@@ -1,28 +1,15 @@
 package fuzs.forgeconfigapiport.impl;
 
-import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.StringArgumentType;
 import fuzs.forgeconfigapiport.api.config.v2.ForgeConfigPaths;
-import fuzs.forgeconfigapiport.impl.config.ForgeConfigApiPortConfig;
 import fuzs.forgeconfigapiport.impl.network.config.ConfigSync;
-import net.fabricmc.api.EnvType;
-import net.minecraft.commands.CommandBuildContext;
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.Commands;
-import net.minecraft.commands.synchronization.SingletonArgumentInfo;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.fml.config.ConfigTracker;
 import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.server.command.ConfigCommand;
-import net.minecraftforge.server.command.ModIdArgument;
 import org.apache.commons.lang3.tuple.Pair;
 import org.quiltmc.loader.api.ModContainer;
-import org.quiltmc.loader.api.minecraft.MinecraftQuiltLoader;
 import org.quiltmc.qsl.base.api.entrypoint.ModInitializer;
 import org.quiltmc.qsl.base.api.event.Event;
-import org.quiltmc.qsl.command.api.CommandRegistrationCallback;
-import org.quiltmc.qsl.command.api.ServerArgumentType;
 import org.quiltmc.qsl.lifecycle.api.event.ServerLifecycleEvents;
 import org.quiltmc.qsl.networking.api.PacketByteBufs;
 import org.quiltmc.qsl.networking.api.ServerLoginConnectionEvents;
@@ -36,12 +23,11 @@ public class ForgeConfigAPIPortQuilt implements ModInitializer {
 
     @Override
     public void onInitialize(ModContainer mod) {
-        registerServerLoginNetworking();
-        registerArgumentTypes();
+        registerMessages();
         registerHandlers();
     }
 
-    private static void registerServerLoginNetworking() {
+    private static void registerMessages() {
         ServerLoginConnectionEvents.QUERY_START.register((handler2, server2, sender, synchronizer2) -> {
             final List<Pair<String, FriendlyByteBuf>> pairs = ConfigSync.onSyncConfigs();
             for (Pair<String, FriendlyByteBuf> pair : pairs) {
@@ -53,17 +39,6 @@ public class ForgeConfigAPIPortQuilt implements ModInitializer {
         ServerLoginNetworking.registerGlobalReceiver(ConfigSync.ESTABLISH_MODDED_CONNECTION_CHANNEL, (server, handler, understood, buf, synchronizer, responseSender) -> ConfigSync.onEstablishModdedConnection(server, handler, understood, buf));
     }
 
-    private static void registerArgumentTypes() {
-        if (MinecraftQuiltLoader.getEnvironmentType() == EnvType.CLIENT) {
-            // this should work on Quilt even with vanilla clients, but couldn't test yet
-            if (!ForgeConfigApiPortConfig.INSTANCE.<Boolean>getValue("disableConfigCommand")) {
-                ServerArgumentType.register(new ResourceLocation(ForgeConfigAPIPort.MOD_ID, "modid"), ModIdArgument.class, SingletonArgumentInfo.contextFree(ModIdArgument::modIdArgument), originalArg -> {
-                    return StringArgumentType.word();
-                });
-            }
-        }
-    }
-
     private static void registerHandlers() {
         ServerLifecycleEvents.STARTING.addPhaseOrdering(BEFORE_PHASE, Event.DEFAULT_PHASE);
         ServerLifecycleEvents.STARTING.register(BEFORE_PHASE, server -> {
@@ -72,13 +47,6 @@ public class ForgeConfigAPIPortQuilt implements ModInitializer {
         ServerLifecycleEvents.STOPPED.addPhaseOrdering(Event.DEFAULT_PHASE, AFTER_PHASE);
         ServerLifecycleEvents.STOPPED.register(AFTER_PHASE, server -> {
             ConfigTracker.INSTANCE.unloadConfigs(ModConfig.Type.SERVER, ForgeConfigPaths.INSTANCE.getServerConfigDirectory(server));
-        });
-        CommandRegistrationCallback.EVENT.register((CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext registryAccess, Commands.CommandSelection environment) -> {
-            if (environment != Commands.CommandSelection.DEDICATED) {
-                if (!ForgeConfigApiPortConfig.INSTANCE.<Boolean>getValue("disableConfigCommand")) {
-                    ConfigCommand.register(dispatcher);
-                }
-            }
         });
     }
 }

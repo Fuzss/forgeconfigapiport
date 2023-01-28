@@ -29,9 +29,5 @@ public interface CommonAbstractions {
 
     Path getConfigDirectory();
 
-    FriendlyByteBuf createFriendlyByteBuf();
-
-    <T extends Enum<T>> ArgumentType<?> makeEnumArgumentType(Class<T> enumClass);
-
     boolean isModLoaded(String modId);
 }

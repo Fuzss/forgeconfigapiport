@@ -8,10 +8,9 @@ package net.minecraftforge.server.command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import fuzs.forgeconfigapiport.impl.core.CommonAbstractions;
+import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.fml.config.ConfigTracker;
@@ -19,6 +18,10 @@ import net.minecraftforge.fml.config.ModConfig;
 
 import java.io.File;
 
+/**
+ * @deprecated moved to internal client-side implementation
+ */
+@Deprecated(forRemoval = true)
 public class ConfigCommand {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(
@@ -32,8 +35,7 @@ public class ConfigCommand {
             return Commands.literal("showfile").
                     requires(cs->cs.hasPermission(0)).
                     then(Commands.argument("mod", ModIdArgument.modIdArgument()).
-                    // Forge Config Api Port: allow using built-in quilt enum argument type
-                            then(Commands.argument("type", CommonAbstractions.INSTANCE.makeEnumArgumentType(ModConfig.Type.class)).
+                            then(Commands.argument("type", EnumArgument.enumArgument(ModConfig.Type.class)).
                             executes(ShowFile::showFile)
                     )
             );
