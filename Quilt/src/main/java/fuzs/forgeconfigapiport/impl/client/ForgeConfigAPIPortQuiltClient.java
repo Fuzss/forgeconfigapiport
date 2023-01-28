@@ -8,7 +8,6 @@ import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.Commands;
 import org.quiltmc.loader.api.ModContainer;
 import org.quiltmc.qsl.base.api.entrypoint.client.ClientModInitializer;
-import org.quiltmc.qsl.command.api.EnumArgumentType;
 import org.quiltmc.qsl.command.api.client.ClientCommandRegistrationCallback;
 import org.quiltmc.qsl.command.api.client.QuiltClientCommandSource;
 import org.quiltmc.qsl.networking.api.client.ClientLoginNetworking;
@@ -28,7 +27,7 @@ public class ForgeConfigAPIPortQuiltClient implements ClientModInitializer {
 
     private static void registerHandlers() {
         ClientCommandRegistrationCallback.EVENT.register((CommandDispatcher<QuiltClientCommandSource> dispatcher, CommandBuildContext buildContext, Commands.CommandSelection environment) -> {
-            ConfigCommand.register(dispatcher, EnumArgumentType::enumConstant, QuiltClientCommandSource::sendFeedback);
+            ConfigCommand.register(dispatcher, QuiltClientCommandSource::sendFeedback);
         });
     }
 }

@@ -8,8 +8,9 @@ The format is based on [Keep a Changelog].
 - The `/config` command now is registered as a client-side command to prevent issues with local multiplayer when vanilla clients are trying to connect (thanks for the suggestion [DJtheRedstoner](https://github.com/DJtheRedstoner)!)
 - As a result Forge Config API Port's `disableConfigCommand` config option has become obsolete and was therefore removed
 - Some further improvements to the `/config` command itself
-  - Invalid suggestions for mod id and config type are no longer shown
+  - Invalid suggestions for mod id are no longer shown
   - Supports multiple configs per config type for a single mod (if present)
+  - Disabled access to server configs when playing on a dedicated server which would throw an exception before 
 - Deprecated Forge's config command implementation, it is no longer used and will be removed in the future as it's not a relevant part of the api
 
 ## [v5.0.6-1.19.3] - 2023-01-09
