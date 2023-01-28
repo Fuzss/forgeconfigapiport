@@ -3,9 +3,6 @@ defaultConfigsPath = "defaultconfigs"
 #Prevent server config files from being saved inside the current world directory. Instead, save them to the global config directory in .minecraft/config/.
 #This option effectively disables per world server configs, but helps a lot with avoiding user confusion.
 forceGlobalServerConfigs = true
-#Disable the custom '/config' command introduced by Forge for opening config files from in-game. Disabling this option also disables registration of custom command argument serializers.
-#This option mainly exists so that Forge Config Api Port may be present when hosting a LAN world, so that vanilla clients may connect.
-disableConfigCommand = false
 #Config loading from a file config appears to occasionally fail and throw a com.electronwill.nightconfig.core.io.ParsingException: Not enough data available.
 #This workaround catches the exception, and recreates a fresh file to try config loading for again. If loading fails for the new file the original exception is thrown.
 recreateConfigsWhenParsingFails = true

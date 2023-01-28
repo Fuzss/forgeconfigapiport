@@ -6,8 +6,8 @@
 package fuzs.forgeconfigapiport.impl.network.client.config;
 
 import fuzs.forgeconfigapiport.impl.ForgeConfigAPIPort;
-import fuzs.forgeconfigapiport.impl.core.CommonAbstractions;
 import fuzs.forgeconfigapiport.impl.network.client.NetworkHooks;
+import io.netty.buffer.Unpooled;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientHandshakePacketListenerImpl;
 import net.minecraft.network.FriendlyByteBuf;
@@ -28,7 +28,7 @@ public final class ConfigSyncClient {
     public static CompletableFuture<@Nullable FriendlyByteBuf> onSyncConfigs(Minecraft client, ClientHandshakePacketListenerImpl handler, FriendlyByteBuf buf) {
         final String fileName = receiveSyncedConfig(buf);
         ForgeConfigAPIPort.LOGGER.debug("Received config sync for {} from server", fileName);
-        FriendlyByteBuf response = CommonAbstractions.INSTANCE.createFriendlyByteBuf();
+        FriendlyByteBuf response = new FriendlyByteBuf(Unpooled.buffer());
         response.writeUtf(fileName);
         ForgeConfigAPIPort.LOGGER.debug("Sent config sync for {} to server", fileName);
         return CompletableFuture.completedFuture(response);
@@ -37,7 +37,7 @@ public final class ConfigSyncClient {
     public static CompletableFuture<@Nullable FriendlyByteBuf> onEstablishModdedConnection(Minecraft client, ClientHandshakePacketListenerImpl handler, FriendlyByteBuf buf) {
         ForgeConfigAPIPort.LOGGER.debug("Received modded connection marker from server");
         NetworkHooks.setModdedConnection();
-        return CompletableFuture.completedFuture(CommonAbstractions.INSTANCE.createFriendlyByteBuf());
+        return CompletableFuture.completedFuture(new FriendlyByteBuf(Unpooled.buffer()));
     }
 
     private static String receiveSyncedConfig(final FriendlyByteBuf buf) {

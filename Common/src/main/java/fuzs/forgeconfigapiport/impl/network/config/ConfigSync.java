@@ -6,7 +6,7 @@
 package fuzs.forgeconfigapiport.impl.network.config;
 
 import fuzs.forgeconfigapiport.impl.ForgeConfigAPIPort;
-import fuzs.forgeconfigapiport.impl.core.CommonAbstractions;
+import io.netty.buffer.Unpooled;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -40,7 +40,7 @@ public final class ConfigSync {
             }
         }));
         return configData.entrySet().stream().map(e -> {
-            FriendlyByteBuf buf = CommonAbstractions.INSTANCE.createFriendlyByteBuf();
+            FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
             buf.writeUtf(e.getKey());
             buf.writeByteArray(e.getValue());
             return Pair.of("Config " + e.getKey(), buf);
