@@ -1,5 +1,5 @@
 {
-  "commands.forge.arguments.enum.invalid": "Enum constant must be one of %s, found %s",
-  "commands.config.getwithtype": "Config(s) for %s of type %s found at %s",
-  "commands.config.noconfig": "Config(s) for %s of type %s not found"
+  "commands.config.getwithtype": "Config for %s of type %s found at %s",
+  "commands.config.noconfig": "Config for %s of type %s not found",
+  "commands.config.click": "Click to open"
 }
