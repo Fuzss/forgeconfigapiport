@@ -1,5 +1,4 @@
 {
   "commands.config.getwithtype": "Config for %s of type %s found at %s",
-  "commands.config.noconfig": "Config for %s of type %s not found",
-  "commands.config.click": "Click to open"
+  "commands.config.noconfig": "Config for %s of type %s not found"
 }

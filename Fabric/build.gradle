@@ -43,22 +43,22 @@ dependencies {
     }
 
     // Fabric
-    modImplementation "net.fabricmc:fabric-loader:${fabricVersion}"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${fabricApiVersion}"
+    modApi "net.fabricmc:fabric-loader:${fabricVersion}"
+    modApi "net.fabricmc.fabric-api:fabric-api:${fabricApiVersion}"
 
     // Config Dependencies
-    implementation(include('com.electronwill.night-config:core:3.6.5'))
-    implementation(include('com.electronwill.night-config:toml:3.6.5'))
+    api(include('com.electronwill.night-config:core:3.6.5'))
+    api(include('com.electronwill.night-config:toml:3.6.5'))
 
     // Configured
-    modImplementation "curse.maven:configured-fabric-667378:4166864"
+    modCompileOnly "curse.maven:configured-fabric-667378:4166864"
 
     // Quality of Life Mods
-    modRuntimeOnly "com.terraformersmc:modmenu:5.0.2"
-    modRuntimeOnly "curse.maven:tooltipfix-411557:4167237"
+    modLocalRuntime "com.terraformersmc:modmenu:5.0.2"
+    modLocalRuntime "curse.maven:tooltipfix-411557:4167237"
 
     // Puzzles Lib
-//    modImplementation "fuzs.puzzleslib:puzzleslib-fabric:${puzzlesVersion}"
+//    modApi "fuzs.puzzleslib:puzzleslib-fabric:${puzzlesVersion}"
 }
 
 loom {
@@ -204,7 +204,7 @@ publishing {
                 }
                 licenses {
                     license {
-                        name = 'MPL-2'
+                        name = 'MPL-2.0'
                         url = 'https://www.mozilla.org/en-US/MPL/2.0/'
                     }
                 }
@@ -212,19 +212,6 @@ publishing {
                     developer {
                         id = "${modAuthor}".toLowerCase()
                         name = "${modAuthor}"
-                    }
-                }
-            }
-            // this is necessary when not using 'from components.java', otherwise dependencies block will still be empty at this point
-            afterEvaluate {
-                // exclude certain dependencies when publishing to maven
-                // from https://stackoverflow.com/a/50121790
-                pom.withXml {
-                    asNode().dependencies.dependency.each { dep ->
-                        // use this approach to make excluding dependencies from Curse Maven more convenient
-                        if (["curse.maven:", "com.terraformersmc:modmenu"].stream().anyMatch(mod -> "${dep.groupId.last().value()}:${dep.artifactId.last().value()}".startsWith(mod))) {
-                            assert dep.parent().remove(dep)
-                        }
                     }
                 }
             }
