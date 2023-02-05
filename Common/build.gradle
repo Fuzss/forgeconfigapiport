@@ -15,17 +15,17 @@ dependencies {
     }
 
     // Mixin Dependencies
-    implementation 'org.ow2.asm:asm-tree:9.2'
-    implementation 'org.ow2.asm:asm-commons:9.2'
-    implementation 'org.ow2.asm:asm-util:9.2'
-    implementation 'org.spongepowered:mixin:0.8.5'
+    compileOnly 'org.ow2.asm:asm-tree:9.2'
+    compileOnly 'org.ow2.asm:asm-commons:9.2'
+    compileOnly 'org.ow2.asm:asm-util:9.2'
+    compileOnly 'org.spongepowered:mixin:0.8.5'
 
     // Config Dependencies
-    implementation 'com.electronwill.night-config:core:3.6.5'
-    implementation 'com.electronwill.night-config:toml:3.6.5'
+    api 'com.electronwill.night-config:core:3.6.5'
+    api 'com.electronwill.night-config:toml:3.6.5'
 
     // Puzzles Lib
-//    modImplementation "fuzs.puzzleslib:puzzleslib-common:${puzzlesVersion}"
+//    modApi "fuzs.puzzleslib:puzzleslib-common:${puzzlesVersion}"
 }
 
 loom {
@@ -124,7 +124,7 @@ publishing {
                 }
                 licenses {
                     license {
-                        name = 'MPL-2'
+                        name = 'MPL-2.0'
                         url = 'https://www.mozilla.org/en-US/MPL/2.0/'
                     }
                 }
@@ -132,18 +132,6 @@ publishing {
                     developer {
                         id = "${modAuthor}".toLowerCase()
                         name = "${modAuthor}"
-                    }
-                }
-            }
-            afterEvaluate {
-                // exclude certain dependencies when publishing to maven
-                // from https://stackoverflow.com/a/50121790
-                pom.withXml {
-                    asNode().dependencies.dependency.each { dep ->
-                        // use this approach to make excluding dependencies from Curse Maven more convenient
-                        if (["org.ow2.asm:asm", "org.spongepowered:mixin"].stream().anyMatch(mod -> "${dep.groupId.last().value().last()}:${dep.artifactId.last().value().last()}".startsWith(mod))) {
-                            assert dep.parent().remove(dep)
-                        }
                     }
                 }
             }

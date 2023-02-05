@@ -229,7 +229,7 @@ publishing {
                 }
                 licenses {
                     license {
-                        name = 'MPL-2'
+                        name = 'MPL-2.0'
                         url = 'https://www.mozilla.org/en-US/MPL/2.0/'
                     }
                 }

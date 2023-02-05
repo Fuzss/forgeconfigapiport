@@ -3,6 +3,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog].
 
+## [v5.0.9-1.19.3] - 2023-02-05
+### Fixed
+- Remove accidental test code
+
+## [v5.0.8-1.19.3] - 2023-02-05
+### Fixed
+- Fixed an issue with compile time dependencies missing from Maven publication
+
 ## [v5.0.7-1.19.3] - 2023-01-28
 ### Changed
 - The `/config` command now is registered as a client-side command to prevent issues with local multiplayer when vanilla clients are trying to connect (thanks for the suggestion [DJtheRedstoner](https://github.com/DJtheRedstoner)!)
