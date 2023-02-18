@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog].
 
+## [v4.2.11-1.19.2] - 2023-02-18
+### Fixed
+- Backported some changes to the `/config` command making it fully client-side to fix issues with command argument serialization
+
 ## [v4.2.10-1.19.2] - 2023-01-09
 ### Fixed
 - Update `fuzs.forgeconfigapiport.impl.util.ReflectionHelper` to fix crash with the Configured mod when editing a value that does not have a valid `net.minecraftforge.common.ForgeConfigSpec$Range`

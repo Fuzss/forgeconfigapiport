@@ -38,7 +38,7 @@
     "fabric": ">=${minFabricApiVersion}",
     "com_electronwill_night-config_core": "*",
     "com_electronwill_night-config_toml": "*",
-    "minecraft": ">=${minMinecraftVersion} <${nextMinecraftVersion}",
+    "minecraft": ">=1.19 <1.19.3",
     "java": ">=17"
   },
 
