@@ -17,7 +17,7 @@ import java.util.Objects;
 public class ForgeConfigApiPortConfig {
     public static final ForgeConfigApiPortConfig INSTANCE;
     private static final String CONFIG_FILE_NAME = ForgeConfigAPIPort.MOD_ID + ".toml";
-    private static final Map<String, Object> CONFIG_VALUES = ImmutableMap.<String, Object>builder().put("defaultConfigsPath", "defaultconfigs").put("forceGlobalServerConfigs", true).put("recreateConfigsWhenParsingFails", true).build();
+    private static final Map<String, Object> CONFIG_VALUES = ImmutableMap.<String, Object>builder().put("defaultConfigsPath", "defaultconfigs").put("forceGlobalServerConfigs", true).put("recreateConfigsWhenParsingFails", true).put("correctConfigValuesFromDefaultConfig", true).build();
     private static final ConfigSpec CONFIG_SPEC;
 
     static {

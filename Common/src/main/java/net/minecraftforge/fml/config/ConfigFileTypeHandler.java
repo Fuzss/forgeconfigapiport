@@ -15,7 +15,6 @@ import com.mojang.logging.LogUtils;
 import fuzs.forgeconfigapiport.impl.core.CommonAbstractions;
 import fuzs.forgeconfigapiport.impl.util.ConfigLoadingUtil;
 import org.apache.commons.io.FilenameUtils;
-import org.jetbrains.annotations.ApiStatus;
 import org.slf4j.Logger;
 
 import java.io.IOException;
@@ -56,6 +55,8 @@ public class ConfigFileTypeHandler {
             {
                 throw new ConfigLoadingException(c, ex);
             }
+            // Forge Config API Port: store values from default config, so we can retrieve them when correcting individual values
+            ConfigLoadingUtil.tryRegisterDefaultConfig(c);
             LOGGER.debug(CONFIG, "Loaded TOML config file {}", configPath.toString());
             try {
                 FileWatcher.defaultInstance().addWatch(configPath, new ConfigWatcher(c, configData, Thread.currentThread().getContextClassLoader()));
