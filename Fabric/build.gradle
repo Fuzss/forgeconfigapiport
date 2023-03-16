@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '0.12-SNAPSHOT'
+    id 'fabric-loom' version '1.0.+'
     id 'io.github.juuxel.loom-quiltflower' version '1.7.1'
     // this depends on an older version of guava, which loom is incompatible with, so make sure to apply this plugin after loom
     // haven't found a proper way to manage plugin dependencies otherwise
@@ -55,7 +55,6 @@ dependencies {
 
     // Quality of Life Mods
     modLocalRuntime "com.terraformersmc:modmenu:5.0.2"
-    modLocalRuntime "curse.maven:tooltipfix-411557:4167237"
 
     // Puzzles Lib
 //    modApi "fuzs.puzzleslib:puzzleslib-fabric:${puzzlesVersion}"
