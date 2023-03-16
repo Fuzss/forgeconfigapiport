@@ -16,6 +16,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import fuzs.forgeconfigapiport.impl.ForgeConfigAPIPort;
 import fuzs.forgeconfigapiport.impl.core.CommonAbstractions;
+import fuzs.forgeconfigapiport.impl.util.ConfigLoadingUtil;
 import net.minecraftforge.fml.config.IConfigSpec;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
@@ -67,13 +68,13 @@ public class ForgeConfigSpec extends UnmodifiableConfigWrapper<UnmodifiableConfi
             String configName = config instanceof FileConfig ? ((FileConfig) config).getNioPath().toString() : config.toString();
             // Forge Config API Port: replace with SLF4J logger
             ForgeConfigAPIPort.LOGGER.warn("Configuration file {} is not correct. Correcting", configName);
-            correct(config,
-                    (action, path, incorrectValue, correctedValue) ->
-                            // Forge Config API Port: replace with SLF4J logger
-                            ForgeConfigAPIPort.LOGGER.warn("Incorrect key {} was corrected from {} to its default, {}. {}", DOT_JOINER.join( path ), incorrectValue, correctedValue, incorrectValue == correctedValue ? "This seems to be an error." : ""),
-                    (action, path, incorrectValue, correctedValue) ->
-                            // Forge Config API Port: replace with SLF4J logger
-                            ForgeConfigAPIPort.LOGGER.debug("The comment on key {} does not match the spec. This may create a backup.", DOT_JOINER.join( path )));
+            correct(config, (action, path, incorrectValue, correctedValue) -> {
+                        // Forge Config API Port: replace with SLF4J logger
+                        ForgeConfigAPIPort.LOGGER.warn("Incorrect key {} was corrected from {} to its default, {}. {}", DOT_JOINER.join(path), incorrectValue, correctedValue, incorrectValue == correctedValue ? "This seems to be an error." : "");
+                    }, (action, path, incorrectValue, correctedValue) -> {
+                        // Forge Config API Port: replace with SLF4J logger
+                        ForgeConfigAPIPort.LOGGER.debug("The comment on key {} does not match the spec. This may create a backup.", DOT_JOINER.join(path));
+                    });
 
             if (config instanceof FileConfig) {
                 ((FileConfig) config).save();
@@ -129,11 +130,17 @@ public class ForgeConfigSpec extends UnmodifiableConfigWrapper<UnmodifiableConfi
 
     public synchronized boolean isCorrect(CommentedConfig config) {
         LinkedList<String> parentPath = new LinkedList<>();
-        return correct(this.config, config, parentPath, Collections.unmodifiableList( parentPath ), (a, b, c, d) -> {}, null, true) == 0;
+        // Forge Config API Port: add default values map read from 'defaultconfigs' directory as method parameter
+        return correct(this.config, config, null, parentPath, Collections.unmodifiableList( parentPath ), (a, b, c, d) -> {}, null, true) == 0;
     }
 
     public int correct(CommentedConfig config) {
-        return correct(config, (action, path, incorrectValue, correctedValue) -> {}, null);
+        // Forge Config API Port: add proper listeners for corrections
+        return correct(config, (action, path, incorrectValue, correctedValue) -> {
+            ForgeConfigAPIPort.LOGGER.warn("Incorrect key {} was corrected from {} to its default, {}. {}", DOT_JOINER.join(path), incorrectValue, correctedValue, incorrectValue == correctedValue ? "This seems to be an error." : "");
+        }, (action, path, incorrectValue, correctedValue) -> {
+            ForgeConfigAPIPort.LOGGER.debug("The comment on key {} does not match the spec. This may create a backup.", DOT_JOINER.join(path));
+        });
     }
 
     public synchronized int correct(CommentedConfig config, CorrectionListener listener) {
@@ -145,14 +152,22 @@ public class ForgeConfigSpec extends UnmodifiableConfigWrapper<UnmodifiableConfi
         int ret = -1;
         try {
             isCorrecting = true;
-            ret = correct(this.config, config, parentPath, Collections.unmodifiableList(parentPath), listener, commentListener, false);
+            // Forge Config API Port: add default values map read from 'defaultconfigs' directory as method parameter
+            final Map<String, Object> defaultMap;
+            if (config instanceof FileConfig fileConfig) {
+                defaultMap = ConfigLoadingUtil.DEFAULT_CONFIG_VALUES.get(fileConfig.getNioPath().getFileName().toString().intern());
+            } else {
+                defaultMap = null;
+            }
+            ret = correct(this.config, config, defaultMap, parentPath, Collections.unmodifiableList(parentPath), listener, commentListener, false);
         } finally {
             isCorrecting = false;
         }
         return ret;
     }
 
-    private int correct(UnmodifiableConfig spec, CommentedConfig config, LinkedList<String> parentPath, List<String> parentPathUnmodifiable, CorrectionListener listener, CorrectionListener commentListener, boolean dryRun)
+    // Forge Config API Port: add default values map read from 'defaultconfigs' directory as method parameter
+    private int correct(UnmodifiableConfig spec, CommentedConfig config, @Nullable Map<String, Object> defaultMap, LinkedList<String> parentPath, List<String> parentPathUnmodifiable, CorrectionListener listener, CorrectionListener commentListener, boolean dryRun)
     {
         int count = 0;
 
@@ -172,7 +187,8 @@ public class ForgeConfigSpec extends UnmodifiableConfigWrapper<UnmodifiableConfi
             {
                 if (configValue instanceof CommentedConfig)
                 {
-                    count += correct((Config)specValue, (CommentedConfig)configValue, parentPath, parentPathUnmodifiable, listener, commentListener, dryRun);
+                    // Forge Config API Port: add default values map read from 'defaultconfigs' directory as method parameter
+                    count += correct((Config)specValue, (CommentedConfig)configValue, defaultMap != null && defaultMap.get(key) instanceof Config defaultConfig ? defaultConfig.valueMap() : null, parentPath, parentPathUnmodifiable, listener, commentListener, dryRun);
                     if (count > 0 && dryRun)
                         return count;
                 }
@@ -186,7 +202,8 @@ public class ForgeConfigSpec extends UnmodifiableConfigWrapper<UnmodifiableConfi
                     configMap.put(key, newValue);
                     listener.onCorrect(action, parentPathUnmodifiable, configValue, newValue);
                     count++;
-                    count += correct((Config)specValue, newValue, parentPath, parentPathUnmodifiable, listener, commentListener, dryRun);
+                    // Forge Config API Port: add default values map read from 'defaultconfigs' directory as method parameter
+                    count += correct((Config)specValue, newValue, defaultMap != null && defaultMap.get(key) instanceof Config defaultConfig ? defaultConfig.valueMap() : null, parentPath, parentPathUnmodifiable, listener, commentListener, dryRun);
                 }
 
                 String newComment = levelComments.get(parentPath);
@@ -210,7 +227,17 @@ public class ForgeConfigSpec extends UnmodifiableConfigWrapper<UnmodifiableConfi
                     if (dryRun)
                         return 1;
 
-                    Object newValue = valueSpec.correct(configValue);
+                    // Forge Config API Port: try to get the value from the default config first before falling back to the built-in default config value
+                    Object newValue;
+                    if (defaultMap != null && defaultMap.containsKey(key)) {
+                        newValue = defaultMap.get(key);
+                        if (!valueSpec.test(newValue)) {
+                            newValue = valueSpec.correct(configValue);
+                        }
+                    } else {
+                        newValue = valueSpec.correct(configValue);
+                    }
+
                     configMap.put(key, newValue);
                     listener.onCorrect(action, parentPathUnmodifiable, configValue, newValue);
                     count++;
