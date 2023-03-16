@@ -1,5 +1,5 @@
 plugins {
-    id 'org.quiltmc.loom' version '0.12.+'
+    id 'org.quiltmc.loom' version '1.0.+'
     // this depends on an older version of guava, which loom is incompatible with, so make sure to apply this plugin after loom
     // haven't found a proper way to manage plugin dependencies otherwise
     id 'me.hypherionmc.cursegradle' version '2.+'
