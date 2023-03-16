@@ -18,7 +18,7 @@ abstract class MinecraftMixin {
     @Nullable
     public ClientLevel level;
 
-    @Inject(method = "clearLevel(Lnet/minecraft/client/gui/screens/Screen;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Game;onLeaveGameSession()V"))
+    @Inject(method = "clearLevel(Lnet/minecraft/client/gui/screens/Screen;)V", at = @At(value = "FIELD", target = "Lnet/minecraft/client/Minecraft;isLocalServer:Z", shift = At.Shift.AFTER))
     public void forgeconfigapiport$clearLevel(Screen screen, CallbackInfo callback) {
         ConfigSync.unloadSyncedConfig();
     }
