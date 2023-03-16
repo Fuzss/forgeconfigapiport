@@ -15,8 +15,8 @@ import java.nio.file.Path;
 public final class ForgeConfigPathsImpl implements ForgeConfigPaths {
     private static final LevelResource SERVER_CONFIG_LEVEL_RESOURCE = LevelResourceAccessor.forgeconfigapiport$create("serverconfig");
 
+    // Copied from net.minecraftforge.fml.loading.FileUtils
     private static Path getOrCreateDirectory(Path dirPath, String dirLabel) {
-        // copied from net.minecraftforge.fml.loading.FileUtils
         if (!Files.isDirectory(dirPath.getParent())) {
             getOrCreateDirectory(dirPath.getParent(), "parent of " + dirLabel);
         }
