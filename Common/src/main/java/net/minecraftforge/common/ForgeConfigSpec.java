@@ -230,7 +230,11 @@ public class ForgeConfigSpec extends UnmodifiableConfigWrapper<UnmodifiableConfi
                     // Forge Config API Port: try to get the value from the default config first before falling back to the built-in default config value
                     Object newValue;
                     if (defaultMap != null && defaultMap.containsKey(key)) {
-                        newValue = defaultMap.get(key);
+                        if (valueSpec.getRange() != null) {
+                            newValue = valueSpec.getRange().correct(configValue, defaultMap.get(key));
+                        } else {
+                            newValue = defaultMap.get(key);
+                        }
                         if (!valueSpec.test(newValue)) {
                             newValue = valueSpec.correct(configValue);
                         }

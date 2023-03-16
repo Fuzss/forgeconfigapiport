@@ -114,7 +114,14 @@ public class ConfigTracker {
     // It's ok to use this in a Fabric/Quilt project, just don't use it in Common, that's what the annotation is for
     @ApiStatus.Internal
     public List<String> getConfigFileNames(String modId, ModConfig.Type type) {
-        return Optional.ofNullable(this.configsByMod.get(modId)).map(map -> map.get(type)).map(configs -> configs.stream().filter(config -> config.getConfigData() instanceof FileConfig).map(ModConfig::getFullPath).map(Object::toString).toList()).orElse(List.of());
+        return Optional.ofNullable(this.configsByMod.get(modId))
+                .map(map -> map.get(type))
+                .map(configs -> configs.stream()
+                        .filter(config -> config.getConfigData() instanceof FileConfig)
+                        .map(ModConfig::getFullPath)
+                        .map(Object::toString)
+                        .toList())
+                .orElse(List.of());
     }
 
     public Map<ModConfig.Type, Set<ModConfig>> configSets() {
