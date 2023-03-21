@@ -33,13 +33,13 @@ repositories {
 }
 
 dependencies {
-    modImplementation "fuzs.forgeconfigapiport:forgeconfigapiport-fabric:<modVersion>"   // e.g. 5.0.0 for Minecraft 1.19.3
+    modApi "fuzs.forgeconfigapiport:forgeconfigapiport-fabric:<modVersion>"   // e.g. 5.0.0 for Minecraft 1.19.3
 }
 ```
 
 When developing for both multiple mod loaders simultaneously using a multi-loader setup, Forge Config Api Port can also be included in the common project to provide all classes common to both loaders. Instead of the mod loader specific version, simply include the common publication in your `build.gradle` file.
 ```groovy
-modImplementation "fuzs.forgeconfigapiport:forgeconfigapiport-common:<modVersion>"
+api "fuzs.forgeconfigapiport:forgeconfigapiport-common:<modVersion>"
 ```
 
 **Versions of Forge Config Api Port for Minecraft before 1.19.3 are distributed using the `net.minecraftforge` Maven group instead of `fuzs.forgeconfigapiport`.**
@@ -198,7 +198,7 @@ As the sole purpose of Forge Config Api Port is to allow for config parity on Fo
 
 Configs can be created and used within the common project without having to use any abstractions at all: Simply add Forge Config API Port to the common project (use the dedicated common publication so no mod loader specific code makes its way into your common project!).
 ```groovy
-modImplementation "fuzs.forgeconfigapiport:forgeconfigapiport-common:<modVersion>"
+api "fuzs.forgeconfigapiport:forgeconfigapiport-common:<modVersion>"
 ```
 
 As all class and package names are the same as Forge your code will compile on both Forge and Fabric/Quilt without any issues. The only thing where you'll actually have to use mod loader specific code is when registering configs, that's all!
@@ -230,10 +230,10 @@ repositories {
 
 dependencies {
     // Configured
-    modImplementation "curse.maven:configured-fabric-667378:4166864"    // Configured version 2.0.2 for Minecraft 1.19.3
+    modLocalRuntime "curse.maven:configured-fabric-667378:4166864"    // Configured version 2.0.2 for Minecraft 1.19.3
 
-    // Quality of Life Mods
-    modRuntimeOnly "com.terraformersmc:modmenu:5.0.2"
+    // Mod Menu
+    modLocalRuntime "com.terraformersmc:modmenu:5.0.2"
 }
 ```
 
