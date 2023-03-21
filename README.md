@@ -33,13 +33,13 @@ repositories {
 }
 
 dependencies {
-    modImplementation "fuzs.forgeconfigapiport:forgeconfigapiport-fabric:<modVersion>"   // e.g. 5.0.0 for Minecraft 1.19.3
+    modApi "fuzs.forgeconfigapiport:forgeconfigapiport-fabric:<modVersion>"   // e.g. 5.0.0 for Minecraft 1.19.3
 }
 ```
 
 When developing for both multiple mod loaders simultaneously using a multi-loader setup, Forge Config Api Port can also be included in the common project to provide all classes common to both loaders. Instead of the mod loader specific version, simply include the common publication in your `build.gradle` file.
 ```groovy
-modImplementation "fuzs.forgeconfigapiport:forgeconfigapiport-common:<modVersion>"
+api "fuzs.forgeconfigapiport:forgeconfigapiport-common:<modVersion>"
 ```
 
 **Versions of Forge Config Api Port for Minecraft before 1.19.3 are distributed using the `net.minecraftforge` Maven group instead of `fuzs.forgeconfigapiport`.**
@@ -143,39 +143,50 @@ ModConfigEvents.reloading(<modId>).register((ModConfig config) -> {
 
 <details>
 
-Apart from the obviously necessary differences in implementation details from Forge mentioned above, Forge Config Api Port additionally includes minor tweaks to certain aspects of the config system. These tweaks are optional via a separate config file (found at `.minecraft/config/forgeconfigapiport.toml`) and only concern the implementation of certain features, they do **NOT** result in changes to public facing code.
+Apart from the obviously necessary differences in implementation details from Forge mentioned above, Forge Config Api Port additionally includes minor tweaks to certain aspects of the config system. These tweaks are optional via a separate config file (found at `.minecraft/config/forgeconfigapiport.toml`) and only concern the implementation of certain features, their implementations do **NOT** result in changes to public facing code.
 
-#### Server configs are global by default
-Respective config option: `forceGlobalServerConfigs = true`
+These options are also available for Forge as a separate mod project: [Night Config Fixes](https://www.curseforge.com/minecraft/mc-mods/night-config-fixes)
 
-Of the three config types Forge supports (`CLIENT`, `COMMON` and `SERVER`), only two use the global config directory in `.minecraft/config/` to store respective contents. `SERVER` configs instead are stored separately per world, to allow different configs per world, very similar to vanilla Minecraft's data packs.
+#### A fix for `ParsingException: Not enough data available`
 
-Although this is an interesting concept, `SERVER` configs missing from the main config directory usually leads to much user confusion, and frustration, like when changed values are only applied to a local world instead of globally. Of course there are default configs supported by Forge for this exact scenario, but that's just another annoying step for users aiming to edit `SERVER` configs on a global level.
+> recreateConfigsWhenParsingFails = true
 
-Therefore, by default, `SERVER` configs are handled as global configs stored inside the default config directory at `.minecraft/config/` by Forge Config Api Port. This means per world server configs are no longer possible. Other `SERVER` config exclusive features, mainly server-client-syncing are unchanged.
+If your game has ever crashed with the following exception, this workaround is just for you and the main reason why Night Config Fixes was made in the first place:
+> Caused by: com.electronwill.nightconfig.core.io.ParsingException: Not enough data available
 
-#### Corrupted config files are deleted and recreated
-Respective config option: `recreateConfigsWhenParsingFails = true`
+Sometimes and very randomly (also only reported on Windows systems), existing config files just loose all of their data and go completely blank. This is when the exception mentioned above is thrown, as Night Config is unable to read the file.
 
-Forge already tries to fix invalid config files to a certain extent, adding missing options and removing invalid ones. Unfortunately though, Forge does not handle corrupt config files, which then lead to a game crash on launch and require manual deletion from the user. This happens most of the time when the following exception is raised:
-```
-com.electronwill.nightconfig.core.io.ParsingException: Not enough data available
-```
+With this workaround enabled, instead of the game crashing, the invalid blank file is simply deleted and a new file with default values is created in its place. No settings from the previous file can be restored, unfortunately.
 
-Forge Config Api Port automatically deletes corrupted config files and recreates them from their default value set.
+**Note:**  
+When enabling this workaround in a mod pack which ships some already configured configs, make sure to place those configs in the `defaultconfigs` directory, not just in `config`, so that when restoring a faulty config the desired default values from `defaultconfigs` are used instead of the built-in values.
 
-**This feature is currently experimental, as it is still being tested how well this option works with mod packs that have a pre-configured config set, where restoring a config to the mod's default values could break part of the user experience.**
+#### Apply default config values from `defaultconfigs`
 
-#### The `/config` command can be disabled
-Respective config option: `disableConfigCommand = false`
+> correctConfigValuesFromDefaultConfig = true
 
-Forge Config Api Port includes a command from Forge for opening config files from in-game (in a separate editor).
+When only individual options in a config are invalid, like an option is missing or contains a set value that cannot be parsed, Forge corrects those individual options by restoring them to their default values in the config file. You can observe Forge doing this in the console when the following message is printed:
 
-The problem is though, this command uses custom command argument types not supported by vanilla Minecraft by default. Registering custom command argument types unfortunately leads to issues when Forge Config Api Port is installed on a dedicated server or LAN host, as it attempts to sync those argument types to clients, which are unable to understand them when Forge Config Api Port is not installed, preventing a connection to the server.
+> [net.minecraftforge.fml.config.ConfigFileTypeHandler/CONFIG]: Configuration file CONFIG_PATH is not correct. Correcting
 
-Forge filters command argument types before sending them to the client, to make sure only supported argument types the client can understand are sent. Fabric/Quilt does not do this. Therefore, on a dedicated server this issue is simply avoided by not registering the `/config` command (clicking on file links does not work in the server console anyway).
+The problem with that is, Forge uses the built-in default value defined by the mod providing the config, but ignores any value from a possibly present default config in `defaultconfigs` which a mod pack might ship.
 
-For LAN play though, the mentioned config option exists, to allow other clients without the mod to join. Note that changing this option requires a game restart!
+This workaround changes this behavior and checks if an entry in a config in `defaultconfigs` exists first before falling back to correcting to the built-in default value.
+
+**Example:**  
+A config contains an option which requires an integer value.  
+The default value for this option defined by the mod the config is from is 3.  
+The default value for this option defined by the current mod pack via the config placed in `defaultconfigs` is 5 though.  
+When the user now accidentially enters a value such as 10.5, Forge corrects the input back to the default 3 (since 10.5 is a double, not an integer and therefore invalid).  
+With this workaround enabled the value will instead be corrected to 5.
+
+#### Global server configs
+
+> forceGlobalServerConfigs = true
+
+Changes Forge's server config type to generate in the global `config` directory, instead of on a local basis per world in `saves/WORLD_NAME/serverconfig`.
+
+This design decision by Forge simply causes too much confusion and frustration among users, so this mod felt like a good enough opportunity to include a fix for that.
 
 </details>
 
@@ -187,7 +198,7 @@ As the sole purpose of Forge Config Api Port is to allow for config parity on Fo
 
 Configs can be created and used within the common project without having to use any abstractions at all: Simply add Forge Config API Port to the common project (use the dedicated common publication so no mod loader specific code makes its way into your common project!).
 ```groovy
-modImplementation "fuzs.forgeconfigapiport:forgeconfigapiport-common:<modVersion>"
+api "fuzs.forgeconfigapiport:forgeconfigapiport-common:<modVersion>"
 ```
 
 As all class and package names are the same as Forge your code will compile on both Forge and Fabric/Quilt without any issues. The only thing where you'll actually have to use mod loader specific code is when registering configs, that's all!
@@ -219,10 +230,10 @@ repositories {
 
 dependencies {
     // Configured
-    modImplementation "curse.maven:configured-fabric-667378:4166864"    // Configured version 2.0.2 for Minecraft 1.19.3
+    modLocalRuntime "curse.maven:configured-fabric-667378:4166864"    // Configured version 2.0.2 for Minecraft 1.19.3
 
-    // Quality of Life Mods
-    modRuntimeOnly "com.terraformersmc:modmenu:5.0.2"
+    // Mod Menu
+    modLocalRuntime "com.terraformersmc:modmenu:5.0.2"
 }
 ```
 

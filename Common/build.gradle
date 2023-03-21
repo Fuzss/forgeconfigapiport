@@ -1,5 +1,6 @@
 plugins {
-    id 'org.quiltmc.loom' version '0.12.+'
+    id 'fabric-loom' version '0.12-SNAPSHOT'
+    id 'io.github.juuxel.loom-quiltflower' version '1.7.1'
 }
 
 archivesBaseName = rootProject.name
@@ -15,9 +16,6 @@ dependencies {
     }
 
     // Mixin Dependencies
-    compileOnly 'org.ow2.asm:asm-tree:9.2'
-    compileOnly 'org.ow2.asm:asm-commons:9.2'
-    compileOnly 'org.ow2.asm:asm-util:9.2'
     compileOnly 'org.spongepowered:mixin:0.8.5'
 
     // Config Dependencies
@@ -57,44 +55,10 @@ processResources {
     duplicatesStrategy DuplicatesStrategy.INCLUDE
 
     // this will ensure that this task is redone when a value changes
-    inputs.property "modId", "${modId}"
-    inputs.property "modName", "${modName}"
-    inputs.property "modVersion", "${modVersion}"
     inputs.property "modDescription", "${modDescription}"
-    inputs.property "modGroup", project.group
-    inputs.property "modPageUrl", "${modSourceUrl}"
-    inputs.property "modIssueUrl", "${modIssueUrl}"
-    inputs.property "modAuthor", "${modAuthor}"
-    inputs.property "minQuiltVersion", "${minQuiltVersion}"
-    inputs.property "minQSLVersion", "${minQSLVersion}"
-    inputs.property "minecraftVersion", "${minecraftVersion}"
-    inputs.property "minPuzzlesVersion", "${minPuzzlesVersion}"
     inputs.property "packFormat", "${packFormat}"
-    inputs.property "mainEntryPoint", "${project.group}.${rootProject.name}Quilt"
-    inputs.property "clientEntryPoint", "${project.group}.client.${rootProject.name}QuiltClient"
-    inputs.property "modEnvironment", "${modEnvironment}"
 
-    // replace stuff in quilt.mod.json and pack.mcmeta
-    filesMatching(['quilt.mod.json', 'publishing.quilt.mod.json']) {
-        expand(
-                'modId': "${modId}",
-                'modName': "${modName}",
-                'modVersion': "${modVersion}",
-                'modDescription': "${modDescription}",
-                'modGroup': project.group,
-                'modPageUrl': "${modSourceUrl}",
-                'modIssueUrl': "${modIssueUrl}",
-                'modAuthor': "${modAuthor}",
-                'minQuiltVersion': "${minQuiltVersion}",
-                'minQSLVersion': "${minQSLVersion}",
-                'minecraftVersion': "${minecraftVersion}",
-                "minPuzzlesVersion": "${minPuzzlesVersion}",
-                "mainEntryPoint": "${project.group}.${rootProject.name}Quilt",
-                "clientEntryPoint": "${project.group}.client.${rootProject.name}QuiltClient",
-                "modEnvironment": "${modEnvironment}"
-        )
-    }
-
+    // replace stuff in pack.mcmeta
     filesMatching('pack.mcmeta') {
         expand(
                 'modDescription': "${modDescription}",
@@ -147,4 +111,12 @@ publishing {
 
 signing {
     sign publishing.publications.mavenJava
+}
+
+// thanks to lukebemish for this comment: https://github.com/jaredlll08/MultiLoader-Template/issues/17#issuecomment-1221598082
+
+import net.fabricmc.loom.task.AbstractRemapJarTask
+
+tasks.withType(AbstractRemapJarTask).each {
+    it.targetNamespace = "named"
 }

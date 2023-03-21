@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog].
 
+## [v5.0.11-1.19.3] - 2023-03-21
+### Fixed
+- The common maven publications is now deobfuscated to support any common multi-loader implementation and not just what is based on Quilt
+
 ## [v5.0.10-1.19.3] - 2023-03-16
 ### Added
 - Added `correctConfigValuesFromDefaultConfig` option from [Night Config Fixes](https://www.curseforge.com/minecraft/mc-mods/night-config-fixes) mod

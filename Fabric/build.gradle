@@ -32,7 +32,7 @@ repositories {
 }
 
 dependencies {
-    // Include Common Project
+    // Common Project
     compileOnly project(":Common")
 
     // Minecraft
@@ -83,10 +83,7 @@ loom {
 }
 
 processResources {
-    from(project(":Common").sourceSets.main.resources) {
-        // we need to have this in common so that in a non-production environment the common jar is correctly deobfuscated
-        exclude("quilt.mod.json")
-    }
+    from(project(":Common").sourceSets.main.resources)
     from(project(":Forge").file('src/generated/resources')) {
         exclude('.cache/')
     }
