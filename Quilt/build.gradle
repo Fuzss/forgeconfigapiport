@@ -12,7 +12,7 @@ version = "v${modVersion}-${minecraftVersion}-Quilt"
 group = modMavenGroup
 
 dependencies {
-    // Include Common Project
+    // Common Project
     compileOnly project(":Common")
 
     // Minecraft
