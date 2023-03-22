@@ -59,14 +59,9 @@ gradle-app.setting
 .gradletasknamecache
 
 ### Other ###
+run
 .DS_Store
 *.txt
-!run
-run/*
-!run/options.txt
-!run/config
-run/config/*
-!run/config/modmenu.json
 
 # Log file
 *.log
