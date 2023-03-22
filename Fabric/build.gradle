@@ -245,11 +245,10 @@ curseforge {
                 requiredDependency 'fabric-api'
 //                requiredDependency 'forge-config-api-port-fabric'
 //                requiredDependency 'puzzles-lib'
-                optionalDependency 'modmenu'
                 optionalDependency 'configured-fabric'
             }
         }
-        addArtifact sourcesJar
+//        addArtifact sourcesJar
     }
     options {
 //        debug = true
@@ -273,12 +272,11 @@ modrinth {
         gameVersions.add it.trim()
     }
     loaders.add 'fabric'
-    additionalFiles.add file("${project.buildDir}/libs/${project.archivesBaseName}-${project.version}-sources.jar")
+//    additionalFiles.add file("${project.buildDir}/libs/${project.archivesBaseName}-${project.version}-sources.jar")
     dependencies {
         required.project 'fabric-api'
 //        required.project 'forge-config-api-port'
 //        required.project 'puzzles-lib'
-        optional.project "modmenu"
     }
 //	debugMode = true
 }
