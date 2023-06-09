@@ -3,6 +3,7 @@ plugins {
     id 'io.github.juuxel.loom-quiltflower' version '1.+' apply false
     id 'me.hypherionmc.cursegradle' version '2.+' apply false
     id 'com.modrinth.minotaur' version '2.+' apply false
+    id 'com.github.johnrengelman.shadow' version '8.+' apply false
 }
 
 apply from: './gradle/tasks.gradle'
