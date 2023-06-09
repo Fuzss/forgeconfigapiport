@@ -1,13 +1,13 @@
 package fuzs.forgeconfigapiport.impl.core;
 
+import fuzs.forgeconfigapiport.impl.util.ServiceProviderHelper;
 import net.minecraftforge.fml.config.ModConfig;
 
 import java.nio.file.Path;
-import java.util.ServiceLoader;
 import java.util.stream.Stream;
 
 public interface CommonAbstractions {
-    CommonAbstractions INSTANCE = loadServiceProvider(CommonAbstractions.class);
+    CommonAbstractions INSTANCE = ServiceProviderHelper.load(CommonAbstractions.class);
 
     void fireConfigLoading(String modId, ModConfig modConfig);
 
@@ -28,10 +28,4 @@ public interface CommonAbstractions {
     Path getConfigDirectory();
 
     boolean isModLoaded(String modId);
-
-    private static <T> T loadServiceProvider(Class<T> clazz) {
-        return ServiceLoader.load(clazz)
-                .findFirst()
-                .orElseThrow(() -> new NullPointerException("Failed to load service for " + clazz.getName()));
-    }
 }

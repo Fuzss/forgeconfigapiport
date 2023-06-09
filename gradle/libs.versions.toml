@@ -6,7 +6,7 @@ puzzles = "7.0.0"
 minPuzzles = "7.0.0"
 resources = "15"
 data = "15"
-nightconfig = "3.6.4"
+nightconfig = "3.6.5"
 
 # Forge
 forge = "1.20-46.0.1"

@@ -13,7 +13,7 @@ import com.electronwill.nightconfig.core.io.WritingMode;
 import com.electronwill.nightconfig.toml.TomlFormat;
 import com.mojang.logging.LogUtils;
 import fuzs.forgeconfigapiport.impl.core.CommonAbstractions;
-import fuzs.forgeconfigapiport.impl.util.ConfigLoadingUtil;
+import fuzs.forgeconfigapiport.impl.util.ConfigLoadingHelper;
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 
@@ -49,14 +49,14 @@ public class ConfigFileTypeHandler {
             try
             {
                 // Forge Config API Port: wrap config loading to better handle com.electronwill.nightconfig.core.io.ParsingException: Not enough data available
-                ConfigLoadingUtil.tryLoadConfigFile(configData);
+                ConfigLoadingHelper.tryLoadConfigFile(configData);
             }
             catch (ParsingException ex)
             {
                 throw new ConfigLoadingException(c, ex);
             }
             // Forge Config API Port: store values from default config, so we can retrieve them when correcting individual values
-            ConfigLoadingUtil.tryRegisterDefaultConfig(c);
+            ConfigLoadingHelper.tryRegisterDefaultConfig(c);
             LOGGER.debug(CONFIG, "Loaded TOML config file {}", configPath.toString());
             try {
                 FileWatcher.defaultInstance().addWatch(configPath, new ConfigWatcher(c, configData, Thread.currentThread().getContextClassLoader()));
@@ -141,7 +141,7 @@ public class ConfigFileTypeHandler {
                 try
                 {
                     // Forge Config API Port: wrap config loading to better handle com.electronwill.nightconfig.core.io.ParsingException: Not enough data available
-                    ConfigLoadingUtil.tryLoadConfigFile(commentedFileConfig);
+                    ConfigLoadingHelper.tryLoadConfigFile(commentedFileConfig);
                     if(!this.modConfig.getSpec().isCorrect(commentedFileConfig))
                     {
                         LOGGER.warn(CONFIG, "Configuration file {} is not correct. Correcting", commentedFileConfig.getFile().getAbsolutePath());

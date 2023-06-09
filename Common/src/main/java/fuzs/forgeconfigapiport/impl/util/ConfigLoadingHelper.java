@@ -17,7 +17,7 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.function.BooleanSupplier;
 
-public class ConfigLoadingUtil {
+public class ConfigLoadingHelper {
     public static final Map<String, Map<String, Object>> DEFAULT_CONFIG_VALUES = Maps.newConcurrentMap();
 
     public static void tryLoadConfigFile(FileConfig configData) {

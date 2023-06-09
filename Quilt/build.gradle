@@ -4,10 +4,16 @@ plugins {
 
 apply plugin: 'me.hypherionmc.cursegradle'
 apply plugin: 'com.modrinth.minotaur'
+apply plugin: 'com.github.johnrengelman.shadow'
 
 archivesBaseName = rootProject.name
 version = "v${modVersion}-${libs.versions.minecraft.get()}-Fabric"
 group = modMavenGroup
+
+configurations {
+    shade
+    implementation.extendsFrom shade
+}
 
 repositories {
     maven {
@@ -44,8 +50,8 @@ dependencies {
     }
 
     // Night Config
-    api "com.electronwill.night-config:core:${libs.versions.nightconfig.get()}"
-    api "com.electronwill.night-config:toml:${libs.versions.nightconfig.get()}"
+    shade "com.electronwill.night-config:core:${libs.versions.nightconfig.get()}"
+    shade "com.electronwill.night-config:toml:${libs.versions.nightconfig.get()}"
 
     // Cardinal Components
 //    modApi(include("dev.onyxstudios.cardinal-components-api:cardinal-components-base:${libs.versions.cardinalcomponents.get()}"))
@@ -143,6 +149,17 @@ processResources {
                 "dataPackFormat": libs.versions.data.get()
         )
     }
+}
+
+shadowJar {
+    configurations = [project.configurations.shade]
+    // we need to relocate to the same package to stay consistent with Night Config on Forge
+    relocate 'com.electronwill.nightconfig', "com.electronwill.nightconfig"
+}
+
+remapJar {
+    dependsOn shadowJar
+    input = shadowJar.archivePath
 }
 
 compileJava {

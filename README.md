@@ -10,7 +10,7 @@ A Minecraft mod. Downloads can be found on [CurseForge](https://www.curseforge.c
 **The sole purpose of this library is to enable usage of the Minecraft Forge config api on both Fabric and Quilt mod loaders. This is done in the hopes of removing one more obstacle for developers wishing to maintain their mods on various mod loaders.**
 
 This is a direct port from Minecraft Forge, all package names are the same, so you don't even have to readjust imports when porting from Forge.
-As Fabric and Quilt are very different mod loaders, there obviously have to be some differences, even though they're quite small.
+As Fabric and Quilt are very different mod loaders from Forge, there obviously have to be some differences, even though they're quite small.
 
 The main advantage of Forge Config Api Port over other config libraries lies in the fact that no additional library is required on Forge (since this very exact config api is built-in), only Fabric/Quilt needs this one library.
 
@@ -33,18 +33,59 @@ repositories {
 }
 
 dependencies {
-    modApi "fuzs.forgeconfigapiport:forgeconfigapiport-fabric:<modVersion>"   // e.g. 5.0.0 for Minecraft 1.19.3
+    modApi "fuzs.forgeconfigapiport:forgeconfigapiport-fabric:<modVersion>"   // `modVersion` e.g. 7.0.0 for Minecraft 1.20
 }
 ```
 
-When developing for both multiple mod loaders simultaneously using a multi-loader setup, Forge Config Api Port can also be included in the common project to provide all classes common to both loaders. Instead of the mod loader specific version, simply include the common publication in your `build.gradle` file.
+When developing for both multiple mod loaders simultaneously using a multi-loader setup, Forge Config Api Port can also be included in the common project to provide all classes common to both loaders. Instead of the mod loader specific version, simply include the common publication in your `build.gradle` file. The common publication is not obfuscated, it therefore is sufficient to use `api` over `modApi`.
 ```groovy
-api "fuzs.forgeconfigapiport:forgeconfigapiport-common:<modVersion>"
+dependencies {
+    api "fuzs.forgeconfigapiport:forgeconfigapiport-common:<modVersion>"   // `modVersion` e.g. 7.0.0 for Minecraft 1.20
+}
 ```
+
+#### Via Curse Maven / Modrinth Maven
+Alternatively you can use the Curse Maven / Modrinth Maven to include Forge Config Api Port in your workspace. Javadoc and sources will be absent in that case.
+
+```groovy
+repositories {
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = "CurseForge"
+                url = "https://cursemaven.com"
+            }
+        }
+        filter {
+            includeGroup "curse.maven"
+        }
+    }
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = "Modrinth"
+                url = "https://api.modrinth.com/maven"
+            }
+        }
+        filter {
+            includeGroup "maven.modrinth"
+        }
+    }
+}
+
+dependencies {
+    modApi "curse.maven:forgeconfigapiport-547434:<fileId>"  // `fileId` e.g. `3671141` for mod version 3.2.0 for Minecraft 1.18.2
+    modApi "maven.modrinth:forge-config-api-port:<fileId>"  // `fileId` e.g. `v6.0.2-1.19.4-Fabric` for mod version 6.0.2 for Minecraft 1.19.4
+}
+```
+
+#### Before Minecraft 1.20
+
+<details>
 
 **Versions of Forge Config Api Port for Minecraft before 1.19.3 are distributed using the `net.minecraftforge` Maven group instead of `fuzs.forgeconfigapiport`.**
 
-It is important to note, that there is a minor difference from the production jars released on CurseForge and Modrinth: Jars from this Maven do not have a dependency set on Night Config in `fabric.mod.json`. This is necessary as there is no proper way of getting Night Config to be recognized as a Fabric/Quilt mod.
+It is important to note that there is a minor difference from the production jars released on CurseForge and Modrinth: Jars from this Maven do not have a dependency set on Night Config in `fabric.mod.json`. This is necessary as there is no proper way of getting Night Config to be recognized as a Fabric / Quilt mod.
 
 With this in mind, when you plan to `include` Forge Config API Port as a Jar-in-Jar, absolutely make sure to set a proper dependency on Night Config within your own mod's `fabric.mod.json`, since Forge Config API Port won't have any set.
 ```json
@@ -53,26 +94,6 @@ With this in mind, when you plan to `include` Forge Config API Port as a Jar-in-
     "com_electronwill_night-config_core": "*",
     "com_electronwill_night-config_toml": "*"
   }
-}
-```
-
-#### Via Curse Maven
-Alternatively you can use the Curse Maven to include this library in your workspace. (Note: project name is merely a descriptor, you should be able to choose it freely; project id is found in the info box of a project page, file id is found at the end of the file url) This is how adding a Curse Maven dependency is generally done:
-
-Since the Curse Maven generally isn't aware of any maven dependencies, you have to add those manually. They are only required within your workspace, in a production environment those dependencies are shipped with Forge Config API Port.
-```groovy
-repositories {
-    mavenCentral()
-    maven {
-        name = 'Curse Maven'
-        url = 'https://cursemaven.com'
-    }
-}
-
-dependencies {
-        implementation 'com.electronwill.night-config:core:3.6.5'
-        implementation 'com.electronwill.night-config:toml:3.6.5'
-    	modImplementation "curse.maven:<projectName>-<projectId>:<fileId>"  // e.g. forgeconfigapiport-547434:3671141 for mod version 3.2.0 for Minecraft 1.18.2, all required ids for this version are found here: https://www.curseforge.com/minecraft/mc-mods/forge-config-api-port-fabric/files/3671141
 }
 ```
 
@@ -99,6 +120,8 @@ To resolve this issue, manually add dependency overrides (check the [Fabric Wiki
 ```
 
 **Also don't forget to manually add this file to your VCS, since the whole `run` directory is usually ignored by default. A dedicated common publication does not exist for these versions.**
+
+</details>
 
 </details>
 

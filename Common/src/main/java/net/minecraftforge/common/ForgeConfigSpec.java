@@ -16,7 +16,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import fuzs.forgeconfigapiport.impl.ForgeConfigAPIPort;
 import fuzs.forgeconfigapiport.impl.core.CommonAbstractions;
-import fuzs.forgeconfigapiport.impl.util.ConfigLoadingUtil;
+import fuzs.forgeconfigapiport.impl.util.ConfigLoadingHelper;
 import net.minecraftforge.fml.config.IConfigSpec;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
@@ -155,7 +155,7 @@ public class ForgeConfigSpec extends UnmodifiableConfigWrapper<UnmodifiableConfi
             // Forge Config API Port: add default values map read from 'defaultconfigs' directory as method parameter
             final Map<String, Object> defaultMap;
             if (config instanceof FileConfig fileConfig) {
-                defaultMap = ConfigLoadingUtil.DEFAULT_CONFIG_VALUES.get(fileConfig.getNioPath().getFileName().toString().intern());
+                defaultMap = ConfigLoadingHelper.DEFAULT_CONFIG_VALUES.get(fileConfig.getNioPath().getFileName().toString().intern());
             } else {
                 defaultMap = null;
             }
