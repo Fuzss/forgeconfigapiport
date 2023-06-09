@@ -1,3 +1,10 @@
+plugins {
+    id 'fabric-loom' version '1.2.+' apply false
+    id 'io.github.juuxel.loom-quiltflower' version '1.+' apply false
+    id 'me.hypherionmc.cursegradle' version '2.+' apply false
+    id 'com.modrinth.minotaur' version '2.+' apply false
+}
+
 apply from: './gradle/tasks.gradle'
 
 subprojects {
@@ -5,6 +12,7 @@ subprojects {
     apply plugin: 'java-library'
     apply plugin: 'maven-publish'
     apply plugin: 'signing'
+    apply plugin: 'idea'
 
     java.toolchain.languageVersion = JavaLanguageVersion.of(17)
     java.withSourcesJar()
@@ -16,17 +24,17 @@ subprojects {
         mavenCentral()
         mavenLocal()
         maven {
-            name = 'Sponge / Mixin'
+            name = 'Sponge'
             url = 'https://repo.spongepowered.org/repository/maven-public/'
         }
         maven {
             name = 'Jared'
             url = 'https://maven.blamejared.com/'
         }
-//        maven {
-//            name = 'Jitpack'
-//            url = 'https://jitpack.io'
-//        }
+        maven {
+            name = 'Jitpack'
+            url = 'https://jitpack.io'
+        }
         maven {
             name = 'Shedaniel'
             url = 'https://maven.shedaniel.me/'
@@ -35,37 +43,39 @@ subprojects {
             name = 'Parchment'
             url = 'https://maven.parchmentmc.org'
         }
-        maven {
-            name = 'Curse Maven'
-            url = 'https://cursemaven.com'
+        exclusiveContent {
+            forRepository {
+                maven {
+                    name = "CurseForge"
+                    url = "https://cursemaven.com"
+                }
+            }
+            filter {
+                includeGroup "curse.maven"
+            }
+        }
+        exclusiveContent {
+            forRepository {
+                maven {
+                    name = "Modrinth"
+                    url = "https://api.modrinth.com/maven"
+                }
+            }
+            filter {
+                includeGroup "maven.modrinth"
+            }
         }
         maven {
             name = "Fuzs Mod Resources"
             url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/"
         }
         maven {
-            name = "Progwml6 maven"
-            url = "https://dvs1.progwml6.com/files/maven/"
-        }
-        maven {
-            name = "ModMaven"
-            url = "https://modmaven.dev"
-        }
-        maven {
-            name = "Modmuss"
-            url = "https://maven.modmuss50.me/"
-        }
-        maven {
             name = 'Terraformers'
             url = "https://maven.terraformersmc.com/"
         }
         maven {
-            name = "ladysnake"
-            url = 'https://ladysnake.jfrog.io/artifactory/mods'
-        }
-        maven {
-            name = "jamieswhiteshirt"
-            url = "https://maven.jamieswhiteshirt.com/libs-release/"
+            name = "ModMaven"
+            url = "https://modmaven.dev"
         }
         flatDir {
             dirs 'libs'
@@ -82,7 +92,11 @@ subprojects {
     }
 
     tasks.withType(Jar).configureEach {
-        from rootProject.file("LICENSE")
+        from rootProject.file("LICENSE.md")
+        from rootProject.file("LICENSE-ASSETS.md")
+        from rootProject.file("LICENSE-FORGE.md")
+        from rootProject.file("LICENSE-NIGHT-CONFIG.md")
+        from rootProject.file("LICENSING.md")
         from rootProject.file("CHANGELOG.md")
         manifest {
             attributes([
@@ -96,7 +110,7 @@ subprojects {
                 'Implementation-Timestamp-Milli'    : System.currentTimeMillis(),
                 'Implementation-URL'                : modSourceUrl,
                 'Built-On-Java'                     : "${System.getProperty('java.vm.version')} (${System.getProperty('java.vm.vendor')})",
-                'Built-On-Minecraft'                : minecraftVersion
+                'Built-On-Minecraft'                : libs.versions.minecraft.get()
             ])
         }
         group 'jar'
@@ -110,7 +124,6 @@ subprojects {
     }
 }
 
-import groovy.json.*
 import java.util.regex.Pattern
 
 println('Java: ' + System.getProperty('java.version') + ' JVM: ' + System.getProperty('java.vm.version') + '(' + System.getProperty('java.vendor') + ') Arch: ' + System.getProperty('os.arch'))

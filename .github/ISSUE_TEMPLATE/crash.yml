@@ -1,6 +1,6 @@
 name: Crash Report
 description: >-
-  Please use this template when this mod has caused your game to crash.
+  Please use this template when this mod has caused your game to crash. Supported versions are for Minecraft 1.18+.
 title: '[Crash]: '
 labels: ["bug"]
 assignees:

@@ -22,15 +22,7 @@
 			},
 			{
 				"id": "quilt_base",
-				"version": ">=${minQSLVersion}"
-			},
-			{
-				"id": "com_electronwill_night-config_core",
-				"version": "*"
-			},
-			{
-				"id": "com_electronwill_night-config_toml",
-				"version": "*"
+				"version": ">=${minQslVersion}"
 			},
 			{
 				"id": "minecraft",
@@ -59,7 +51,7 @@
 				"issues": "${modIssueUrl}",
 				"sources": "${modPageUrl}"
 			},
-			"license": "MPL-2.0",
+			"license": "${modLicense}",
 			"icon": "mod_logo.png"
 		}
 
@@ -70,6 +62,6 @@
 	],
 
 	"minecraft": {
-		"environment": "${modEnvironment}"
+		"environment": "${modFabricEnvironment}"
 	}
 }

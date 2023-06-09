@@ -5,19 +5,22 @@
 
   "name": "${modName}",
   "description": "${modDescription}",
+
   "authors": [
     "${modAuthor}"
   ],
+  
   "contact": {
     "homepage": "${modPageUrl}",
     "issues": "${modIssueUrl}",
     "sources": "${modPageUrl}"
   },
 
-  "license": "MPL-2.0",
+  "license": "${modLicense}",
   "icon": "mod_logo.png",
 
-  "environment": "${modEnvironment}",
+  "environment": "${modFabricEnvironment}",
+
   "entrypoints": {
     "main": [
       "${modGroup}.impl.ForgeConfigAPIPortFabric"
@@ -26,6 +29,7 @@
       "${modGroup}.impl.client.ForgeConfigAPIPortFabricClient"
     ]
   },
+
   "mixins": [
     "${modId}.common.mixins.json"
   ],
@@ -33,27 +37,14 @@
   "depends": {
     "fabricloader": ">=${minFabricVersion}",
     "fabric-api": ">=${minFabricApiVersion}",
-    "com_electronwill_night-config_core": "*",
-    "com_electronwill_night-config_toml": "*",
     "minecraft": "${minecraftVersion}",
     "java": ">=17"
-  },
-
-  "suggests": {
-    "configured": "*",
-    "modmenu": "*"
   },
 
   "custom": {
     "modmenu": {
       "badges": [
         "library"
-      ]
-    },
-
-    "configured": {
-      "providers": [
-        "${modGroup}.impl.integration.configured.ForgeConfigProvider"
       ]
     }
   }

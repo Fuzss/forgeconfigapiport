@@ -6,20 +6,16 @@ pluginManagement {
             url = 'https://maven.fabricmc.net/'
         }
         maven {
-            name = 'Sponge Snapshots'
+            name = 'Sponge'
             url = 'https://repo.spongepowered.org/repository/maven-public/'
         }
         maven {
-            name = 'Quilt (Release)'
+            name = 'Quilt'
             url = 'https://maven.quiltmc.org/repository/release'
         }
         maven {
-            name = 'Quilt (Snapshot)'
-            url = 'https://maven.quiltmc.org/repository/snapshot'
-        }
-        maven {
-            name = 'QuiltFlower'
-            url = 'https://server.bbkr.space/artifactory/libs-release/'
+            name = 'Minecraft Forge'
+            url = 'https://maven.minecraftforge.net/'
         }
     }
 }
