@@ -1,8 +1,8 @@
 # Forge Config API Port
 
-A Minecraft mod. Downloads can be found on CurseForge.
+A Minecraft mod. Downloads can be found on [CurseForge](https://www.curseforge.com/members/fuzs_/projects) and [Modrinth](https://modrinth.com/user/Fuzs).
 
-![](https://i.imgur.com/bUAnw7w.png)
+![](https://raw.githubusercontent.com/Fuzss/modresources/main/pages/data/forgeconfigapiport/banner.png)
 
 ## ABOUT THE PROJECT
 **!!! Forge Config API Port is in no way affiliated with the Minecraft Forge project !!!**

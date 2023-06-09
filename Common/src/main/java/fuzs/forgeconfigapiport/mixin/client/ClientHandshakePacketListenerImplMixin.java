@@ -18,7 +18,7 @@ abstract class ClientHandshakePacketListenerImplMixin {
     private Connection connection;
 
     @Inject(method = "handleGameProfile", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/Connection;setProtocol(Lnet/minecraft/network/ConnectionProtocol;)V", shift = At.Shift.AFTER))
-    public void forgeconfigapiport$handleGameProfile(ClientboundGameProfilePacket clientboundGameProfilePacket, CallbackInfo callbackInfo) {
+    public void handleGameProfile(ClientboundGameProfilePacket clientboundGameProfilePacket, CallbackInfo callbackInfo) {
         NetworkHooks.handleClientLoginSuccess(this.connection);
     }
 }

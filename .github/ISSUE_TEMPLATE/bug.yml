@@ -1,6 +1,6 @@
 name: Bug Report
 description: >-
-  Please use this template when you have encountered a bug in this mod.
+  Please use this template when you have encountered a bug in this mod. Supported versions are for Minecraft 1.18+.
 title: '[Bug]: '
 labels: ["bug"]
 assignees:

@@ -28,12 +28,12 @@ public class NetworkHooks {
 
     public static void handleClientLoginSuccess(Connection manager) {
         if (isVanillaConnection(manager)) {
-            ForgeConfigAPIPort.LOGGER.info("Connected to a vanilla server. Catching up missing behaviour.");
+            ForgeConfigAPIPort.LOGGER.debug("Connected to a vanilla server. Catching up missing behaviour.");
             ConfigTracker.INSTANCE.loadDefaultServerConfigs();
         } else {
             // reset for next server
             setVanillaConnection();
-            ForgeConfigAPIPort.LOGGER.info("Connected to a modded server.");
+            ForgeConfigAPIPort.LOGGER.debug("Connected to a modded server.");
         }
     }
 }
