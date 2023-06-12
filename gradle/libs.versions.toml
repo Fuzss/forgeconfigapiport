@@ -1,5 +1,5 @@
 [versions]
-minecraft = "1.20"
+minecraft = "1.20.1"
 parchment = "2023.03.12"
 parchmentMinecraft = "1.19.3"
 puzzles = "7.0.0"
@@ -15,7 +15,7 @@ minForge = "46.0.0"
 # Fabric
 fabric = "0.14.21"
 minFabric = "0.14.21"
-fabricApi = "0.83.0+1.20"
+fabricApi = "0.83.0+1.20.1"
 minFabricApi = "0.83.0"
 
 # Quilt
