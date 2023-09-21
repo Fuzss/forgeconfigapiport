@@ -1,11 +1,11 @@
 [versions]
-minecraft = "1.20.1"
+minecraft = "1.20.2"
 parchment = "2023.03.12"
 parchmentMinecraft = "1.19.3"
 puzzles = "7.0.0"
 minPuzzles = "7.0.0"
-resources = "15"
-data = "15"
+resources = "18"
+data = "18"
 nightconfig = "3.6.5"
 
 # Forge
@@ -13,18 +13,18 @@ forge = "1.20-46.0.1"
 minForge = "46.0.0"
 
 # Fabric
-fabric = "0.14.21"
+fabric = "0.14.22"
 minFabric = "0.14.21"
-fabricApi = "0.83.0+1.20.1"
-minFabricApi = "0.83.0"
+fabricApi = "0.89.1+1.20.2"
+minFabricApi = "0.89.0"
 
 # Quilt
-quilt = "0.19.0-beta.18"
-minQuilt = "0.19.0"
-qsl = "6.0.1+1.20"
-minQsl = "6.0.1"
+quilt = "0.21.0-beta.4"
+minQuilt = "0.21.0"
+qsl = "6.1.2+1.20.1"
+minQsl = "6.1.0"
 
 # Mods
-modmenu = "7.0.1"
+modmenu = "8.0.0-beta.2"
 bettermodsbutton = "7.0.0"
 cardinalcomponents = "5.2.0"
