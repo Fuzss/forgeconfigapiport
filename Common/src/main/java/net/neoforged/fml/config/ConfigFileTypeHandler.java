@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-only
  */
 
-package net.minecraftforge.fml.config;
+package net.neoforged.fml.config;
 
 import com.electronwill.nightconfig.core.ConfigFormat;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
@@ -22,9 +22,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.Function;
 
-import static net.minecraftforge.fml.config.ConfigTracker.CONFIG;
+import static net.neoforged.fml.config.ConfigTracker.CONFIG;
 
-@Deprecated
 public class ConfigFileTypeHandler {
     private static final Logger LOGGER = LogUtils.getLogger();
     static ConfigFileTypeHandler TOML = new ConfigFileTypeHandler();
@@ -46,7 +45,7 @@ public class ConfigFileTypeHandler {
                     onFileNotFound((newfile, configFormat)-> this.setupConfigFile(c, newfile, configFormat)).
                     writingMode(WritingMode.REPLACE).
                     build();
-            LOGGER.debug(CONFIG, "Built TOML config for {}", configPath);
+            LOGGER.debug(ConfigTracker.CONFIG, "Built TOML config for {}", configPath);
             try
             {
                 // Forge Config API Port: wrap config loading to better handle com.electronwill.nightconfig.core.io.ParsingException: Not enough data available
@@ -54,7 +53,7 @@ public class ConfigFileTypeHandler {
             }
             catch (ParsingException ex)
             {
-                throw new ConfigLoadingException(c, ex);
+                throw new ConfigFileTypeHandler.ConfigLoadingException(c, ex);
             }
             // Forge Config API Port: store values from default config, so we can retrieve them when correcting individual values
             ConfigLoadingHelper.tryRegisterDefaultConfig(c.getFileName());
@@ -141,8 +140,7 @@ public class ConfigFileTypeHandler {
             if (!this.modConfig.getSpec().isCorrecting()) {
                 try
                 {
-                    // Forge Config API Port: wrap config loading to better handle com.electronwill.nightconfig.core.io.ParsingException: Not enough data available
-                    ConfigLoadingHelper.tryLoadConfigFile(this.commentedFileConfig);
+                    this.commentedFileConfig.load();
                     if(!this.modConfig.getSpec().isCorrect(this.commentedFileConfig))
                     {
                         LOGGER.warn(CONFIG, "Configuration file {} is not correct. Correcting", this.commentedFileConfig.getFile().getAbsolutePath());
@@ -158,7 +156,7 @@ public class ConfigFileTypeHandler {
                 LOGGER.debug(CONFIG, "Config file {} changed, sending notifies", this.modConfig.getFileName());
                 this.modConfig.getSpec().afterReload();
                 // Forge Config API Port: invoke Fabric style callback instead of Forge event
-                CommonAbstractions.INSTANCE.fireConfigReloadingV2(this.modConfig.getModId(), this.modConfig);
+                CommonAbstractions.INSTANCE.fireConfigReloadingV3(this.modConfig.getModId(), this.modConfig);
             }
         }
     }

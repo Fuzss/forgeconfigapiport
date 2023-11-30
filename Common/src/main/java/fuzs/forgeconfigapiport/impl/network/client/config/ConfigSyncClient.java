@@ -45,6 +45,7 @@ public final class ConfigSyncClient {
         byte[] fileData = buf.readByteArray();
         if (!Minecraft.getInstance().isLocalServer()) {
             Optional.ofNullable(ConfigTracker.INSTANCE.fileMap().get(fileName)).ifPresent(config -> config.acceptSyncedConfig(fileData));
+            Optional.ofNullable(net.neoforged.fml.config.ConfigTracker.INSTANCE.fileMap().get(fileName)).ifPresent(config -> config.acceptSyncedConfig(fileData));
         }
         return fileName;
     }

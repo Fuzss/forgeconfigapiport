@@ -1,6 +1,6 @@
 package fuzs.forgeconfigapiport.impl.config;
 
-import fuzs.forgeconfigapiport.api.config.v2.ForgeConfigPaths;
+import fuzs.forgeconfigapiport.api.config.v3.ForgeConfigPaths;
 import fuzs.forgeconfigapiport.impl.ForgeConfigAPIPort;
 import fuzs.forgeconfigapiport.mixin.accessor.LevelResourceAccessor;
 import net.fabricmc.loader.api.FabricLoader;
@@ -12,7 +12,7 @@ import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-public final class ForgeConfigPathsImpl implements ForgeConfigPaths {
+public final class ForgeConfigPathsV3Impl implements ForgeConfigPaths {
     private static final LevelResource SERVER_CONFIG_LEVEL_RESOURCE = LevelResourceAccessor.forgeconfigapiport$create("serverconfig");
 
     // Copied from net.minecraftforge.fml.loading.FileUtils

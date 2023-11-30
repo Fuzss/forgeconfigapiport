@@ -31,7 +31,7 @@ public final class ConfigSync {
 
     }
 
-    public static List<Pair<String, FriendlyByteBuf>> onSyncConfigs() {
+    public static List<Pair<String, FriendlyByteBuf>> writeSyncedConfigs() {
         final Map<String, byte[]> configData = ConfigTracker.INSTANCE.configSets().get(ModConfig.Type.SERVER).stream().collect(Collectors.toMap(ModConfig::getFileName, config -> {
             try {
                 return Files.readAllBytes(config.getFullPath());
@@ -39,19 +39,25 @@ public final class ConfigSync {
                 throw new RuntimeException(e);
             }
         }));
-        return configData.entrySet().stream().map(e -> {
+        net.neoforged.fml.config.ConfigTracker.INSTANCE.configSets().get(net.neoforged.fml.config.ModConfig.Type.SERVER).forEach(config -> {
+            try {
+                configData.put(config.getFileName(), Files.readAllBytes(config.getFullPath()));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        return configData.entrySet().stream().map(entry -> {
             FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
-            buf.writeUtf(e.getKey());
-            buf.writeByteArray(e.getValue());
-            return Pair.of("Config " + e.getKey(), buf);
+            buf.writeUtf(entry.getKey());
+            buf.writeByteArray(entry.getValue());
+            return Pair.of("Config " + entry.getKey(), buf);
         }).collect(Collectors.toList());
     }
 
     public static void onSyncConfigs(MinecraftServer server, ServerLoginPacketListenerImpl handler, boolean understood, FriendlyByteBuf buf) {
         // The client is likely a vanilla client.
         if (!understood) return;
-        String fileName = buf.readUtf(32767);
-        ForgeConfigAPIPort.LOGGER.debug("Received acknowledgement for config sync for {} from client", fileName);
+        ForgeConfigAPIPort.LOGGER.debug("Received acknowledgement for config sync for {} from client", buf.readUtf(32767));
     }
 
     public static void onEstablishModdedConnection(MinecraftServer server, ServerLoginPacketListenerImpl handler, boolean understood, FriendlyByteBuf buf) {
@@ -60,5 +66,6 @@ public final class ConfigSync {
 
     public static void unloadSyncedConfig() {
         ConfigTracker.INSTANCE.configSets().get(ModConfig.Type.SERVER).forEach(config -> config.acceptSyncedConfig(null));
+        net.neoforged.fml.config.ConfigTracker.INSTANCE.configSets().get(net.neoforged.fml.config.ModConfig.Type.SERVER).forEach(config -> config.acceptSyncedConfig(null));
     }
 }

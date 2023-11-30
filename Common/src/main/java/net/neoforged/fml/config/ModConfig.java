@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-only
  */
 
-package net.minecraftforge.fml.config;
+package net.neoforged.fml.config;
 
 import com.electronwill.nightconfig.core.CommentedConfig;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
@@ -17,7 +17,6 @@ import java.nio.file.Path;
 import java.util.Locale;
 import java.util.concurrent.Callable;
 
-@Deprecated
 public class ModConfig {
     private final Type type;
     private final IConfigSpec<?> spec;
@@ -47,30 +46,30 @@ public class ModConfig {
     // Forge Config API Port: replace ModContainer with mod id, marked as internal for common project as no mod id constructor exists on Forge
     // It's ok to use this in a Fabric/Quilt project, just don't use it in Common, that's what the annotation is for
     @ApiStatus.Internal
-    public ModConfig(final Type type, final IConfigSpec<?> spec, String modId) {
+    public ModConfig(final ModConfig.Type type, final IConfigSpec<?> spec, String modId) {
         this(type, spec, modId, defaultConfigName(type, modId));
     }
 
-    static String defaultConfigName(Type type, String modId) {
+    private static String defaultConfigName(Type type, String modId) {
         // config file name would be "forge-client.toml" and "forge-server.toml"
-        return String.format("%s-%s.toml", modId, type.extension());
+        return String.format(Locale.ROOT, "%s-%s.toml", modId, type.extension());
     }
 
     public Type getType() {
-        return type;
+        return this.type;
     }
 
     public String getFileName() {
-        return fileName;
+        return this.fileName;
     }
 
     public ConfigFileTypeHandler getHandler() {
-        return configHandler;
+        return this.configHandler;
     }
 
     @SuppressWarnings("unchecked")
     public <T extends IConfigSpec<T>> IConfigSpec<T> getSpec() {
-        return (IConfigSpec<T>) spec;
+        return (IConfigSpec<T>) this.spec;
     }
 
     public String getModId() {
@@ -101,17 +100,16 @@ public class ModConfig {
 
     public void acceptSyncedConfig(byte[] bytes) {
         if (bytes != null) {
-            setConfigData(TomlFormat.instance().createParser().parse(new ByteArrayInputStream(bytes)));
+            this.setConfigData(TomlFormat.instance().createParser().parse(new ByteArrayInputStream(bytes)));
             // Forge Config API Port: invoke Fabric style callback instead of Forge event
-            CommonAbstractions.INSTANCE.fireConfigReloadingV2(this.getModId(), this);
+            CommonAbstractions.INSTANCE.fireConfigReloadingV3(this.getModId(), this);
         } else {
-            setConfigData(null);
+            this.setConfigData(null);
             // Forge Config API Port: invoke Fabric style callback instead of Forge event
-            CommonAbstractions.INSTANCE.fireConfigUnloadingV2(this.getModId(), this);
+            CommonAbstractions.INSTANCE.fireConfigUnloadingV3(this.getModId(), this);
         }
     }
 
-    // Forge Config API Port: implements StringRepresentable to allow using vanilla argument type for /config
     public enum Type implements StringRepresentable {
         /**
          * Common mod config for configuration that needs to be loaded on both environments.

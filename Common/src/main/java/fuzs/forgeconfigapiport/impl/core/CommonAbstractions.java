@@ -1,7 +1,7 @@
 package fuzs.forgeconfigapiport.impl.core;
 
 import fuzs.forgeconfigapiport.impl.util.ServiceProviderHelper;
-import net.minecraftforge.fml.config.ModConfig;
+import net.neoforged.fml.config.ModConfig;
 
 import java.nio.file.Path;
 import java.util.stream.Stream;
@@ -9,11 +9,17 @@ import java.util.stream.Stream;
 public interface CommonAbstractions {
     CommonAbstractions INSTANCE = ServiceProviderHelper.load(CommonAbstractions.class);
 
-    void fireConfigLoading(String modId, ModConfig modConfig);
+    void fireConfigLoadingV2(String modId, net.minecraftforge.fml.config.ModConfig modConfig);
 
-    void fireConfigReloading(String modId, ModConfig modConfig);
+    void fireConfigReloadingV2(String modId, net.minecraftforge.fml.config.ModConfig modConfig);
 
-    void fireConfigUnloading(String modId, ModConfig modConfig);
+    void fireConfigUnloadingV2(String modId, net.minecraftforge.fml.config.ModConfig modConfig);
+
+    void fireConfigLoadingV3(String modId, ModConfig modConfig);
+
+    void fireConfigReloadingV3(String modId, ModConfig modConfig);
+
+    void fireConfigUnloadingV3(String modId, ModConfig modConfig);
 
     Stream<String> getAllModIds();
 

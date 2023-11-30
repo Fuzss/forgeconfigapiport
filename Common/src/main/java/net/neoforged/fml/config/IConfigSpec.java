@@ -3,12 +3,11 @@
  * SPDX-License-Identifier: LGPL-2.1-only
  */
 
-package net.minecraftforge.fml.config;
+package net.neoforged.fml.config;
 
 import com.electronwill.nightconfig.core.CommentedConfig;
 import com.electronwill.nightconfig.core.UnmodifiableConfig;
 
-@Deprecated
 public interface IConfigSpec<T extends IConfigSpec<T>> extends UnmodifiableConfig {
     @SuppressWarnings("unchecked")
     default T self() {

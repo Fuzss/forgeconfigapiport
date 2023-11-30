@@ -8,7 +8,6 @@ import com.google.common.collect.Maps;
 import fuzs.forgeconfigapiport.impl.ForgeConfigAPIPort;
 import fuzs.forgeconfigapiport.impl.config.ForgeConfigApiPortConfig;
 import fuzs.forgeconfigapiport.impl.core.CommonAbstractions;
-import net.minecraftforge.fml.config.ModConfig;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.IOException;
@@ -45,9 +44,8 @@ public class ConfigLoadingHelper {
         }
     }
 
-    public static void tryRegisterDefaultConfig(ModConfig modConfig) {
+    public static void tryRegisterDefaultConfig(String fileName) {
         if (!ForgeConfigApiPortConfig.INSTANCE.<Boolean>getValue("correctConfigValuesFromDefaultConfig")) return;
-        String fileName = modConfig.getFileName();
         Path path = CommonAbstractions.INSTANCE.getDefaultConfigsDirectory().resolve(fileName);
         if (Files.exists(path)) {
             try (CommentedFileConfig config = CommentedFileConfig.of(path)) {

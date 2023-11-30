@@ -1,6 +1,6 @@
-package fuzs.forgeconfigapiport.api.config.v2;
+package fuzs.forgeconfigapiport.api.config.v3;
 
-import fuzs.forgeconfigapiport.impl.config.ForgeConfigPathsV2Impl;
+import fuzs.forgeconfigapiport.impl.config.ForgeConfigPathsV3Impl;
 import net.minecraft.server.MinecraftServer;
 
 import java.nio.file.Path;
@@ -8,12 +8,11 @@ import java.nio.file.Path;
 /**
  * Access to paths where different kinds of config files are stored by Forge.
  */
-@Deprecated
 public interface ForgeConfigPaths {
     /**
      * implementation instance for retrieving config paths
      */
-    ForgeConfigPaths INSTANCE = new ForgeConfigPathsV2Impl();
+    ForgeConfigPaths INSTANCE = new ForgeConfigPathsV3Impl();
 
     /**
      * The directory where client configs are stored at.
