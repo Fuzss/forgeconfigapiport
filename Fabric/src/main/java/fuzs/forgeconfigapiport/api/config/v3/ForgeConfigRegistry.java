@@ -1,19 +1,18 @@
-package fuzs.forgeconfigapiport.api.config.v2;
+package fuzs.forgeconfigapiport.api.config.v3;
 
-import fuzs.forgeconfigapiport.impl.config.ForgeConfigRegistryV2Impl;
-import net.minecraftforge.fml.config.IConfigSpec;
-import net.minecraftforge.fml.config.ModConfig;
+import fuzs.forgeconfigapiport.impl.config.ForgeConfigRegistryV3Impl;
+import net.neoforged.fml.config.IConfigSpec;
+import net.neoforged.fml.config.ModConfig;
 
 /**
  * Registry for adding your configs. On Forge this is done using <code>net.minecraftforge.fml.ModLoadingContext</code>, which does not exist in Forge Config Api Port.
  * <p>Note that opposed to Forge, configs are loaded and usable immediately after registration.
  */
-@Deprecated
 public interface ForgeConfigRegistry {
     /**
      * implementation instance for registering configs
      */
-    ForgeConfigRegistry INSTANCE = new ForgeConfigRegistryV2Impl();
+    ForgeConfigRegistry INSTANCE = new ForgeConfigRegistryV3Impl();
 
     /**
      * Register a new mod config, only difference from registering on Forge is <code>modId</code> has to be provided as there is no loading context to get that information from

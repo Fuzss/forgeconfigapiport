@@ -11,17 +11,17 @@ import java.util.stream.Stream;
 public final class QuiltAbstractions implements CommonAbstractions {
 
     @Override
-    public void fireConfigLoading(String modId, ModConfig modConfig) {
+    public void fireConfigLoadingV2(String modId, ModConfig modConfig) {
         ModConfigEvents.loading(modId).invoker().onModConfigLoading(modConfig);
     }
 
     @Override
-    public void fireConfigReloading(String modId, ModConfig modConfig) {
+    public void fireConfigReloadingV2(String modId, ModConfig modConfig) {
         ModConfigEvents.reloading(modId).invoker().onModConfigReloading(modConfig);
     }
 
     @Override
-    public void fireConfigUnloading(String modId, ModConfig modConfig) {
+    public void fireConfigUnloadingV2(String modId, ModConfig modConfig) {
         ModConfigEvents.unloading(modId).invoker().onModConfigUnloading(modConfig);
     }
 

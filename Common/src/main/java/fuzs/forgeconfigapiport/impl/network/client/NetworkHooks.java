@@ -30,6 +30,7 @@ public class NetworkHooks {
         if (isVanillaConnection(manager)) {
             ForgeConfigAPIPort.LOGGER.debug("Connected to a vanilla server. Catching up missing behaviour.");
             ConfigTracker.INSTANCE.loadDefaultServerConfigs();
+            net.neoforged.fml.config.ConfigTracker.INSTANCE.loadDefaultServerConfigs();
         } else {
             // reset for next server
             setVanillaConnection();

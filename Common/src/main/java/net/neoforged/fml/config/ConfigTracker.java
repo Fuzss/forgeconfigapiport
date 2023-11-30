@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-only
  */
 
-package net.minecraftforge.fml.config;
+package net.neoforged.fml.config;
 
 import com.electronwill.nightconfig.core.CommentedConfig;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
@@ -20,7 +20,6 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-@Deprecated
 public class ConfigTracker {
     private static final Logger LOGGER = LogUtils.getLogger();
     static final Marker CONFIG = MarkerFactory.getMarker("CONFIG");
@@ -50,28 +49,28 @@ public class ConfigTracker {
         // Forge Config API Port: store a collection of mod configs since mods with multiple configs for the same type are supported
         this.configsByMod.computeIfAbsent(config.getModId(), (k)->new EnumMap<>(ModConfig.Type.class)).computeIfAbsent(config.getType(), type -> new ArrayList<>()).add(config);
         LOGGER.debug(CONFIG, "Config file {} for {} tracking", config.getFileName(), config.getModId());
-        loadTrackedConfig(config);  // Forge Config API Port: load configs immediately
+        this.loadTrackedConfig(config);  // Forge Config API Port: load configs immediately
     }
 
     // Forge Config API Port: additional method for loading a single config immediately
     private void loadTrackedConfig(ModConfig config) {
         // unlike on forge there isn't really more than one loading stage for mods on fabric, therefore we load configs immediately
         if (config.getType() == ModConfig.Type.CLIENT) {
-            openConfig(config, CommonAbstractions.INSTANCE.getClientConfigDirectory());
+            this.openConfig(config, CommonAbstractions.INSTANCE.getClientConfigDirectory());
         } else if (config.getType() == ModConfig.Type.COMMON) {
-            openConfig(config, CommonAbstractions.INSTANCE.getCommonConfigDirectory());
+            this.openConfig(config, CommonAbstractions.INSTANCE.getCommonConfigDirectory());
         }
         // server configs are not handled here, they are all loaded at once when a world is loaded
     }
 
     public void loadConfigs(ModConfig.Type type, Path configBasePath) {
         LOGGER.debug(CONFIG, "Loading configs type {}", type);
-        this.configSets.get(type).forEach(config -> openConfig(config, configBasePath));
+        this.configSets.get(type).forEach(config -> this.openConfig(config, configBasePath));
     }
 
     public void unloadConfigs(ModConfig.Type type, Path configBasePath) {
         LOGGER.debug(CONFIG, "Unloading configs type {}", type);
-        this.configSets.get(type).forEach(config -> closeConfig(config, configBasePath));
+        this.configSets.get(type).forEach(config -> this.closeConfig(config, configBasePath));
     }
 
     private void openConfig(final ModConfig config, final Path configBasePath) {
@@ -79,7 +78,7 @@ public class ConfigTracker {
         final CommentedFileConfig configData = config.getHandler().reader(configBasePath).apply(config);
         config.setConfigData(configData);
         // Forge Config API Port: invoke Fabric style callback instead of Forge event
-        CommonAbstractions.INSTANCE.fireConfigLoadingV2(config.getModId(), config);
+        CommonAbstractions.INSTANCE.fireConfigLoadingV3(config.getModId(), config);
         config.save();
     }
 
@@ -89,19 +88,19 @@ public class ConfigTracker {
             // stop the filewatcher before we save the file and close it, so reload doesn't fire
             config.getHandler().unload(configBasePath, config);
             // Forge Config API Port: invoke Fabric style callback instead of Forge event
-            CommonAbstractions.INSTANCE.fireConfigUnloadingV2(config.getModId(), config);
+            CommonAbstractions.INSTANCE.fireConfigUnloadingV3(config.getModId(), config);
             config.save();
             config.setConfigData(null);
         }
     }
 
     public void loadDefaultServerConfigs() {
-        configSets.get(ModConfig.Type.SERVER).forEach(modConfig -> {
+        this.configSets.get(ModConfig.Type.SERVER).forEach(modConfig -> {
             final CommentedConfig commentedConfig = CommentedConfig.inMemory();
             modConfig.getSpec().correct(commentedConfig);
             modConfig.setConfigData(commentedConfig);
             // Forge Config API Port: invoke Fabric style callback instead of Forge event
-            CommonAbstractions.INSTANCE.fireConfigLoadingV2(modConfig.getModId(), modConfig);
+            CommonAbstractions.INSTANCE.fireConfigLoadingV3(modConfig.getModId(), modConfig);
         });
     }
 
@@ -127,10 +126,10 @@ public class ConfigTracker {
     }
 
     public Map<ModConfig.Type, Set<ModConfig>> configSets() {
-        return configSets;
+        return this.configSets;
     }
 
     public ConcurrentHashMap<String, ModConfig> fileMap() {
-        return fileMap;
+        return this.fileMap;
     }
 }

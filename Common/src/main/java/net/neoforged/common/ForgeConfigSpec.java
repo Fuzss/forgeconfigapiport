@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-only
  */
 
-package net.minecraftforge.common;
+package net.neoforged.common;
 
 import com.electronwill.nightconfig.core.*;
 import com.electronwill.nightconfig.core.ConfigSpec.CorrectionAction;
@@ -17,7 +17,7 @@ import com.google.common.collect.Lists;
 import fuzs.forgeconfigapiport.impl.ForgeConfigAPIPort;
 import fuzs.forgeconfigapiport.impl.core.CommonAbstractions;
 import fuzs.forgeconfigapiport.impl.util.ConfigLoadingHelper;
-import net.minecraftforge.fml.config.IConfigSpec;
+import net.neoforged.fml.config.IConfigSpec;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -35,7 +35,6 @@ import static com.electronwill.nightconfig.core.ConfigSpec.CorrectionAction.*;
  * Like {@link com.electronwill.nightconfig.core.ConfigSpec} except in builder format, and extended to accept comments, language keys,
  * and other things Forge configs would find useful.
  */
-@Deprecated
 public class ForgeConfigSpec extends UnmodifiableConfigWrapper<UnmodifiableConfig> implements IConfigSpec<ForgeConfigSpec>//TODO: Remove extends and pipe everything through getSpec/getValues?
 {
     private final Map<List<String>, String> levelComments;
