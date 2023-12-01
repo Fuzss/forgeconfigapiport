@@ -35,7 +35,7 @@ import static com.electronwill.nightconfig.core.ConfigSpec.CorrectionAction.*;
  * Like {@link com.electronwill.nightconfig.core.ConfigSpec} except in builder format, and extended to accept comments, language keys,
  * and other things Forge configs would find useful.
  */
-public class ForgeConfigSpec extends UnmodifiableConfigWrapper<UnmodifiableConfig> implements IConfigSpec<ForgeConfigSpec>//TODO: Remove extends and pipe everything through getSpec/getValues?
+public class ModConfigSpec extends UnmodifiableConfigWrapper<UnmodifiableConfig> implements IConfigSpec<ModConfigSpec>//TODO: Remove extends and pipe everything through getSpec/getValues?
 {
     private final Map<List<String>, String> levelComments;
     private final Map<List<String>, String> levelTranslationKeys;
@@ -47,7 +47,7 @@ public class ForgeConfigSpec extends UnmodifiableConfigWrapper<UnmodifiableConfi
 
     private static final Logger LOGGER = LogManager.getLogger();
 
-    private ForgeConfigSpec(UnmodifiableConfig storage, UnmodifiableConfig values, Map<List<String>, String> levelComments, Map<List<String>, String> levelTranslationKeys) {
+    private ModConfigSpec(UnmodifiableConfig storage, UnmodifiableConfig values, Map<List<String>, String> levelComments, Map<List<String>, String> levelTranslationKeys) {
         super(storage);
         this.values = values;
         this.levelComments = levelComments;
@@ -398,7 +398,15 @@ public class ForgeConfigSpec extends UnmodifiableConfigWrapper<UnmodifiableConfi
                 }
             }, defaultSupplier);
         }
-
+        public <T> ConfigValue<List<? extends T>> defineListAllowEmpty(String path, List<? extends T> defaultValue, Predicate<Object> elementValidator) {
+            return this.defineListAllowEmpty(split(path), defaultValue, elementValidator);
+        }
+        public <T> ConfigValue<List<? extends T>> defineListAllowEmpty(String path, Supplier<List<? extends T>> defaultSupplier, Predicate<Object> elementValidator) {
+            return this.defineListAllowEmpty(split(path), defaultSupplier, elementValidator);
+        }
+        public <T> ConfigValue<List<? extends T>> defineListAllowEmpty(List<String> path, List<? extends T> defaultValue, Predicate<Object> elementValidator) {
+            return this.defineListAllowEmpty(path, () -> defaultValue, elementValidator);
+        }
         public <T> ConfigValue<List<? extends T>> defineListAllowEmpty(List<String> path, Supplier<List<? extends T>> defaultSupplier, Predicate<Object> elementValidator) {
             this.context.setClazz(List.class);
             return this.define(path, new ValueSpec(defaultSupplier, x -> x instanceof List && ((List<?>) x).stream().allMatch( elementValidator ), this.context, path) {
@@ -621,18 +629,18 @@ public class ForgeConfigSpec extends UnmodifiableConfigWrapper<UnmodifiableConfi
             return this;
         }
 
-        public <T> Pair<T, ForgeConfigSpec> configure(Function<Builder, T> consumer) {
+        public <T> Pair<T, ModConfigSpec> configure(Function<Builder, T> consumer) {
             T o = consumer.apply(this);
             return Pair.of(o, this.build());
         }
 
-        public ForgeConfigSpec build()
+        public ModConfigSpec build()
         {
             this.context.ensureEmpty();
             Config valueCfg = Config.of(Config.getDefaultMapCreator(true, true), InMemoryFormat.withSupport(ConfigValue.class::isAssignableFrom));
             this.values.forEach(v -> valueCfg.set(v.getPath(), v));
 
-            ForgeConfigSpec ret = new ForgeConfigSpec(this.storage, valueCfg, this.levelComments, this.levelTranslationKeys);
+            ModConfigSpec ret = new ModConfigSpec(this.storage, valueCfg, this.levelComments, this.levelTranslationKeys);
             this.values.forEach(v -> v.spec = ret);
             return ret;
         }
@@ -667,12 +675,12 @@ public class ForgeConfigSpec extends UnmodifiableConfigWrapper<UnmodifiableConfi
             if (this.comment.stream().allMatch(String::isBlank))
             {
                 if (!CommonAbstractions.INSTANCE.isDevelopmentEnvironment())
-                    ForgeConfigAPIPort.LOGGER.warn("Detected a comment that is all whitespace for config option {}, which causes obscure bugs in Forge's config system and will cause a crash in the future. Please report this to the mod author.",
+                    ForgeConfigAPIPort.LOGGER.warn("Detected a comment that is all whitespace for config option {}, which causes obscure bugs in NeoForge's config system and will cause a crash in the future. Please report this to the mod author.",
                             DOT_JOINER.join(path));
                 else
-                    throw new IllegalStateException("Can not build comment for config option " + DOT_JOINER.join(path) + " as it comprises entirely of blank lines/whitespace. This is not allowed as it causes a \"constantly correcting config\" bug with NightConfig in Forge's config system.");
+                    throw new IllegalStateException("Can not build comment for config option " + DOT_JOINER.join(path) + " as it comprises entirely of blank lines/whitespace. This is not allowed as it causes a \"constantly correcting config\" bug with NightConfig in NeoForge's config system.");
 
-                return "A developer of this mod has defined this config option with a blank comment, which causes obscure bugs in Forge's config system and will cause a crash in the future. Please report this to the mod author.";
+                return "A developer of this mod has defined this config option with a blank comment, which causes obscure bugs in NeoForge's config system and will cause a crash in the future. Please report this to the mod author.";
             }
 
             return LINE_JOINER.join(this.comment);
@@ -712,7 +720,7 @@ public class ForgeConfigSpec extends UnmodifiableConfigWrapper<UnmodifiableConfi
     }
 
     @SuppressWarnings("unused")
-    private static class Range<V extends Comparable<? super V>> implements Predicate<Object>
+    public static class Range<V extends Comparable<? super V>> implements Predicate<Object>
     {
         private final Class<? extends V> clazz;
         private final V min;
@@ -832,7 +840,7 @@ public class ForgeConfigSpec extends UnmodifiableConfigWrapper<UnmodifiableConfi
 
         private T cachedValue = null;
 
-        private ForgeConfigSpec spec;
+        private ModConfigSpec spec;
 
         ConfigValue(Builder parent, List<String> path, Supplier<T> defaultSupplier)
         {
@@ -851,7 +859,7 @@ public class ForgeConfigSpec extends UnmodifiableConfigWrapper<UnmodifiableConfi
          * Returns the actual value for the configuration setting, throwing if the config has not yet been loaded.
          *
          * @return the actual value for the setting
-         * @throws NullPointerException if the {@link ForgeConfigSpec config spec} object that will contain this has
+         * @throws NullPointerException if the {@link ModConfigSpec config spec} object that will contain this has
          *                              not yet been built
          * @throws IllegalStateException if the associated config has not yet been loaded
          */

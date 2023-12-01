@@ -13,7 +13,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.fml.config.ConfigTracker;
 import net.minecraftforge.fml.config.ModConfig;
-import net.neoforged.common.ForgeConfigSpec;
+import net.neoforged.common.ModConfigSpec;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
@@ -26,7 +26,7 @@ public class ForgeConfigAPIPortFabric implements ModInitializer {
     public void onInitialize() {
         registerMessages();
         registerHandlers();
-        ForgeConfigRegistry.INSTANCE.register(ForgeConfigAPIPort.MOD_ID, net.neoforged.fml.config.ModConfig.Type.SERVER, new ForgeConfigSpec.Builder().comment("Hello world").define("dummy_optoin", true).next().build());
+        ForgeConfigRegistry.INSTANCE.register(ForgeConfigAPIPort.MOD_ID, net.neoforged.fml.config.ModConfig.Type.SERVER, new ModConfigSpec.Builder().comment("Hello world").define("dummy_optoin", true).next().build());
     }
 
     private static void registerMessages() {
