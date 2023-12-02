@@ -134,7 +134,7 @@ To resolve this issue, manually add dependency overrides (check the [Fabric Wiki
 #### Registering configs
 The recommended point for registering your configs is directly in your `ModInitializer::onInitialize` method.
 
-Registering your configs works via `fuzs.forgeconfigapiport.api.config.v2.ForgeConfigRegistry`, obtain an instance of the implementation from `ForgeConfigRegistry#INSTANCE`.
+Registering your configs works via `fuzs.forgeconfigapiport.api.config.v3.ForgeConfigRegistry`, obtain an instance of the implementation from `ForgeConfigRegistry#INSTANCE`.
 
 You'll have to provide the mod id of your mod, as there is no context which would be aware of the current mod as there is on Forge.
 ```java
@@ -236,14 +236,14 @@ An example implementation of this can be found [here](https://github.com/thexaer
 
 Just as with Forge itself, in-game configuration is not available in Forge Config Api Port by default. Instead, users will have to rely on third-party mods to offer that capability.
 
-Forge Config Api Port includes default support for and recommends the [Configured (Fabric)](https://www.curseforge.com/minecraft/mc-mods/configured-fabric) mod, which already is the most popular way of handling in-game configs on Forge. To use the configs provided by Configured in-game [Mod Menu](https://github.com/TerraformersMC/ModMenu) needs to be installed, too.
+Forge Config Api Port recommends the [Forge Config Screens] mod. To use the configs provided by Forge Config Screens in-game [Mod Menu](https://github.com/TerraformersMC/ModMenu) needs to be installed, too.
 
-Adding Configured and Mod Menu to your workspace is not a requirement, but highly recommended.
+Adding Forge Config Screens and Mod Menu to your workspace is not a requirement, but highly recommended.
 ```groovy
 repositories {
     maven {
-        name = 'Curse Maven'
-        url = 'https://cursemaven.com'
+        name = "Fuzs Mod Resources"
+        url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/"
     }
     maven {
         name = 'Terraformers'
@@ -252,11 +252,10 @@ repositories {
 }
 
 dependencies {
-    // Configured
-    modLocalRuntime "curse.maven:configured-fabric-667378:4166864"    // Configured version 2.0.2 for Minecraft 1.19.3
-
+    // Forge Config Screens
+    modLocalRuntime "fuzs.forgeconfigscreens:forgeconfigscreens-fabric:<modVersion>"   // `modVersion` e.g. 7.0.0 for Minecraft 1.20
     // Mod Menu
-    modLocalRuntime "com.terraformersmc:modmenu:5.0.2"
+    modLocalRuntime "com.terraformersmc:modmenu:<modVersion>"  // `modVersion` e.g. 5.0.2 for Minecraft 1.19.3
 }
 ```
 
@@ -271,14 +270,14 @@ Forge Config Api Port is really useful when porting a Forge mod to Fabric/Quilt 
 As with every library though, the Forge config system does have a number of shortcomings, such as:
 - Existence of three different config types with different functionalities that can be annoying to work with as a developer and easily become confusing for users
 - Handling of server config files per world, without easy access to the file, and a major effort when changing server config values globally (this is addressed by Forge Config Api Port by moving server configs to the common config directory in `.minecraft/config/`)
-- Lack of in-game configuration (possible via the third-party [Configured] mod though)
+- Lack of in-game configuration (possible via the third-party [Forge Config Screens] mod though)
 - Lack of annotation support when defining new config files
 
 So when starting on a brand-new mod project, it might be advisable to consider a completely different config library with more features than the Forge system has. Here is an overview with some recommendations:
 
 | Project               | Forge | Fabric | Quilt | Minecraft Versions                 | Comments                                                                                                                                                        |
 |-----------------------|-------|--------|-------|------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Forge Config Api      | ✅     | ✅      | ✅     | 1.16, 1.17, 1.18, 1.19             | Fabric and Quilt support provided by Forge Config Api Port. In-game config screens provided by the [Configured] mod.                                            |
+| Forge Config Api      | ✅     | ✅      | ✅     | 1.16, 1.17, 1.18, 1.19             | Fabric and Quilt support provided by Forge Config Api Port. In-game config screens provided by the [Forge Config Screens] mod.                                  |
 | [Spectre Lib]         | ✅     | ✅      | ✅     | 1.19                               | Not primarily a config library, implementation is very much based on Forge's configs. No in-game config screens.                                                |
 | [Pollen]              | ✅     | ✅      | ✅     | 1.16, 1.18                         | Not primarily a config library, implementation is very much based on Forge's configs. No in-game config screens.                                                |
 | [Cloth Config Api]    | ✅     | ✅      | ✅     | 1.14, 1.15, 1.16, 1.17, 1.18, 1.19 | Very extensive config library with annotation support, in-game config screens, and great api documentation.                                                     |
@@ -289,7 +288,7 @@ So when starting on a brand-new mod project, it might be advisable to consider a
 
 </details>
 
-[Configured]: https://www.curseforge.com/minecraft/mc-mods/configured
+[Forge Config Screens]: https://www.curseforge.com/minecraft/mc-mods/config-menus-forge
 [Spectre Lib]: https://github.com/illusivesoulworks/spectrelib
 [Pollen]: https://www.curseforge.com/minecraft/mc-mods/pollen
 [Cloth Config Api]: https://www.curseforge.com/minecraft/mc-mods/cloth-config
