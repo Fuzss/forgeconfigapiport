@@ -1,7 +1,7 @@
 package fuzs.forgeconfigapiport.impl;
 
-import fuzs.forgeconfigapiport.api.config.v2.ForgeConfigPaths;
 import fuzs.forgeconfigapiport.api.config.v3.ForgeConfigRegistry;
+import fuzs.forgeconfigapiport.impl.handler.ServerLifecycleHandler;
 import fuzs.forgeconfigapiport.impl.network.config.ConfigSync;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.Event;
@@ -10,17 +10,12 @@ import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerLoginConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerLoginNetworking;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.fml.config.ConfigTracker;
-import net.minecraftforge.fml.config.ModConfig;
-import net.neoforged.common.ModConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
 
 public class ForgeConfigAPIPortFabric implements ModInitializer {
-    private static final ResourceLocation BEFORE_PHASE = ForgeConfigAPIPort.id("before");
-    private static final ResourceLocation AFTER_PHASE = ForgeConfigAPIPort.id("after");
 
     @Override
     public void onInitialize() {
@@ -46,15 +41,9 @@ public class ForgeConfigAPIPortFabric implements ModInitializer {
     }
 
     private static void registerHandlers() {
-        ServerLifecycleEvents.SERVER_STARTING.addPhaseOrdering(BEFORE_PHASE, Event.DEFAULT_PHASE);
-        ServerLifecycleEvents.SERVER_STARTING.register(BEFORE_PHASE, server -> {
-            ConfigTracker.INSTANCE.loadConfigs(ModConfig.Type.SERVER, ForgeConfigPaths.INSTANCE.getServerConfigDirectory(server));
-            net.neoforged.fml.config.ConfigTracker.INSTANCE.loadConfigs(net.neoforged.fml.config.ModConfig.Type.SERVER, fuzs.forgeconfigapiport.api.config.v3.ForgeConfigPaths.INSTANCE.getServerConfigDirectory(server));
-        });
-        ServerLifecycleEvents.SERVER_STOPPED.addPhaseOrdering(Event.DEFAULT_PHASE, AFTER_PHASE);
-        ServerLifecycleEvents.SERVER_STOPPED.register(AFTER_PHASE, server -> {
-            ConfigTracker.INSTANCE.unloadConfigs(ModConfig.Type.SERVER, ForgeConfigPaths.INSTANCE.getServerConfigDirectory(server));
-            net.neoforged.fml.config.ConfigTracker.INSTANCE.unloadConfigs(net.neoforged.fml.config.ModConfig.Type.SERVER, fuzs.forgeconfigapiport.api.config.v3.ForgeConfigPaths.INSTANCE.getServerConfigDirectory(server));
-        });
+        ServerLifecycleEvents.SERVER_STARTING.addPhaseOrdering(ServerLifecycleHandler.BEFORE_PHASE, Event.DEFAULT_PHASE);
+        ServerLifecycleEvents.SERVER_STARTING.register(ServerLifecycleHandler.BEFORE_PHASE, ServerLifecycleHandler::onServerStarting);
+        ServerLifecycleEvents.SERVER_STOPPED.addPhaseOrdering(Event.DEFAULT_PHASE, ServerLifecycleHandler.AFTER_PHASE);
+        ServerLifecycleEvents.SERVER_STOPPED.register(ServerLifecycleHandler.AFTER_PHASE, ServerLifecycleHandler::onServerStopped);
     }
 }

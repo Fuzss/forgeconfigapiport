@@ -1,6 +1,8 @@
 package fuzs.forgeconfigapiport.impl.config;
 
 import fuzs.forgeconfigapiport.api.config.v2.ForgeConfigPaths;
+import fuzs.forgeconfigapiport.impl.handler.ServerLifecycleHandler;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.MinecraftServer;
 
 import java.nio.file.Path;
@@ -9,22 +11,22 @@ public final class ForgeConfigPathsV2Impl implements ForgeConfigPaths {
 
     @Override
     public Path getClientConfigDirectory() {
-        return fuzs.forgeconfigapiport.api.config.v3.ForgeConfigPaths.INSTANCE.getClientConfigDirectory();
+        return FabricLoader.getInstance().getConfigDir();
     }
 
     @Override
     public Path getCommonConfigDirectory() {
-        return fuzs.forgeconfigapiport.api.config.v3.ForgeConfigPaths.INSTANCE.getCommonConfigDirectory();
+        return FabricLoader.getInstance().getConfigDir();
     }
 
     @Override
     public Path getServerConfigDirectory(final MinecraftServer server) {
-        return fuzs.forgeconfigapiport.api.config.v3.ForgeConfigPaths.INSTANCE.getServerConfigDirectory(server);
+        return ServerLifecycleHandler.getServerConfigPath(server);
     }
 
     @Override
     public boolean forceGlobalServerConfigs() {
-        return fuzs.forgeconfigapiport.api.config.v3.ForgeConfigPaths.INSTANCE.forceGlobalServerConfigs();
+        return ForgeConfigApiPortConfig.INSTANCE.<Boolean>getValue("forceGlobalServerConfigs");
     }
 
     @Override

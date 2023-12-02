@@ -10,7 +10,7 @@ import java.nio.file.Path;
  */
 public interface ForgeConfigPaths {
     /**
-     * implementation instance for retrieving config paths
+     * Implementation instance for retrieving config paths.
      */
     ForgeConfigPaths INSTANCE = new ForgeConfigPathsImpl();
 

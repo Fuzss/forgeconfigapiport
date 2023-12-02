@@ -10,7 +10,10 @@ import com.google.common.collect.ImmutableMap;
 import fuzs.forgeconfigapiport.impl.ForgeConfigAPIPort;
 import fuzs.forgeconfigapiport.impl.core.CommonAbstractions;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Objects;
 
@@ -34,7 +37,7 @@ public class ForgeConfigApiPortConfig {
         this.loadFrom(CommonAbstractions.INSTANCE.getConfigDirectory().resolve(CONFIG_FILE_NAME));
     }
 
-    // copied from FML config
+    // Copied from FML config
     private void loadFrom(final Path configFile) {
         this.configData = CommentedFileConfig.builder(configFile, TomlFormat.instance()).sync().onFileNotFound(FileNotFoundAction.copyData(Objects.requireNonNull(this.getClass().getResourceAsStream("/" + CONFIG_FILE_NAME)))).autosave().autoreload().writingMode(WritingMode.REPLACE).build();
         try {
@@ -47,6 +50,20 @@ public class ForgeConfigApiPortConfig {
             CONFIG_SPEC.correct(this.configData, (action, path, incorrectValue, correctedValue) -> ForgeConfigAPIPort.LOGGER.warn("Incorrect key {} was corrected from {} to {}", path, incorrectValue, correctedValue));
         }
         this.configData.save();
+        getOrCreateGameRelativePath(Paths.get(this.<String>getValue("defaultConfigsPath")));
+    }
+
+    // Copied from net.minecraftforge.fml.loading.FMLPaths
+    private static Path getOrCreateGameRelativePath(Path path) {
+        Path gameFolderPath = CommonAbstractions.INSTANCE.getGameDirectory().resolve(path);
+        if (!Files.isDirectory(gameFolderPath)) {
+            try {
+                Files.createDirectories(gameFolderPath);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return gameFolderPath;
     }
 
     @SuppressWarnings("unchecked")

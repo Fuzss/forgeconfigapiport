@@ -46,16 +46,6 @@ public final class FabricAbstractions implements CommonAbstractions {
     }
 
     @Override
-    public Path getClientConfigDirectory() {
-        return ForgeConfigPaths.INSTANCE.getClientConfigDirectory();
-    }
-
-    @Override
-    public Path getCommonConfigDirectory() {
-        return ForgeConfigPaths.INSTANCE.getCommonConfigDirectory();
-    }
-
-    @Override
     public Path getDefaultConfigsDirectory() {
         return ForgeConfigPaths.INSTANCE.getDefaultConfigsDirectory();
     }
@@ -67,7 +57,12 @@ public final class FabricAbstractions implements CommonAbstractions {
 
     @Override
     public Path getConfigDirectory() {
-        return FabricLoader.getInstance().getConfigDir();
+        return ForgeConfigPaths.INSTANCE.getConfigDirectory();
+    }
+
+    @Override
+    public Path getGameDirectory() {
+        return FabricLoader.getInstance().getGameDir();
     }
 
     @Override

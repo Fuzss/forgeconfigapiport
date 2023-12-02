@@ -10,7 +10,7 @@ import net.minecraftforge.fml.config.ModConfig;
  */
 public interface ForgeConfigRegistry {
     /**
-     * implementation instance for registering configs
+     * Implementation instance for registering configs.
      */
     ForgeConfigRegistry INSTANCE = new ForgeConfigRegistryImpl();
 
