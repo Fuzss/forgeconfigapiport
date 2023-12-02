@@ -23,15 +23,13 @@ public interface CommonAbstractions {
 
     Stream<String> getAllModIds();
 
-    Path getClientConfigDirectory();
-
-    Path getCommonConfigDirectory();
-
     Path getDefaultConfigsDirectory();
 
     boolean isDevelopmentEnvironment();
 
     Path getConfigDirectory();
+
+    Path getGameDirectory();
 
     boolean isModLoaded(String modId);
 }

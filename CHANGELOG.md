@@ -3,6 +3,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog].
 
+## [v9.1.2-1.20.2] - 2023-12-02
+### Changed
+- Server configs can now once again be read from a local world directory, when a config file is present (it has to be manually copied there)
+- New server config files are still only created in the global `.minecraft/config` directory
+- Refactored `fuzs.forgeconfigapiport.api.config.v3.ForgeConfigPaths`
+### Fixed
+- Fixed `ModConfigSpec` using a wrong package
+
 ## [v9.1.1-1.20.2] - 2023-12-01
 ### Fixed
 - Fixed `ForgeConfigSpec` still using the old name for NeoForge

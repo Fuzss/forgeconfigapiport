@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-only
  */
 
-package net.neoforged.common;
+package net.neoforged.neoforge.common;
 
 import com.electronwill.nightconfig.core.*;
 import com.electronwill.nightconfig.core.ConfigSpec.CorrectionAction;

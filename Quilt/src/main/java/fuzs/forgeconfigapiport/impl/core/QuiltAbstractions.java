@@ -26,18 +26,23 @@ public final class QuiltAbstractions implements CommonAbstractions {
     }
 
     @Override
+    public void fireConfigLoadingV3(String modId, net.neoforged.fml.config.ModConfig modConfig) {
+
+    }
+
+    @Override
+    public void fireConfigReloadingV3(String modId, net.neoforged.fml.config.ModConfig modConfig) {
+
+    }
+
+    @Override
+    public void fireConfigUnloadingV3(String modId, net.neoforged.fml.config.ModConfig modConfig) {
+
+    }
+
+    @Override
     public Stream<String> getAllModIds() {
         return QuiltLoader.getAllMods().stream().map(container -> container.metadata().id());
-    }
-
-    @Override
-    public Path getClientConfigDirectory() {
-        return ForgeConfigPaths.INSTANCE.getClientConfigDirectory();
-    }
-
-    @Override
-    public Path getCommonConfigDirectory() {
-        return ForgeConfigPaths.INSTANCE.getCommonConfigDirectory();
     }
 
     @Override
@@ -53,6 +58,11 @@ public final class QuiltAbstractions implements CommonAbstractions {
     @Override
     public Path getConfigDirectory() {
         return QuiltLoader.getConfigDir();
+    }
+
+    @Override
+    public Path getGameDirectory() {
+        return QuiltLoader.getGameDir();
     }
 
     @Override

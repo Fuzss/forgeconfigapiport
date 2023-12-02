@@ -1,18 +1,20 @@
 package fuzs.forgeconfigapiport.api.config.v3;
 
-import fuzs.forgeconfigapiport.impl.config.ForgeConfigRegistryV3Impl;
+import fuzs.forgeconfigapiport.impl.config.ForgeConfigRegistryImpl;
+import net.minecraftforge.fml.config.ModConfig;
 import net.neoforged.fml.config.IConfigSpec;
-import net.neoforged.fml.config.ModConfig;
 
 /**
- * Registry for adding your configs. On Forge this is done using <code>net.minecraftforge.fml.ModLoadingContext</code>, which does not exist in Forge Config Api Port.
- * <p>Note that opposed to Forge, configs are loaded and usable immediately after registration.
+ * Registry for adding your configs. Opposed to Fabric/Quilt this registry serves as a bridge between NeoForge's and Forge's config systems.
+ * NeoForge configs supplied by Forge Config Api Port are automatically adapted as Forge configs. Therefore, the returned {@link ModConfig} instance is the original Forge mod config.
+ * <p>As configs are added to Forge's native config system, original restrictions apply, and none of the changes implemented by Forge Config Api Port on Fabric/Quilt hold,
+ * like loading client and common configs immediately upon registration as well as loading server configs from the global <code>.minecraft/config</code> directory.
  */
 public interface ForgeConfigRegistry {
     /**
      * Implementation instance for registering configs.
      */
-    ForgeConfigRegistry INSTANCE = new ForgeConfigRegistryV3Impl();
+    ForgeConfigRegistry INSTANCE = new ForgeConfigRegistryImpl();
 
     /**
      * Register a new mod config, only difference from registering on Forge is <code>modId</code> has to be provided as there is no loading context to get that information from

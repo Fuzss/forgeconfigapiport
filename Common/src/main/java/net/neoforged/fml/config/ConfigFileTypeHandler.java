@@ -12,6 +12,7 @@ import com.electronwill.nightconfig.core.io.ParsingException;
 import com.electronwill.nightconfig.core.io.WritingMode;
 import com.electronwill.nightconfig.toml.TomlFormat;
 import com.mojang.logging.LogUtils;
+import fuzs.forgeconfigapiport.impl.config.ForgeConfigApiPortConfig;
 import fuzs.forgeconfigapiport.impl.core.CommonAbstractions;
 import fuzs.forgeconfigapiport.impl.util.ConfigLoadingHelper;
 import org.apache.commons.io.FilenameUtils;
@@ -32,7 +33,12 @@ public class ConfigFileTypeHandler {
 
     public Function<ModConfig, CommentedFileConfig> reader(Path configBasePath) {
         return (c) -> {
-            final Path configPath = configBasePath.resolve(c.getFileName());
+            // Forge Config API Port: if the server config exists locally in the world directory use that, otherwise use global server configs
+            // idea from https://github.com/MinecraftForge/MinecraftForge/issues/9465
+            Path configPath = configBasePath.resolve(c.getFileName());
+            if (ForgeConfigApiPortConfig.INSTANCE.<Boolean>getValue("forceGlobalServerConfigs") && Files.notExists(configPath)) {
+                configPath = CommonAbstractions.INSTANCE.getConfigDirectory().resolve(c.getFileName());
+            }
             // Forge Config API Port:
             // force toml format which is normally auto-detected by night config from the file extension
             // there have been reports of this failing and the auto-detection not working

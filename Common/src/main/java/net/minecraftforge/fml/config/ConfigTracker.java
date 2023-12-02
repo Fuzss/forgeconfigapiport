@@ -50,28 +50,22 @@ public class ConfigTracker {
         // Forge Config API Port: store a collection of mod configs since mods with multiple configs for the same type are supported
         this.configsByMod.computeIfAbsent(config.getModId(), (k)->new EnumMap<>(ModConfig.Type.class)).computeIfAbsent(config.getType(), type -> new ArrayList<>()).add(config);
         LOGGER.debug(CONFIG, "Config file {} for {} tracking", config.getFileName(), config.getModId());
-        loadTrackedConfig(config);  // Forge Config API Port: load configs immediately
-    }
-
-    // Forge Config API Port: additional method for loading a single config immediately
-    private void loadTrackedConfig(ModConfig config) {
+        // Forge Config API Port: load configs immediately
         // unlike on forge there isn't really more than one loading stage for mods on fabric, therefore we load configs immediately
-        if (config.getType() == ModConfig.Type.CLIENT) {
-            openConfig(config, CommonAbstractions.INSTANCE.getClientConfigDirectory());
-        } else if (config.getType() == ModConfig.Type.COMMON) {
-            openConfig(config, CommonAbstractions.INSTANCE.getCommonConfigDirectory());
-        }
         // server configs are not handled here, they are all loaded at once when a world is loaded
+        if (config.getType() != ModConfig.Type.SERVER) {
+            this.openConfig(config, CommonAbstractions.INSTANCE.getConfigDirectory());
+        }
     }
 
     public void loadConfigs(ModConfig.Type type, Path configBasePath) {
         LOGGER.debug(CONFIG, "Loading configs type {}", type);
-        this.configSets.get(type).forEach(config -> openConfig(config, configBasePath));
+        this.configSets.get(type).forEach(config -> this.openConfig(config, configBasePath));
     }
 
     public void unloadConfigs(ModConfig.Type type, Path configBasePath) {
         LOGGER.debug(CONFIG, "Unloading configs type {}", type);
-        this.configSets.get(type).forEach(config -> closeConfig(config, configBasePath));
+        this.configSets.get(type).forEach(config -> this.closeConfig(config, configBasePath));
     }
 
     private void openConfig(final ModConfig config, final Path configBasePath) {
@@ -96,7 +90,7 @@ public class ConfigTracker {
     }
 
     public void loadDefaultServerConfigs() {
-        configSets.get(ModConfig.Type.SERVER).forEach(modConfig -> {
+        this.configSets.get(ModConfig.Type.SERVER).forEach(modConfig -> {
             final CommentedConfig commentedConfig = CommentedConfig.inMemory();
             modConfig.getSpec().correct(commentedConfig);
             modConfig.setConfigData(commentedConfig);
@@ -127,10 +121,10 @@ public class ConfigTracker {
     }
 
     public Map<ModConfig.Type, Set<ModConfig>> configSets() {
-        return configSets;
+        return this.configSets;
     }
 
     public ConcurrentHashMap<String, ModConfig> fileMap() {
-        return fileMap;
+        return this.fileMap;
     }
 }
