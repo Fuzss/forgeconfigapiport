@@ -1,0 +1,192 @@
+plugins {
+    alias libs.plugins.architecturyloom apply false
+    alias libs.plugins.architecturyplugin apply false
+    alias libs.plugins.shadow apply false
+    alias libs.plugins.cursegradle apply false
+    alias libs.plugins.minotaur apply false
+}
+
+apply from: './gradle/tasks.gradle'
+
+println('Java: ' + System.getProperty('java.version') + ' JVM: ' + System.getProperty('java.vm.version') + '(' + System.getProperty('java.vendor') + ') Arch: ' + System.getProperty('os.arch'))
+
+architectury {
+    minecraft = libs.versions.minecraft.get()
+}
+
+subprojects {
+    apply plugin: "dev.architectury.loom"
+    apply plugin: "architectury-plugin"
+    apply plugin: "com.github.johnrengelman.shadow"
+    apply plugin: "com.matthewprenger.cursegradle"
+    apply plugin: "com.modrinth.minotaur"
+
+    loom {
+        silentMojangMappingsLicense()
+    }
+
+    dependencies {
+        minecraft "com.mojang:minecraft:${libs.versions.minecraft.get()}"
+        mappings loom.layered() {
+            it.parchment("org.parchmentmc.data:parchment-${libs.versions.parchment.minecraft.get()}:${libs.versions.parchment.version.get()}")
+            it.officialMojangMappings {
+                setNameSyntheticMembers(false)
+            }
+        }
+    }
+}
+
+allprojects {
+    apply plugin: "java"
+    apply plugin: "java-library"
+    apply plugin: "maven-publish"
+    apply plugin: "signing"
+    apply plugin: "idea"
+
+    archivesBaseName = "${modName.replaceAll("[^a-zA-Z]", "")}"
+    version = "v${modVersion}-${libs.versions.minecraft.get()}-${project.name}"
+    group = modMavenGroup
+
+    repositories {
+        mavenCentral()
+        mavenLocal()
+        maven {
+            name = "Sponge"
+            url = "https://repo.spongepowered.org/repository/maven-public/"
+        }
+        maven {
+            name = "Jared"
+            url = "https://maven.blamejared.com/"
+        }
+        maven {
+            name = "Jitpack"
+            url = "https://jitpack.io"
+        }
+        maven {
+            name = "Shedaniel"
+            url = "https://maven.shedaniel.me/"
+        }
+        maven {
+            name = "Parchment"
+            url = "https://maven.parchmentmc.org"
+        }
+        maven {
+            name = "Fuzs Mod Resources"
+            url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/"
+        }
+        maven {
+            name = "Terraformers"
+            url = "https://maven.terraformersmc.com/"
+        }
+        maven {
+            name = "ModMaven"
+            url = "https://modmaven.dev"
+        }
+        maven {
+            name = "AppleSkin"
+            url "https://maven.ryanliptak.com/"
+        }
+        flatDir {
+            dirs "libs"
+        }
+        exclusiveContent {
+            forRepository {
+                maven {
+                    name = "CurseForge"
+                    url = "https://cursemaven.com"
+                }
+            }
+            filter {
+                includeGroup "curse.maven"
+            }
+        }
+        exclusiveContent {
+            forRepository {
+                maven {
+                    name = "Modrinth"
+                    url = "https://api.modrinth.com/maven"
+                }
+            }
+            filter {
+                includeGroup "maven.modrinth"
+            }
+        }
+        maven {
+            name = "Modmuss"
+            url = "https://maven.modmuss50.me/"
+        }
+        maven {
+            name = "Ladysnake"
+            url = "https://maven.ladysnake.org/releases"
+        }
+        maven {
+            name = "JamiesWhiteShirt"
+            url = "https://maven.jamieswhiteshirt.com/libs-release/"
+        }
+    }
+
+    tasks.withType(JavaCompile).configureEach {
+        // ensure that the encoding is set to UTF-8, no matter what the system default is
+        // this fixes some edge cases with special characters not displaying correctly
+        // see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
+        // If Javadoc is generated, this must be specified in that task too.
+        options.encoding = 'UTF-8'
+        options.release = 17
+    }
+
+    java {
+        withSourcesJar()
+        withJavadocJar()
+        toolchain.languageVersion = JavaLanguageVersion.of(17)
+    }
+
+    // silence missing javadoc comments, we just don't care
+    javadoc.options.addStringOption('Xdoclint:none', '-quiet')
+
+    tasks.withType(Jar).configureEach {
+        from rootProject.file("../LICENSE.md")
+        from rootProject.file("../LICENSE-ASSETS.md")
+        from rootProject.file("../LICENSE-FORGE.md")
+        from rootProject.file("../LICENSE-NIGHT-CONFIG.md")
+        from rootProject.file("../LICENSING.md")
+        from rootProject.file("CHANGELOG.md")
+        manifest {
+            attributes([
+                    "Specification-Title"           : modName,
+                    'Specification-Version'         : modVersion,
+                    "Specification-Vendor"          : modAuthor,
+                    'Implementation-Title'          : modName,
+                    'Implementation-Version'        : modVersion,
+                    'Implementation-Vendor'         : modAuthor,
+                    'Implementation-Timestamp'      : new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
+                    'Implementation-Timestamp-Milli': System.currentTimeMillis(),
+                    'Implementation-URL'            : modSourceUrl,
+                    'Built-On-Java'                 : "${System.getProperty('java.vm.version')} (${System.getProperty('java.vm.vendor')})",
+                    'Built-On-Minecraft'            : libs.versions.minecraft.get()
+            ])
+        }
+        group 'jar'
+    }
+
+    tasks.withType(GenerateModuleMetadata) {
+        // Disables Gradle's custom module metadata from being published to maven. The
+        // metadata includes mapped dependencies which are not reasonably consumable by
+        // other mod developers.
+        enabled = false
+    }
+}
+
+task incrementBuildNumber {
+    onlyIf { project.hasProperty('uniqueBuildNumber') }
+    doLast {
+        def propertiesName = 'gradle.properties'
+        // build number is stored in global gradle.properties
+        def propertiesFile = new File(project.gradle.gradleUserHomeDir, propertiesName)
+        if (!propertiesFile.canRead()) { throw new FileNotFoundException("Could not read file ".concat(propertiesName)) }
+        def buildNumberMatcher = java.util.regex.Pattern.compile("uniqueBuildNumber=(\\d+)").matcher(propertiesFile.getText())
+        buildNumberMatcher.find()
+        def versionCode = Integer.parseInt(buildNumberMatcher.group(1))
+        def propertiesContent = buildNumberMatcher.replaceAll("uniqueBuildNumber=" + ++versionCode)
+        propertiesFile.write(propertiesContent)
+    }
+}

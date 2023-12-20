@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "compatibilityLevel": "JAVA_17",
+  "package": "fuzs.examplemod.mixin",
+  "refmap": "examplemod.refmap.json",
+  "plugin": "fuzs.examplemod.mixin.ModMixinConfigPlugin",
+  "mixins": [
+  ],
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

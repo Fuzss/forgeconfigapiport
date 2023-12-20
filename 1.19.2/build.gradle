@@ -1,0 +1,12 @@
+plugins {
+    alias libs.plugins.loom apply false
+    alias libs.plugins.quiltflower apply false
+    alias libs.plugins.forgegradle apply false
+    alias libs.plugins.mixin apply false
+    alias libs.plugins.librarian apply false
+    alias libs.plugins.cursegradle apply false
+    alias libs.plugins.minotaur apply false
+}
+
+apply from: 'https://raw.githubusercontent.com/Fuzss/modresources/main/gradle/main.gradle'
+apply from: 'https://raw.githubusercontent.com/Fuzss/modresources/main/gradle/tasks.gradle'

@@ -1,0 +1,29 @@
+apply from: 'https://raw.githubusercontent.com/Fuzss/modresources/main/gradle/fabric.gradle'
+
+def versionCatalog = extensions.getByType(VersionCatalogsExtension).named("libs")
+
+dependencies {
+    // Fabric Api
+    modApi libs.fabricapi.fabric
+
+    // Puzzles Lib
+    modApi libs.puzzleslib.fabric
+
+    // Cardinal Components
+//    modApi(include(libs.cardinalcomponentsbase.fabric.get()))
+//    modApi(include(libs.cardinalcomponentsentity.fabric.get()))
+//    modApi(include(libs.cardinalcomponentsblock.fabric.get()))
+//    modApi(include(libs.cardinalcomponentschunk.fabric.get()))
+//    modApi(include(libs.cardinalcomponentsworld.fabric.get()))
+
+    // Extensible Enums
+//    modApi(include(libs.extensibleenums.fabric.get()))
+
+    // Quality of Life Mods
+    versionCatalog.findLibrary("modmenu.fabric").ifPresent {
+        modLocalRuntime(it)
+    }
+    versionCatalog.findLibrary("forgeconfigscreens.fabric").ifPresent {
+        modLocalRuntime(it)
+    }
+}
