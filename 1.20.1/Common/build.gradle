@@ -1,0 +1,11 @@
+apply from: 'https://raw.githubusercontent.com/Fuzss/modresources/main/gradle/common.gradle'
+
+dependencies {
+    // Puzzles Lib
+    modApi libs.puzzleslib.common
+}
+
+// @see https://github.com/jaredlll08/MultiLoader-Template/issues/17#issuecomment-1221598082
+tasks.withType(net.fabricmc.loom.task.AbstractRemapJarTask).each {
+    it.targetNamespace = "named"
+}

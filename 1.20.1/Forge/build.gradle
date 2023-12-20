@@ -1,0 +1,28 @@
+apply from: 'https://raw.githubusercontent.com/Fuzss/modresources/main/gradle/forge.gradle'
+
+def versionCatalog = extensions.getByType(VersionCatalogsExtension).named("libs")
+
+dependencies {
+    // Puzzles Lib
+    api fg.deobf(libs.puzzleslib.forge.get())
+
+    // Quality of Life Mods
+    versionCatalog.findLibrary("bettermodsbutton.forge").ifPresent {
+        runtimeOnly fg.deobf(it.get())
+    }
+    versionCatalog.findLibrary("forgeconfigscreens.forge").ifPresent {
+        runtimeOnly fg.deobf(it.get())
+    }
+}
+
+task signJar(type: net.minecraftforge.gradle.common.tasks.SignJar, dependsOn: tasks.reobfJarJar) {
+    onlyIf { project.hasProperty('keyStore') }
+    keyStore = project.findProperty('keyStore')
+    alias = project.findProperty('keyStoreAlias')
+    storePass = project.findProperty('keyStorePass')
+    keyPass = project.findProperty('keyStoreKeyPass')
+    inputFile = outputFile = tasks.jarJar.archivePath
+}
+
+jar.finalizedBy 'signJar'
+signJar.mustRunAfter 'reobfJar'

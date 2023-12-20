@@ -1,0 +1,40 @@
+modLoader = "javafml"
+loaderVersion = "[${minFMLVersion},)"
+license = "${modLicense}"
+issueTrackerURL = "${modIssueUrl}"
+
+[[mods]]
+modId = "${modId}"
+displayName = "${modName}"
+description = "${modDescription}"
+version = "${modVersion}"
+authors = "${modAuthor}"
+logoFile = "mod_banner.png"
+logoBlur = false
+displayURL = "${modPageUrl}"
+updateJSONURL = "${modUpdateUrl}"
+displayTest = "${modForgeDisplayTest}"
+
+[[dependencies.${ modId }]]
+modId = "forge"
+mandatory = true
+versionRange = "[${minForgeVersion},)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.${ modId }]]
+modId = "minecraft"
+mandatory = true
+versionRange = "[${minecraftVersion}]"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.${ modId }]]
+modId = "puzzleslib"
+mandatory = true
+versionRange = "[${minPuzzlesVersion},)"
+ordering = "NONE"
+side = "BOTH"
+
+[modproperties.${ modId }]
+catalogueImageIcon = "mod_logo.png"

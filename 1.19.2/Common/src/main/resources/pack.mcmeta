@@ -1,0 +1,8 @@
+{
+    "pack": {
+        "description": "${modDescription}",
+        "pack_format": ${resourcePackFormat},
+        "forge:resource_pack_format": ${resourcePackFormat},
+        "forge:data_pack_format": ${dataPackFormat}
+    }
+}
