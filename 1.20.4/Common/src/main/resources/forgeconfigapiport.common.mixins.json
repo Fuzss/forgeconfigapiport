@@ -2,8 +2,9 @@
   "required": true,
   "minVersion": "0.8",
   "compatibilityLevel": "JAVA_17",
-  "package": "fuzs.forgeconfigapiport.mixin",
-  "refmap": "forgeconfigapiport.refmap.json",
+  "package": "${modGroup}.mixin",
+  "refmap": "${modId}.refmap.json",
+  "plugin": "${modGroup}.mixin.ModMixinConfigPlugin",
   "mixins": [
     "accessor.LevelResourceAccessor"
   ],

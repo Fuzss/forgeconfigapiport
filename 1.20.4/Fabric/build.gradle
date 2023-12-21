@@ -1,16 +1,20 @@
-apply plugin: 'fabric-loom'
-apply plugin: 'io.github.juuxel.loom-quiltflower'
-apply plugin: 'me.hypherionmc.cursegradle'
-apply plugin: 'com.modrinth.minotaur'
-apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: "com.github.johnrengelman.shadow"
 
-archivesBaseName = rootProject.name
-version = "v${modVersion}-${libs.versions.minecraft.get()}-Fabric"
-group = modMavenGroup
+architectury {
+    platformSetupLoomIde()
+    fabric()
+}
+
+loom {
+    accessWidenerPath = project(":Common").loom.accessWidenerPath
+}
 
 configurations {
-    shade
-    implementation.extendsFrom shade
+    common
+    shadowCommon // Don't use shadow from the shadow plugin since it *excludes* files.
+    compileClasspath.extendsFrom common
+    runtimeClasspath.extendsFrom common
+    developmentFabric.extendsFrom common
 }
 
 repositories {
@@ -30,260 +34,83 @@ repositories {
 
 dependencies {
     // Common Project
-    compileOnly(project(path: ":Common", configuration: "namedElements")) {
-        transitive = false
-    }
+    common(project(path: ":common", configuration: "namedElements")) { transitive false }
+    shadowCommon(project(path: ":common", configuration: "transformProductionFabric")) { transitive false }
 
-    // Minecraft
-    minecraft "com.mojang:minecraft:${libs.versions.minecraft.get()}"
-    mappings loom.layered() {
-        officialMojangMappings()
-        parchment("org.parchmentmc.data:parchment-${libs.versions.parchmentMinecraft.get()}:${libs.versions.parchment.get()}@zip")
-    }
+    // Fabric Loader
+    modApi libs.fabricloader.fabric
 
-    // Fabric
-    modApi "net.fabricmc:fabric-loader:${libs.versions.fabric.get()}"
-    modApi "net.fabricmc.fabric-api:fabric-api:${libs.versions.fabricApi.get()}"
+    // Fabric Api
+    modApi libs.fabricapi.fabric
 
     // Night Config
-    shade "com.electronwill.night-config:core:${libs.versions.nightconfig.get()}"
-    shade "com.electronwill.night-config:toml:${libs.versions.nightconfig.get()}"
-
-    // Cardinal Components
-//    modApi(include("dev.onyxstudios.cardinal-components-api:cardinal-components-base:${libs.versions.cardinalcomponents.get()}"))
-//    modApi(include("dev.onyxstudios.cardinal-components-api:cardinal-components-entity:${libs.versions.cardinalcomponents.get()}"))
-
-    // Quality of Life Mods
-    modLocalRuntime "com.terraformersmc:modmenu:${libs.versions.modmenu.get()}"
-//    modLocalRuntime "curse.maven:configured-fabric-667378:4441611"
+    api(include(libs.nightconfigcore))
+    api(include(libs.nightconfigtoml))
 
     // Puzzles Lib
-//    modApi ("fuzs.puzzleslib:puzzleslib-fabric:${libs.versions.puzzles.get()}")
+//    modApi libs.puzzleslib.fabric
+
+    // Cardinal Components
+//    modApi(include(libs.cardinalcomponentsbase.fabric.get()))
+//    modApi(include(libs.cardinalcomponentsentity.fabric.get()))
+//    modApi(include(libs.cardinalcomponentsblock.fabric.get()))
+//    modApi(include(libs.cardinalcomponentschunk.fabric.get()))
+//    modApi(include(libs.cardinalcomponentsworld.fabric.get()))
+
+    // Extensible Enums
+//    modApi(include(libs.extensibleenums.fabric.get()))
+
+    // Quality of Life Mods
+    versionCatalog.findLibrary("modmenu.fabric").ifPresent {
+        modLocalRuntime(it)
+    }
+    versionCatalog.findLibrary("forgeconfigscreens.fabric").ifPresent {
+        modLocalRuntime(it)
+    }
 }
 
 loom {
-    mixin.defaultRefmapName = "${modId}.refmap.json"
-
     runs {
-        client {
-            client()
-            setConfigName("Fabric Client")
+        configureEach {
             ideConfigGenerated(true)
             runDir("../run")
             vmArg '-Dmixin.debug.export=true'
+        }
+        client {
+            client()
+            setConfigName("Fabric Client-${libs.versions.minecraft.get()}")
         }
         server {
             server()
-            setConfigName("Fabric Server")
-            ideConfigGenerated(true)
-            runDir("../run")
-            vmArg '-Dmixin.debug.export=true'
+            setConfigName("Fabric Server-${libs.versions.minecraft.get()}")
         }
-    }
-}
-
-processResources {
-    from(project(":Common").sourceSets.main.resources)
-    from(project(":Forge").file('src/generated/resources')) {
-        exclude('.cache/')
-    }
-    // Forge's data gen doesn't work with assets placed in the common project, so we place them in Forge and include them here
-    from(project(":Forge").sourceSets.main.resources) {
-        include("assets/")
-        include("data/")
-    }
-
-    duplicatesStrategy DuplicatesStrategy.INCLUDE
-
-    // this will ensure that this task is redone when a value changes
-    inputs.property "modId", modId
-    inputs.property "modName", modName
-    inputs.property "modVersion", modVersion
-    inputs.property "modDescription", modDescription
-    inputs.property "modGroup", project.group
-    inputs.property "modPageUrl", modSourceUrl
-    inputs.property "modIssueUrl", modIssueUrl
-    inputs.property "modAuthor", modAuthor
-    inputs.property "modLicense", modLicense
-    inputs.property "minFabricVersion", libs.versions.minFabric.get()
-    inputs.property "minFabricApiVersion", libs.versions.minFabricApi.get()
-    inputs.property "minecraftVersion", libs.versions.minecraft.get()
-    inputs.property "minPuzzlesVersion", libs.versions.minPuzzles.get()
-    inputs.property "resourcePackFormat", libs.versions.resources.get()
-    inputs.property "dataPackFormat", libs.versions.data.get()
-    inputs.property "mainEntryPoint", "${project.group}.${rootProject.name}Fabric"
-    inputs.property "clientEntryPoint", "${project.group}.client.${rootProject.name}FabricClient"
-    inputs.property "modFabricEnvironment", modFabricEnvironment
-
-    // replace stuff in fabric.mod.json
-    filesMatching('fabric.mod.json') {
-        expand(
-                'modId': modId,
-                'modName': modName,
-                'modVersion': modVersion,
-                'modDescription': modDescription,
-                'modGroup': project.group,
-                'modPageUrl': modSourceUrl,
-                'modIssueUrl': modIssueUrl,
-                'modAuthor': modAuthor,
-                'modLicense': modLicense,
-                'minFabricVersion': libs.versions.minFabric.get(),
-                'minFabricApiVersion': libs.versions.minFabricApi.get(),
-                'minecraftVersion': libs.versions.minecraft.get(),
-                "minPuzzlesVersion": libs.versions.minPuzzles.get(),
-                "mainEntryPoint": "${project.group}.${rootProject.name}Fabric",
-                "clientEntryPoint": "${project.group}.client.${rootProject.name}FabricClient",
-                "modFabricEnvironment": modFabricEnvironment
-        )
-    }
-
-    // replace stuff in pack.mcmeta
-    filesMatching('pack.mcmeta') {
-        expand(
-                'modDescription': modDescription,
-                "resourcePackFormat": libs.versions.resources.get(),
-                "dataPackFormat": libs.versions.data.get()
-        )
     }
 }
 
 shadowJar {
-    configurations = [project.configurations.shade]
-    // we need to relocate to the same package to stay consistent with Night Config on Forge
-    relocate 'com.electronwill.nightconfig', "com.electronwill.nightconfig"
+    configurations = [project.configurations.shadowCommon]
+    archiveClassifier.set("dev-shadow")
 }
 
 remapJar {
+    injectAccessWidener = true
+    input.set shadowJar.archiveFile
     dependsOn shadowJar
-    input = shadowJar.archivePath
+    archiveClassifier.set("")
 }
 
-compileJava {
-    source project(":Common").sourceSets.main.allSource
+jar {
+    archiveClassifier.set("dev")
 }
 
 sourcesJar {
-    from project(":Common").sourceSets.main.allJava
+    def commonSources = project(":Common").sourcesJar
+    dependsOn commonSources
+    from commonSources.archiveFile.map { zipTree(it) }
 }
 
-javadoc {
-    source project(":Common").sourceSets.main.allJava
-}
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            artifactId = "${modId}-fabric"
-            version = modVersion
-            from components.java
-            pom {
-                name = "${modName} [Fabric]"
-                description = "${modDescription}"
-                url = "${modSourceUrl}"
-                scm {
-                    url = "${modSourceUrl}"
-                    connection = "${modSourceUrl}".replace("https", "scm:git:git").concat(".git")
-                    developerConnection = "${modSourceUrl}".replace("https://github.com/", "scm:git:git@github.com:").concat(".git")
-                }
-                issueManagement {
-                    system = 'github'
-                    url = "${modIssueUrl}"
-                }
-                licenses {
-                    license {
-                        name = "${modLicense}"
-                        url = "https://spdx.org/licenses/${modLicense}.html"
-                    }
-                }
-                developers {
-                    developer {
-                        id = "${modAuthor}".toLowerCase()
-                        name = "${modAuthor}"
-                    }
-                }
-            }
-        }
-    }
-    repositories {
-        maven {
-            name = 'FuzsModResources'
-            url "file://" + project.hasProperty('modResources') ? "${project.findProperty('modResources')}/maven" : System.getenv('local_maven')
-        }
+components.java {
+    withVariantsFromConfiguration(project.configurations.shadowRuntimeElements) {
+        skip()
     }
 }
-
-signing {
-    sign publishing.publications.mavenJava
-}
-
-curseforge {
-    if (!file('../CHANGELOG.md').canRead()) {
-        throw new FileNotFoundException("Could not read changelog file")
-    }
-    apiKey = project.hasProperty('curseApiToken') ? project.findProperty('curseApiToken') : ''
-    project {
-        id = projectCurseId
-        changelogType = 'markdown'
-        changelog = file('../CHANGELOG.md')
-        releaseType = projectReleaseType
-        addGameVersion 'Fabric'
-        projectGameVersions.split(",").each {
-            addGameVersion it.trim()
-        }
-        mainArtifact(remapJar) {
-            displayName = "[FABRIC] [${libs.versions.minecraft.get()}] ${rootProject.name}-v${modVersion}"
-            relations {
-                requiredDependency 'fabric-api'
-//                requiredDependency 'forge-config-api-port-fabric'
-//                requiredDependency 'puzzles-lib'
-//                embeddedLibrary 'cardinal-components'
-                optionalDependency 'config-menus-forge'
-            }
-        }
-//        addArtifact sourcesJar
-    }
-    options {
-//        debug = true
-        javaVersionAutoDetect = false
-        forgeGradleIntegration = false
-    }
-}
-
-modrinth {
-    if (!file('../CHANGELOG.md').canRead()) {
-        throw new FileNotFoundException("Could not read changelog file")
-    }
-    token = project.hasProperty('modrinthApiToken') ? project.findProperty('modrinthApiToken') : ''
-    projectId = projectModrinthId
-    versionNumber = project.version
-    versionName = "[FABRIC] [${libs.versions.minecraft.get()}] ${rootProject.name}-v${modVersion}"
-    changelog = file('../CHANGELOG.md').text
-    versionType = projectReleaseType
-    uploadFile = remapJar // This is the java jar task
-    projectGameVersions.split(",").each {
-        gameVersions.add it.trim()
-    }
-    loaders.add 'fabric'
-//    additionalFiles.add file("${project.buildDir}/libs/${project.archivesBaseName}-${project.version}-sources.jar")
-    dependencies {
-        required.project 'fabric-api'
-//        required.project 'forge-config-api-port'
-//        required.project 'puzzles-lib'
-//        embedded.project 'cardinal-components-api'
-        optional.project 'forge-config-screens'
-    }
-//	debugMode = true
-}
-
-task copyJarToDir(type: Copy) {
-    onlyIf { project.hasProperty('buildJarOutputDir') && project.hasProperty('uniqueBuildNumber') }
-    if (project.findProperty('copyBuildJar').toBoolean()) {
-        from remapJar
-        into project.findProperty('buildJarOutputDir')
-        // add build number to be able to distinguish jars when testing thorough official launcher
-        // build number is stored in global gradle.properties
-        rename { fileName -> fileName.replace("v${modVersion}", "v${modVersion}.${uniqueBuildNumber}") }
-    }
-}
-
-build.finalizedBy project.tasks.copyJarToDir, rootProject.tasks.incrementBuildNumber

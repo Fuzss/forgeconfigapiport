@@ -12,14 +12,18 @@ minecraftforgegradle-version = "6.+"
 mixin-version = "0.7.+"
 librarian-version = "1.+"
 
+# Libraries
+nightconfig = "3.6.6"
+mixinextras-version = "0.3.1"
+
 # Common
 minecraft = "1.20.4"
 resources = "22"
 data = "26"
 parchment-version = "2023.12.10"
 parchment-minecraft = "1.20.2"
-#puzzleslib-version = "8.1.9"
-#puzzleslib-min = "8.1.9"
+puzzleslib-version = "20.4.0"
+puzzleslib-min = "20.4.0"
 
 # Fabric
 fabricloader-version = "0.15.0"
@@ -36,7 +40,6 @@ forge-version = "1.20.4-49.0.10"
 forge-min = "49.0.0"
 
 # Mods
-nightconfig = "3.6.6"
 modmenu = "9.0.0"
 #puzzlesapi = "8.1.2"
 #puzzlesaccessapi = "8.0.7"
@@ -67,6 +70,7 @@ modmenu = "9.0.0"
 
 nightconfigcore = { module = "com.electronwill.night-config:core", version.ref = "nightconfig" }
 nightconfigtoml = { module = "com.electronwill.night-config:toml", version.ref = "nightconfig" }
+mixinextras = { module = "io.github.llamalad7:mixinextras-common", version.ref = "mixinextras-version" }
 
 # Common
 #puzzleslib-common = { module = "fuzs.puzzleslib:puzzleslib-common", version.ref = "puzzleslib-version" }
@@ -132,7 +136,7 @@ fabricapi-fabric = { module = "net.fabricmc.fabric-api:fabric-api", version.ref 
 
 [plugins]
 
-architecturyloom = { id = "architectury-loom", version.ref = "architecturyloom-version" }
+architecturyloom = { id = "dev.architectury.loom", version.ref = "architecturyloom-version" }
 architecturyplugin = { id = "architectury-plugin", version.ref = "architecturyplugin-version" }
 shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow-version" }
 cursegradle = { id = "me.hypherionmc.cursegradle", version.ref = "cursegradle-version" }
