@@ -1,133 +1,44 @@
-apply plugin: 'fabric-loom'
-apply plugin: 'io.github.juuxel.loom-quiltflower'
-
-archivesBaseName = rootProject.name
-version = "v${modVersion}-${libs.versions.minecraft.get()}-Common"
-group = modMavenGroup
-
-dependencies {
-    minecraft "com.mojang:minecraft:${libs.versions.minecraft.get()}"
-    mappings loom.layered() {
-        officialMojangMappings()
-        parchment("org.parchmentmc.data:parchment-${libs.versions.parchmentMinecraft.get()}:${libs.versions.parchment.get()}@zip")
-    }
-
-    // Mixin
-    compileOnly 'org.spongepowered:mixin:0.8.5'
-
-    // Night Config
-    api "com.electronwill.night-config:core:${libs.versions.nightconfig.get()}"
-    api "com.electronwill.night-config:toml:${libs.versions.nightconfig.get()}"
-
-    // Puzzles Lib
-//    modApi ("fuzs.puzzleslib:puzzleslib-common:${libs.versions.puzzles.get()}")
+architectury {
+    common("fabric", "neoforge", "forge")
 }
 
 loom {
-    mixin {
-        // not sure if this is necessary for common...
-        defaultRefmapName = "${modId}.refmap.json"
-        // fix for java.lang.NoClassDefFoundError: org/objectweb/asm/tree/MethodNode
-        useLegacyMixinAp = false
-    }
+    accessWidenerPath = file("src/main/resources/${modId}.accesswidener")
+}
 
-    // this should hopeful prevent an empty run directory being generated in common during initial project setup
+dependencies {
+    // Fabric Loader
+    modApi libs.fabricloader.fabric
+
+    // Mixin Extras
+    api(annotationProcessor(libs.mixinextras))
+
+    // Night Config
+    api libs.nightconfigcore
+    api libs.nightconfigtoml
+}
+
+loom {
     runs {
+        configureEach {
+            ideConfigGenerated(false)
+            // this should hopeful prevent an empty run directory being generated in common during initial project setup
+            runDir("../run")
+            vmArg '-Dmixin.debug.export=true'
+        }
         client {
             client()
-            setConfigName("Common Client")
-            ideConfigGenerated(false)
-            runDir("../run")
+            setConfigName("Common Client-${libs.versions.minecraft.get()}")
         }
         server {
             server()
-            setConfigName("Common Server")
-            ideConfigGenerated(false)
-            runDir("../run")
+            setConfigName("Common Server-${libs.versions.minecraft.get()}")
         }
     }
 }
 
-processResources {
-    duplicatesStrategy DuplicatesStrategy.INCLUDE
-
-    // this will ensure that this task is redone when a value changes
-    inputs.property "modDescription", modDescription
-    inputs.property "resourcePackFormat", libs.versions.resources.get()
-    inputs.property "dataPackFormat", libs.versions.data.get()
-
-    // replace stuff in pack.mcmeta
-    filesMatching('pack.mcmeta') {
-        expand(
-                'modDescription': modDescription,
-                "resourcePackFormat": libs.versions.resources.get(),
-                "dataPackFormat": libs.versions.data.get()
-        )
+jar {
+    manifest {
+        attributes 'Fabric-Loom-Remap': true
     }
 }
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            artifactId = "${modId}-common"
-            version = modVersion
-            from components.java
-            pom {
-                name = "${modName} [Common]"
-                description = "${modDescription}"
-                url = "${modSourceUrl}"
-                scm {
-                    url = "${modSourceUrl}"
-                    connection = "${modSourceUrl}".replace("https", "scm:git:git").concat(".git")
-                    developerConnection = "${modSourceUrl}".replace("https://github.com/", "scm:git:git@github.com:").concat(".git")
-                }
-                issueManagement {
-                    system = 'github'
-                    url = "${modIssueUrl}"
-                }
-                licenses {
-                    license {
-                        name = "${modLicense}"
-                        url = "https://spdx.org/licenses/${modLicense}.html"
-                    }
-                }
-                developers {
-                    developer {
-                        id = "${modAuthor}".toLowerCase()
-                        name = "${modAuthor}"
-                    }
-                }
-            }
-        }
-    }
-    repositories {
-        maven {
-            name = 'FuzsModResources'
-            url "file://" + project.hasProperty('modResources') ? "${project.findProperty('modResources')}/maven" : System.getenv('local_maven')
-        }
-    }
-}
-
-signing {
-    sign publishing.publications.mavenJava
-}
-
-import net.fabricmc.loom.task.AbstractRemapJarTask
-
-// thanks to lukebemish for this comment: https://github.com/jaredlll08/MultiLoader-Template/issues/17#issuecomment-1221598082
-tasks.withType(AbstractRemapJarTask).each {
-    it.targetNamespace = "named"
-}
-
-task copyJarToDir(type: Copy) {
-    onlyIf { project.hasProperty('buildJarOutputDir') && project.hasProperty('uniqueBuildNumber') }
-    if (project.findProperty('copyBuildJar').toBoolean()) {
-        from remapJar
-        into project.findProperty('buildJarOutputDir')
-        // add build number to be able to distinguish jars when testing thorough official launcher
-        // build number is stored in global gradle.properties
-        rename { fileName -> fileName.replace("v${modVersion}", "v${modVersion}.${uniqueBuildNumber}") }
-    }
-}
-
-build.finalizedBy project.tasks.copyJarToDir, rootProject.tasks.incrementBuildNumber
