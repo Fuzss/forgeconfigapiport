@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog].
 
+## [v20.4.0-1.20.4] - 2023-12-21
+- Updated to Minecraft 1.20.4 (thanks to [Girafi](https://github.com/GirafiStudios) for helping out!)
+- The mod version now is more streamlined by including the targeted Minecraft version (e.g. Minecraft 1.20.4 -> Mod Version 20.4.X)
+
 ## [v9.1.2-1.20.2] - 2023-12-02
 ### Changed
 - Server configs can now once again be read from a local world directory, when a config file is present (it has to be manually copied there)

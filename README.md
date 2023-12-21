@@ -33,14 +33,14 @@ repositories {
 }
 
 dependencies {
-    modApi "fuzs.forgeconfigapiport:forgeconfigapiport-fabric:<modVersion>"   // `modVersion` e.g. 7.0.0 for Minecraft 1.20
+    modApi "fuzs.forgeconfigapiport:forgeconfigapiport-fabric:<modVersion>"   // `modVersion` e.g. 20.4.0 for Minecraft 1.20.4
 }
 ```
 
 When developing for both multiple mod loaders simultaneously using a multi-loader setup, Forge Config Api Port can also be included in the common project to provide all classes common to both loaders. Instead of the mod loader specific version, simply include the common publication in your `build.gradle` file. The common publication is not obfuscated, it therefore is sufficient to use `api` over `modApi`.
 ```groovy
 dependencies {
-    api "fuzs.forgeconfigapiport:forgeconfigapiport-common:<modVersion>"   // `modVersion` e.g. 7.0.0 for Minecraft 1.20
+    api "fuzs.forgeconfigapiport:forgeconfigapiport-common:<modVersion>"   // `modVersion` e.g. 20.4.0 for Minecraft 1.20.4
 }
 ```
 
