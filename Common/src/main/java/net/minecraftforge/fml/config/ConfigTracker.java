@@ -20,7 +20,6 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-@Deprecated
 public class ConfigTracker {
     private static final Logger LOGGER = LogUtils.getLogger();
     static final Marker CONFIG = MarkerFactory.getMarker("CONFIG");

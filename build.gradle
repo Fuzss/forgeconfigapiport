@@ -136,30 +136,6 @@ allprojects {
     }
 }
 
-def resourceProperties = [
-        "modId": modId,
-        "modName": modName,
-        "modVersion": modVersion,
-        "modDescription": modDescription,
-        "modGroup": project.group,
-        "modPageUrl": modSourceUrl,
-        "modIssueUrl": modIssueUrl,
-        "modAuthor": modAuthor,
-        "modLicense": modLicense,
-        "minFabricVersion": libs.versions.fabricloader.min.get(),
-        "minFabricApiVersion": libs.versions.fabricapi.min.get(),
-        "minFMLVersion": libs.versions.forge.min.get().replaceAll("\\..*", ""),
-        "minForgeVersion": libs.versions.forge.min.get(),
-        "minecraftVersion": libs.versions.minecraft.get(),
-        "minPuzzlesVersion": libs.versions.puzzleslib.min.get(),
-        "resourcePackFormat": libs.versions.resources.get(),
-        "dataPackFormat": libs.versions.data.get(),
-        "mainEntryPoint": "${project.group}.${archivesBaseName}Fabric",
-        "clientEntryPoint": "${project.group}.client.${archivesBaseName}FabricClient",
-        "modFabricEnvironment": modFabricEnvironment,
-        "modForgeDisplayTest": modForgeDisplayTest
-]
-
 subprojects {
     apply plugin: "dev.architectury.loom"
     apply plugin: "com.github.johnrengelman.shadow"
@@ -180,12 +156,38 @@ subprojects {
         }
     }
 
+    def resourceProperties = [
+            "modId": modId,
+            "modName": modName,
+            "modVersion": modVersion,
+            "modDescription": modDescription,
+            "modGroup": project.group,
+            "modPageUrl": modSourceUrl,
+            "modIssueUrl": modIssueUrl,
+            "modAuthor": modAuthor,
+            "modLicense": modLicense,
+            "minFabricVersion": libs.versions.fabricloader.min.get(),
+            "minFabricApiVersion": libs.versions.fabricapi.min.get(),
+            "minForgeFMLVersion": libs.versions.minecraftforge.min.get().replaceAll("\\..*", ""),
+            "minForgeVersion": libs.versions.minecraftforge.min.get(),
+            "minNeoForgeFMLVersion": libs.versions.neoforge.min.get().replaceAll("\\..*", ""),
+            "minNeoForgeVersion": libs.versions.neoforge.min.get(),
+            "minecraftVersion": libs.versions.minecraft.get(),
+            "minPuzzlesVersion": libs.versions.puzzleslib.min.get(),
+            "resourcePackFormat": libs.versions.resources.get(),
+            "dataPackFormat": libs.versions.data.get(),
+            "mainEntryPoint": "${project.group}.${archivesBaseName}Fabric",
+            "clientEntryPoint": "${project.group}.client.${archivesBaseName}FabricClient",
+            "modFabricEnvironment": modFabricEnvironment,
+            "modForgeDisplayTest": modForgeDisplayTest
+    ]
+
     processResources {
         duplicatesStrategy DuplicatesStrategy.INCLUDE
 
         inputs.properties resourceProperties
 
-        filesMatching(["pack.mcmeta", "fabric.mod.json", "META-INF/mods.toml", "architectury.common.json", "${modId}.common.mixins.json", "${modId}.fabric.mixins.json", "${modId}.neoforge.mixins.json", "${modId}.forge.mixins.json"]) {
+        filesMatching(["pack.mcmeta", "fabric.mod.json", "META-INF/mods.toml", "architectury.common.json", modId + ".common.mixins.json", modId + ".fabric.mixins.json", modId + ".neoforge.mixins.json", modId + ".forge.mixins.json"]) {
             expand resourceProperties + [project: project]
         }
     }

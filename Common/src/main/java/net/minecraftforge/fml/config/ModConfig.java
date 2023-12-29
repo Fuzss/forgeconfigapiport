@@ -17,7 +17,6 @@ import java.nio.file.Path;
 import java.util.Locale;
 import java.util.concurrent.Callable;
 
-@Deprecated
 public class ModConfig {
     private final Type type;
     private final IConfigSpec<?> spec;

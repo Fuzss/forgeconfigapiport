@@ -10,7 +10,7 @@ import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 
-public record ForwardingConfigSpec<S extends net.minecraftforge.fml.config.IConfigSpec<S>>(IConfigSpec<?> configSpec) implements net.minecraftforge.fml.config.IConfigSpec<S> {
+public record ForwardingConfigSpec<S extends IConfigSpec<S>>(IConfigSpec<?> configSpec) implements IConfigSpec<S> {
     
     @Override
     public S self() {

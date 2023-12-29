@@ -1,5 +1,5 @@
 modLoader = "javafml"
-loaderVersion = "[${minFMLVersion},)"
+loaderVersion = "[${minNeoForgeFMLVersion},)"
 license = "${modLicense}"
 issueTrackerURL = "${modIssueUrl}"
 
@@ -16,9 +16,9 @@ updateJSONURL = "${modUpdateUrl}"
 displayTest = "${modForgeDisplayTest}"
 
 [[dependencies.${ modId }]]
-modId = "forge"
+modId = "neoforge"
 mandatory = true
-versionRange = "[${minForgeVersion},)"
+versionRange = "[${minNeoForgeVersion},)"
 ordering = "NONE"
 side = "BOTH"
 

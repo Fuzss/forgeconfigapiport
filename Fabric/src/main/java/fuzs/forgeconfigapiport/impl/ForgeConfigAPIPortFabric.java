@@ -10,6 +10,7 @@ import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerLoginConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerLoginNetworking;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.item.CreativeModeTabs;
 import net.neoforged.neoforge.common.ModConfigSpec;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -22,6 +23,11 @@ public class ForgeConfigAPIPortFabric implements ModInitializer {
         registerMessages();
         registerHandlers();
         ForgeConfigRegistry.INSTANCE.register(ForgeConfigAPIPort.MOD_ID, net.neoforged.fml.config.ModConfig.Type.SERVER, new ModConfigSpec.Builder().comment("Hello world").define("dummy_optoin", true).next().build());
+    }
+
+
+    static {
+        System.out.println(CreativeModeTabs.BUILDING_BLOCKS);
     }
 
     private static void registerMessages() {

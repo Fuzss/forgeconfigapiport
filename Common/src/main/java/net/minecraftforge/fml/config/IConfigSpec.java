@@ -8,7 +8,6 @@ package net.minecraftforge.fml.config;
 import com.electronwill.nightconfig.core.CommentedConfig;
 import com.electronwill.nightconfig.core.UnmodifiableConfig;
 
-@Deprecated
 public interface IConfigSpec<T extends IConfigSpec<T>> extends UnmodifiableConfig {
     @SuppressWarnings("unchecked")
     default T self() {
