@@ -4,6 +4,23 @@ architectury {
 
 loom {
     accessWidenerPath = file("src/main/resources/${modId}.accesswidener")
+
+    runs {
+        configureEach {
+            ideConfigGenerated(false)
+            // this should hopeful prevent an empty run directory being generated in common during initial project setup
+            runDir("../run")
+            vmArgs '-Xms1G', '-Xmx4G', '-Dmixin.debug.export=true', '-Dmixin.debug.verbose=true'
+        }
+        client {
+            client()
+            setConfigName("Common Client ${libs.versions.minecraft.get()}")
+        }
+        server {
+            server()
+            setConfigName("Common Server ${libs.versions.minecraft.get()}")
+        }
+    }
 }
 
 dependencies {
@@ -11,30 +28,12 @@ dependencies {
     modApi libs.fabricloader.fabric
 
     // Mixin Extras
-    api(annotationProcessor(libs.mixinextras))
+    api libs.mixinextras
+    annotationProcessor libs.mixinextras
 
     // Night Config
     api libs.nightconfigcore
     api libs.nightconfigtoml
-}
-
-loom {
-    runs {
-        configureEach {
-            ideConfigGenerated(false)
-            // this should hopeful prevent an empty run directory being generated in common during initial project setup
-            runDir("../run")
-            vmArg '-Dmixin.debug.export=true'
-        }
-        client {
-            client()
-            setConfigName("Common Client-${libs.versions.minecraft.get()}")
-        }
-        server {
-            server()
-            setConfigName("Common Server-${libs.versions.minecraft.get()}")
-        }
-    }
 }
 
 jar {

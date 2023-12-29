@@ -35,7 +35,6 @@ import static com.electronwill.nightconfig.core.ConfigSpec.CorrectionAction.*;
  * Like {@link com.electronwill.nightconfig.core.ConfigSpec} except in builder format, and extended to accept comments, language keys,
  * and other things Forge configs would find useful.
  */
-@Deprecated
 public class ForgeConfigSpec extends UnmodifiableConfigWrapper<UnmodifiableConfig> implements IConfigSpec<ForgeConfigSpec>//TODO: Remove extends and pipe everything through getSpec/getValues?
 {
     private final Map<List<String>, String> levelComments;

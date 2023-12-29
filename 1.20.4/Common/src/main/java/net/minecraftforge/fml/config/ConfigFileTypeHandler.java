@@ -25,7 +25,6 @@ import java.util.function.Function;
 
 import static net.minecraftforge.fml.config.ConfigTracker.CONFIG;
 
-@Deprecated
 public class ConfigFileTypeHandler {
     private static final Logger LOGGER = LogUtils.getLogger();
     static ConfigFileTypeHandler TOML = new ConfigFileTypeHandler();

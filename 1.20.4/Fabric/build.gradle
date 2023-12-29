@@ -7,11 +7,27 @@ architectury {
 
 loom {
     accessWidenerPath = project(":Common").loom.accessWidenerPath
+
+    runs {
+        configureEach {
+            ideConfigGenerated(true)
+            runDir("../run")
+            vmArgs '-Xms1G', '-Xmx4G', '-Dmixin.debug.export=true', '-Dmixin.debug.verbose=true'
+        }
+        client {
+            client()
+            setConfigName("Fabric Client ${libs.versions.minecraft.get()}")
+        }
+        server {
+            server()
+            setConfigName("Fabric Server ${libs.versions.minecraft.get()}")
+        }
+    }
 }
 
 configurations {
     common
-    shadowCommon // Don't use shadow from the shadow plugin since it *excludes* files.
+    shadowCommon
     compileClasspath.extendsFrom common
     runtimeClasspath.extendsFrom common
     developmentFabric.extendsFrom common
@@ -34,8 +50,8 @@ repositories {
 
 dependencies {
     // Common Project
-    common(project(path: ":common", configuration: "namedElements")) { transitive false }
-    shadowCommon(project(path: ":common", configuration: "transformProductionFabric")) { transitive false }
+    common(project(path: ":Common", configuration: "namedElements")) { transitive false }
+    shadowCommon(project(path: ":Common", configuration: "transformProductionFabric")) { transitive false }
 
     // Fabric Loader
     modApi libs.fabricloader.fabric
@@ -44,8 +60,8 @@ dependencies {
     modApi libs.fabricapi.fabric
 
     // Night Config
-    api(include(libs.nightconfigcore))
-    api(include(libs.nightconfigtoml))
+    api(include(libs.nightconfigcore.get()))
+    api(include(libs.nightconfigtoml.get()))
 
     // Puzzles Lib
 //    modApi libs.puzzleslib.fabric
@@ -60,30 +76,14 @@ dependencies {
     // Extensible Enums
 //    modApi(include(libs.extensibleenums.fabric.get()))
 
+    var versionCatalog = rootProject.extensions.getByType(VersionCatalogsExtension).named("libs")
+
     // Quality of Life Mods
     versionCatalog.findLibrary("modmenu.fabric").ifPresent {
-        modLocalRuntime(it)
+        modLocalRuntime it
     }
     versionCatalog.findLibrary("forgeconfigscreens.fabric").ifPresent {
-        modLocalRuntime(it)
-    }
-}
-
-loom {
-    runs {
-        configureEach {
-            ideConfigGenerated(true)
-            runDir("../run")
-            vmArg '-Dmixin.debug.export=true'
-        }
-        client {
-            client()
-            setConfigName("Fabric Client-${libs.versions.minecraft.get()}")
-        }
-        server {
-            server()
-            setConfigName("Fabric Server-${libs.versions.minecraft.get()}")
-        }
+        modLocalRuntime it
     }
 }
 

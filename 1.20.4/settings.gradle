@@ -8,6 +8,28 @@ pluginManagement {
     }
 }
 
-//rootProject.name = "${modName.replaceAll("[^a-zA-Z]", "")}-${dependenciesVersionCatalog.replaceAll("-v\\d+", "")}"
-rootProject.name = "${modName.replaceAll("[^a-zA-Z]", "")}-1.20.4"
+dependencyResolutionManagement {
+    repositories {
+        maven {
+            name = "Fuzs Mod Resources"
+            url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/"
+        }
+    }
+    versionCatalogs {
+        libs {
+            from("fuzs.sharedcatalogs:sharedcatalogs:${dependenciesVersionCatalog}")
+            if (settings.ext.has("dependenciesPuzzlesLibVersion")) {
+                version("puzzleslib-version", settings.ext.find("dependenciesPuzzlesLibVersion"))
+            }
+            if (settings.ext.has("dependenciesMinPuzzlesLibVersion")) {
+                version("puzzleslib-min", settings.ext.find("dependenciesMinPuzzlesLibVersion"))
+            }
+            if (settings.ext.has("dependenciesPuzzlesApi")) {
+                version("puzzlesapi", settings.ext.find("dependenciesPuzzlesApi"))
+            }
+        }
+    }
+}
+
+rootProject.name = "${modName.replaceAll("[^a-zA-Z]", "")}-${dependenciesVersionCatalog.replaceAll("-v\\d+", "")}"
 include("Common", "Fabric", "NeoForge", "Forge")
