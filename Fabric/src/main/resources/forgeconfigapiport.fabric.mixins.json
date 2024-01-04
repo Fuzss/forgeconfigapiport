@@ -7,8 +7,6 @@
   "mixins": [
   ],
   "client": [
-    "client.ClientHandshakePacketListenerImplMixin",
-    "client.MinecraftMixin"
   ],
   "injectors": {
     "defaultRequire": 1

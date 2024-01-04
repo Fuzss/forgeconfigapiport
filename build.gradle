@@ -103,13 +103,15 @@ allprojects {
     javadoc.options.addStringOption('Xdoclint:none', '-quiet')
 
     tasks.withType(Jar).configureEach {
+        duplicatesStrategy DuplicatesStrategy.EXCLUDE
+
         from rootProject.file("../LICENSE.md")
         from rootProject.file("../LICENSE-ASSETS.md")
         from rootProject.file("../LICENSE-FORGE.md")
         from rootProject.file("../LICENSE-NIGHT-CONFIG.md")
         from rootProject.file("../LICENSING.md")
         from rootProject.file("CHANGELOG.md")
-        exclude "architectury.common.json"
+
         manifest {
             attributes([
                     "Specification-Title"           : modName,
@@ -125,6 +127,7 @@ allprojects {
                     'Built-On-Minecraft'            : libs.versions.minecraft.get()
             ])
         }
+
         group 'jar'
     }
 
@@ -156,34 +159,35 @@ subprojects {
         }
     }
 
-    def resourceProperties = [
-            "modId": modId,
-            "modName": modName,
-            "modVersion": modVersion,
-            "modDescription": modDescription,
-            "modGroup": project.group,
-            "modPageUrl": modSourceUrl,
-            "modIssueUrl": modIssueUrl,
-            "modAuthor": modAuthor,
-            "modLicense": modLicense,
-            "minFabricVersion": libs.versions.fabricloader.min.get(),
-            "minFabricApiVersion": libs.versions.fabricapi.min.get(),
-            "minForgeFMLVersion": libs.versions.minecraftforge.min.get().replaceAll("\\..*", ""),
-            "minForgeVersion": libs.versions.minecraftforge.min.get(),
-            "minNeoForgeFMLVersion": libs.versions.neoforge.min.get().replaceAll("\\..*", ""),
-            "minNeoForgeVersion": libs.versions.neoforge.min.get(),
-            "minecraftVersion": libs.versions.minecraft.get(),
-            "minPuzzlesVersion": libs.versions.puzzleslib.min.get(),
-            "resourcePackFormat": libs.versions.resources.get(),
-            "dataPackFormat": libs.versions.data.get(),
-            "mainEntryPoint": "${project.group}.${archivesBaseName}Fabric",
-            "clientEntryPoint": "${project.group}.client.${archivesBaseName}FabricClient",
-            "modFabricEnvironment": modFabricEnvironment,
-            "modForgeDisplayTest": modForgeDisplayTest
-    ]
-
     processResources {
-        duplicatesStrategy DuplicatesStrategy.INCLUDE
+        duplicatesStrategy DuplicatesStrategy.EXCLUDE
+
+        var resourceProperties = [
+                "modId": modId,
+                "modName": modName,
+                "modVersion": modVersion,
+                "modDescription": modDescription,
+                "modGroup": project.group,
+                "modPageUrl": modSourceUrl,
+                "modIssueUrl": modIssueUrl,
+                "modUpdateUrl": modUpdateUrl,
+                "modAuthor": modAuthor,
+                "modLicense": modLicense,
+                "minFabricVersion": libs.versions.fabricloader.min.get(),
+                "minFabricApiVersion": libs.versions.fabricapi.min.get(),
+                "minForgeFMLVersion": libs.versions.minecraftforge.min.get().replaceAll("\\..*", ""),
+                "minForgeVersion": libs.versions.minecraftforge.min.get(),
+                "minNeoForgeFMLVersion": libs.versions.neoforge.min.get().replaceAll("\\..*", ""),
+                "minNeoForgeVersion": libs.versions.neoforge.min.get(),
+                "minecraftVersion": libs.versions.minecraft.get(),
+                "minPuzzlesVersion": libs.versions.puzzleslib.min.get(),
+                "resourcePackFormat": libs.versions.resources.get(),
+                "dataPackFormat": libs.versions.data.get(),
+                "mainEntryPoint": "${project.group}.${archivesBaseName}Fabric",
+                "clientEntryPoint": "${project.group}.client.${archivesBaseName}FabricClient",
+                "modFabricEnvironment": modFabricEnvironment,
+                "modForgeDisplayTest": modForgeDisplayTest
+        ]
 
         inputs.properties resourceProperties
 
