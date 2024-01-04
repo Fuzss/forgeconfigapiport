@@ -1,5 +1,5 @@
 architectury {
-    common("fabric", "neoforge", "forge")
+    common rootProject.subprojects.name.stream().filter { it.toLowerCase() != "common" }.map { it.toLowerCase() }.toArray() as String[]
 }
 
 loom {

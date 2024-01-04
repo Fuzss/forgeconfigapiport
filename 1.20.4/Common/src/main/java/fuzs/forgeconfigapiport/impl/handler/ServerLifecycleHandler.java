@@ -1,7 +1,6 @@
 package fuzs.forgeconfigapiport.impl.handler;
 
 import fuzs.forgeconfigapiport.impl.ForgeConfigAPIPort;
-import fuzs.forgeconfigapiport.mixin.accessor.LevelResourceAccessor;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.storage.LevelResource;
@@ -15,7 +14,7 @@ import java.nio.file.Path;
 public class ServerLifecycleHandler {
     public static final ResourceLocation BEFORE_PHASE = ForgeConfigAPIPort.id("before");
     public static final ResourceLocation AFTER_PHASE = ForgeConfigAPIPort.id("after");
-    private static final LevelResource SERVER_CONFIG_LEVEL_RESOURCE = LevelResourceAccessor.forgeconfigapiport$create("serverconfig");
+    private static final LevelResource SERVER_CONFIG_LEVEL_RESOURCE = new LevelResource("serverconfig");
 
     public static void onServerStarting(MinecraftServer server) {
         ConfigTracker.INSTANCE.loadConfigs(ModConfig.Type.SERVER, getServerConfigPath(server));
