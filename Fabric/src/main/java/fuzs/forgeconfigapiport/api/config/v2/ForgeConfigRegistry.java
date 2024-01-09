@@ -1,6 +1,6 @@
 package fuzs.forgeconfigapiport.api.config.v2;
 
-import fuzs.forgeconfigapiport.impl.config.ForgeConfigRegistryV2Impl;
+import fuzs.forgeconfigapiport.fabric.impl.config.legacy.ForgeConfigRegistryV2Impl;
 import net.minecraftforge.fml.config.IConfigSpec;
 import net.minecraftforge.fml.config.ModConfig;
 

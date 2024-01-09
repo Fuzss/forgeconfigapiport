@@ -1,5 +1,5 @@
 architectury {
-    common rootProject.subprojects.name.stream().filter { it.toLowerCase() != "common" }.map { it.toLowerCase() }.toArray() as String[]
+    common rootProject.subprojects.name.stream().filter { !it.toLowerCase().contains("common") }.map { it.toLowerCase() }.toArray() as String[]
 }
 
 loom {
@@ -10,7 +10,7 @@ loom {
             ideConfigGenerated(false)
             // this should hopeful prevent an empty run directory being generated in common during initial project setup
             runDir("../run")
-            vmArgs '-Xms1G', '-Xmx4G', '-Dmixin.debug.export=true', '-Dmixin.debug.verbose=true'
+            vmArgs '-Xms1G', '-Xmx4G', '-Dmixin.debug.export=true'
         }
         client {
             client()
@@ -28,16 +28,14 @@ dependencies {
     modApi libs.fabricloader.fabric
 
     // Mixin Extras
-    api libs.mixinextras
-    annotationProcessor libs.mixinextras
+    api libs.mixinextras.common
+    annotationProcessor libs.mixinextras.common
 
     // Night Config
     api libs.nightconfigcore
     api libs.nightconfigtoml
 }
 
-jar {
-    manifest {
-        attributes 'Fabric-Loom-Remap': true
-    }
+tasks.withType(net.fabricmc.loom.task.AbstractRemapJarTask).configureEach {
+    targetNamespace = "named"
 }

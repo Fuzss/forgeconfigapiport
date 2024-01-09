@@ -1,6 +1,6 @@
 package fuzs.forgeconfigapiport.api.config.v3;
 
-import fuzs.forgeconfigapiport.impl.config.ForgeConfigRegistryV3Impl;
+import fuzs.forgeconfigapiport.fabric.impl.config.legacy.ForgeConfigRegistryV3Impl;
 import net.neoforged.fml.config.IConfigSpec;
 import net.neoforged.fml.config.ModConfig;
 

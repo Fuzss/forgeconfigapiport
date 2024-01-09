@@ -1,6 +1,6 @@
 package fuzs.forgeconfigapiport.api.config.v2;
 
-import fuzs.forgeconfigapiport.impl.config.ForgeConfigPathsV2Impl;
+import fuzs.forgeconfigapiport.fabric.impl.config.legacy.ForgeConfigPathsV2Impl;
 import net.minecraft.server.MinecraftServer;
 
 import java.nio.file.Path;

@@ -12,7 +12,7 @@ loom {
         configureEach {
             ideConfigGenerated(true)
             runDir("../run")
-            vmArgs '-Xms1G', '-Xmx4G', '-Dmixin.debug.export=true', '-Dmixin.debug.verbose=true'
+            vmArgs '-Xms1G', '-Xmx4G', '-Dmixin.debug.export=true'
         }
         client {
             client()
@@ -35,9 +35,11 @@ loom {
 configurations {
     common
     shadowCommon
-    compileClasspath.extendsFrom common
-    runtimeClasspath.extendsFrom common
-    developmentNeoForge.extendsFrom common
+    commonForgeApi
+    shadowCommonForgeApi
+    compileClasspath.extendsFrom common, commonForgeApi
+    runtimeClasspath.extendsFrom common, commonForgeApi
+    developmentNeoForge.extendsFrom common, commonForgeApi
 }
 
 repositories {
@@ -51,6 +53,8 @@ dependencies {
     // Common Project
     common(project(path: ":Common", configuration: "namedElements")) { transitive false }
     shadowCommon(project(path: ":Common", configuration: "transformProductionNeoForge")) { transitive = false }
+    commonForgeApi(project(path: ":Common-ForgeApi", configuration: "namedElements")) { transitive false }
+    shadowCommonForgeApi(project(path: ":Common-ForgeApi", configuration: "transformProductionNeoForge")) { transitive false }
 
     // NeoForge
     neoForge libs.neoforge.neoforge
@@ -70,7 +74,7 @@ dependencies {
 }
 
 shadowJar {
-    configurations = [project.configurations.shadowCommon]
+    configurations = [project.configurations.shadowCommon, project.configurations.shadowCommonForgeApi]
     archiveClassifier = "dev-shadow"
 }
 
@@ -85,45 +89,14 @@ sourcesJar {
     def commonSources = project(":Common").sourcesJar
     dependsOn commonSources
     from commonSources.archiveFile.map { zipTree(it) }
+    def commonForgeApiSources = project(":Common-ForgeApi").sourcesJar
+    dependsOn commonForgeApiSources
+    from commonForgeApiSources.archiveFile.map { zipTree(it) }
 }
 
 components.java {
     withVariantsFromConfiguration(project.configurations.shadowRuntimeElements) {
         skip()
-    }
-}
-
-task refreshUpdateJson {
-    onlyIf { project.hasProperty('modResources') }
-    doLast {
-        def updateFile = file(project.findProperty('modResources').concat(File.separator).concat('update').concat(File.separator).concat("${modId}").concat('.json'))
-        def updateJson
-        if (updateFile.exists() && updateFile.canRead()) {
-            updateJson = new groovy.json.JsonSlurper().parseText(updateFile.text)
-            "${projectGameVersions}".replaceAll(" ", "").split(",").each { version ->
-                updateJson['promos']["${version}-latest"] = "${modVersion}"
-                // alpha and beta releases will contain 'a' or 'b' char respectively, don't update recommended for those
-                if ("${modVersion}".matches("[^a-zA-Z]+")) {
-                    updateJson['promos']["${version}-recommended"] = "${modVersion}"
-                }
-            }
-        } else {
-            def builder = new groovy.json.JsonBuilder()
-            updateJson = builder {
-                homepage "${modSourceUrl}"
-                promos {
-                    "${projectGameVersions}".replaceAll(" ", "").split(",").each { version ->
-                        "${version}-latest" "${modVersion}"
-                        // alpha and beta releases will contain 'a' or 'b' char respectively, don't update recommended for those
-                        if ("${modVersion}".matches("[^a-zA-Z]+")) {
-                            "${version}-recommended" "${modVersion}"
-                        }
-                    }
-                }
-            }
-        }
-        def output = new groovy.json.JsonOutput()
-        updateFile.write(output.prettyPrint(output.toJson(updateJson)))
     }
 }
 

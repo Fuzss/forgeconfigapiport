@@ -1,6 +1,6 @@
 package fuzs.forgeconfigapiport.api.config.v3;
 
-import fuzs.forgeconfigapiport.impl.config.ForgeConfigPathsV3Impl;
+import fuzs.forgeconfigapiport.fabric.impl.config.legacy.ForgeConfigPathsV3Impl;
 
 import java.nio.file.Path;
 
