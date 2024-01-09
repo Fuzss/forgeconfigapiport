@@ -31,10 +31,9 @@
   },
 
   "mixins": [
-    "${modId}.common.mixins.json"
+    "${modId}.common.mixins.json",
+    "${modId}.fabric.mixins.json"
   ],
-
-  "accessWidener": "${modId}.accesswidener",
 
   "depends": {
     "fabricloader": ">=${minFabricVersion}",

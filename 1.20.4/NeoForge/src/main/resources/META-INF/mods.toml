@@ -15,6 +15,12 @@ displayURL = "${modPageUrl}"
 updateJSONURL = "${modUpdateUrl}"
 displayTest = "${modForgeDisplayTest}"
 
+[[mixins]]
+config="${modId}.common.mixins.json"
+
+[[mixins]]
+config="${modId}.neoforge.mixins.json"
+
 [[dependencies.${ modId }]]
 modId = "neoforge"
 mandatory = true

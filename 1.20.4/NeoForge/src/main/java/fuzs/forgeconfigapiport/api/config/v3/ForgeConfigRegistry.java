@@ -1,8 +1,8 @@
 package fuzs.forgeconfigapiport.api.config.v3;
 
 import fuzs.forgeconfigapiport.impl.config.ForgeConfigRegistryImpl;
-import net.minecraftforge.fml.config.ModConfig;
 import net.neoforged.fml.config.IConfigSpec;
+import net.neoforged.fml.config.ModConfig;
 
 /**
  * Registry for adding your configs. Opposed to Fabric/Quilt this registry serves as a bridge between NeoForge's and Forge's config systems.

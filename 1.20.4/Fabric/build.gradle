@@ -12,7 +12,7 @@ loom {
         configureEach {
             ideConfigGenerated(true)
             runDir("../run")
-            vmArgs '-Xms1G', '-Xmx4G', '-Dmixin.debug.export=true', '-Dmixin.debug.verbose=true'
+            vmArgs '-Xms1G', '-Xmx4G', '-Dmixin.debug.export=true'
         }
         client {
             client()
@@ -28,9 +28,11 @@ loom {
 configurations {
     common
     shadowCommon
-    compileClasspath.extendsFrom common
-    runtimeClasspath.extendsFrom common
-    developmentFabric.extendsFrom common
+    commonNeoForgeApi
+    shadowCommonNeoForgeApi
+    compileClasspath.extendsFrom common, commonNeoForgeApi
+    runtimeClasspath.extendsFrom common, commonNeoForgeApi
+    developmentFabric.extendsFrom common, commonNeoForgeApi
 }
 
 repositories {
@@ -52,6 +54,8 @@ dependencies {
     // Common Project
     common(project(path: ":Common", configuration: "namedElements")) { transitive false }
     shadowCommon(project(path: ":Common", configuration: "transformProductionFabric")) { transitive false }
+    commonNeoForgeApi(project(path: ":Common-NeoForgeApi", configuration: "namedElements")) { transitive false }
+    shadowCommonNeoForgeApi(project(path: ":Common-NeoForgeApi", configuration: "transformProductionFabric")) { transitive false }
 
     // Fabric Loader
     modApi libs.fabricloader.fabric
@@ -88,15 +92,15 @@ dependencies {
 }
 
 shadowJar {
-    configurations = [project.configurations.shadowCommon]
+    configurations = [project.configurations.shadowCommon, project.configurations.shadowCommonNeoForgeApi]
     archiveClassifier.set("dev-shadow")
 }
 
 remapJar {
-    injectAccessWidener = true
     input.set shadowJar.archiveFile
     dependsOn shadowJar
     archiveClassifier.set("")
+    injectAccessWidener = true
 }
 
 jar {
@@ -107,6 +111,9 @@ sourcesJar {
     def commonSources = project(":Common").sourcesJar
     dependsOn commonSources
     from commonSources.archiveFile.map { zipTree(it) }
+    def commonNeoForgeApiSources = project(":Common-NeoForgeApi").sourcesJar
+    dependsOn commonNeoForgeApiSources
+    from commonNeoForgeApiSources.archiveFile.map { zipTree(it) }
 }
 
 components.java {
