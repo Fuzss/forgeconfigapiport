@@ -1,0 +1,38 @@
+apply from: "https://raw.githubusercontent.com/Fuzss/modresources/main/gradle/v2/forge.gradle"
+
+configurations {
+    commonNeoForgeApi
+    shadowCommonNeoForgeApi
+    compileClasspath.extendsFrom common, commonNeoForgeApi
+    runtimeClasspath.extendsFrom common, commonNeoForgeApi
+    developmentForge.extendsFrom common, commonNeoForgeApi
+}
+
+dependencies {
+    // Common Project
+    commonNeoForgeApi(project(path: ":Common-NeoForgeApi", configuration: "namedElements")) { transitive false }
+    shadowCommonNeoForgeApi(project(path: ":Common-NeoForgeApi", configuration: "transformProductionForge")) { transitive false }
+
+    // Puzzles Lib
+//    modApi libs.puzzleslib.forge
+
+    var versionCatalog = rootProject.extensions.getByType(VersionCatalogsExtension).named("libs")
+
+    // Quality of Life Mods
+    versionCatalog.findLibrary("bettermodsbutton.forge").ifPresent {
+        modLocalRuntime it
+    }
+    versionCatalog.findLibrary("forgeconfigscreens.forge").ifPresent {
+        modLocalRuntime it
+    }
+}
+
+shadowJar {
+    configurations = [project.configurations.shadowCommon, project.configurations.shadowCommonNeoForgeApi]
+}
+
+sourcesJar {
+    def commonNeoForgeApiSources = project(":Common-NeoForgeApi").sourcesJar
+    dependsOn commonNeoForgeApiSources
+    from commonNeoForgeApiSources.archiveFile.map { zipTree(it) }
+}
