@@ -1,0 +1,79 @@
+architectury {
+    common rootProject.subprojects.name.stream().filter { !it.toLowerCase().contains("common") }.map { it.toLowerCase() }.toArray() as String[]
+}
+
+loom {
+    accessWidenerPath = project(":Common").loom.accessWidenerPath
+
+    runs {
+        configureEach {
+            ideConfigGenerated(false)
+            // this should hopeful prevent an empty run directory being generated in common during initial project setup
+            runDir("../run")
+            vmArgs '-Xms1G', '-Xmx4G', '-Dmixin.debug.export=true'
+        }
+        client {
+            client()
+            setConfigName("Common Client ${libs.versions.minecraft.get()}")
+        }
+        server {
+            server()
+            setConfigName("Common Server ${libs.versions.minecraft.get()}")
+        }
+    }
+}
+
+configurations {
+    common
+    shadowCommon
+    compileClasspath.extendsFrom common
+    runtimeClasspath.extendsFrom common
+}
+
+dependencies {
+    // Common Project
+    common(project(path: ":Common", configuration: "namedElements")) { transitive false }
+    shadowCommon(project(path: ":Common", configuration: "namedElements")) { transitive false }
+
+    // Fabric Loader
+    modApi libs.fabricloader.fabric
+
+    // Mixin Extras
+    api(annotationProcessor(libs.mixinextras.common.get()))
+
+    // Night Config
+    api libs.nightconfigcore
+    api libs.nightconfigtoml
+}
+
+shadowJar {
+    configurations = [project.configurations.shadowCommon]
+    archiveClassifier = "dev-shadow"
+}
+
+remapJar {
+    input.set shadowJar.archiveFile
+    dependsOn shadowJar
+    archiveClassifier = ""
+    injectAccessWidener = true
+}
+
+jar {
+    archiveClassifier = "dev"
+}
+
+sourcesJar {
+    def commonSources = project(":Common").sourcesJar
+    dependsOn commonSources
+    from commonSources.archiveFile.map { zipTree(it) }
+}
+
+components.java {
+    withVariantsFromConfiguration(project.configurations.shadowRuntimeElements) {
+        skip()
+    }
+}
+
+tasks.withType(net.fabricmc.loom.task.AbstractRemapJarTask).configureEach {
+    targetNamespace = "named"
+}
