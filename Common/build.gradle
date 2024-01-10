@@ -1,5 +1,5 @@
 architectury {
-    common rootProject.subprojects.name.stream().filter { !it.toLowerCase().contains("common") }.map { it.toLowerCase() }.toArray() as String[]
+    common rootProject.subprojects.name.collect { it.toLowerCase() }.findAll { !it.contains("common") }
 }
 
 loom {

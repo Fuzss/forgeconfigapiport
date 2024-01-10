@@ -1,6 +1,6 @@
 package fuzs.forgeconfigapiport.api.config.v3;
 
-import fuzs.forgeconfigapiport.fabric.impl.config.legacy.ModConfigEventsHolder;
+import fuzs.forgeconfigapiport.fabric.impl.config.legacy.ModConfigEventsHolderV3;
 import net.fabricmc.fabric.api.event.Event;
 import net.neoforged.fml.config.ModConfig;
 
@@ -13,6 +13,7 @@ import java.util.Objects;
  * To solve this issue without introducing a manual mod id check in the events implementation itself, mod config event callbacks are instead created separately for every mod that has configs registered with Forge Config Api Port.
  * Accessing events for a specific mod is done by calling {@link #loading(String)}, {@link #reloading(String)} or {@link #unloading(String)}.
  */
+@Deprecated(forRemoval = true)
 public final class ModConfigEvents {
 
     private ModConfigEvents() {
@@ -27,7 +28,7 @@ public final class ModConfigEvents {
      */
     public static Event<Loading> loading(String modId) {
         Objects.requireNonNull(modId, "mod id is null");
-        return ModConfigEventsHolder.modSpecific(modId).loading();
+        return ModConfigEventsHolderV3.modSpecific(modId).loading();
     }
 
     /**
@@ -38,7 +39,7 @@ public final class ModConfigEvents {
      */
     public static Event<Reloading> reloading(String modId) {
         Objects.requireNonNull(modId, "mod id is null");
-        return ModConfigEventsHolder.modSpecific(modId).reloading();
+        return ModConfigEventsHolderV3.modSpecific(modId).reloading();
     }
 
     /**
@@ -49,7 +50,7 @@ public final class ModConfigEvents {
      */
     public static Event<Unloading> unloading(String modId) {
         Objects.requireNonNull(modId, "mod id is null");
-        return ModConfigEventsHolder.modSpecific(modId).unloading();
+        return ModConfigEventsHolderV3.modSpecific(modId).unloading();
     }
 
     /**

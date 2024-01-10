@@ -5,9 +5,8 @@ import com.electronwill.nightconfig.core.file.FileConfig;
 import com.electronwill.nightconfig.core.io.ParsingException;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import fuzs.forgeconfigapiport.impl.ForgeConfigAPIPort;
 import fuzs.forgeconfigapiport.fabric.impl.config.ForgeConfigApiPortConfig;
-import fuzs.forgeconfigapiport.fabric.impl.OtherCommonAbstractions;
+import fuzs.forgeconfigapiport.impl.ForgeConfigAPIPort;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.IOException;
@@ -46,7 +45,7 @@ public class ConfigLoadingHelper {
 
     public static void tryRegisterDefaultConfig(String fileName) {
         if (!ForgeConfigApiPortConfig.INSTANCE.<Boolean>getValue("correctConfigValuesFromDefaultConfig")) return;
-        Path path = OtherCommonAbstractions.getDefaultConfigsDirectory().resolve(fileName);
+        Path path = ForgeConfigApiPortConfig.getDefaultConfigsDirectory().resolve(fileName);
         if (Files.exists(path)) {
             try (CommentedFileConfig config = CommentedFileConfig.of(path)) {
                 config.load();

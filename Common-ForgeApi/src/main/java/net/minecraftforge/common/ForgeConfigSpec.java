@@ -26,6 +26,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.electronwill.nightconfig.core.ConfigSpec.CorrectionAction.*;
@@ -45,6 +46,7 @@ public class ForgeConfigSpec extends UnmodifiableConfigWrapper<UnmodifiableConfi
     private boolean isCorrecting = false;
 
     private static final Logger LOGGER = LogManager.getLogger();
+    private static final Pattern WINDOWS_NEWLINE = Pattern.compile("\r\n");
 
     private ForgeConfigSpec(UnmodifiableConfig storage, UnmodifiableConfig values, Map<List<String>, String> levelComments, Map<List<String>, String> levelTranslationKeys) {
         super(storage);
@@ -282,10 +284,10 @@ public class ForgeConfigSpec extends UnmodifiableConfigWrapper<UnmodifiableConfi
     {
         if (obj1 instanceof String string1 && obj2 instanceof String string2)
         {
-            if (string1.length() > 0 && string2.length() > 0)
+            if (!string1.isEmpty() && !string2.isEmpty())
             {
-                return string1.replaceAll("\r\n", "\n")
-                        .equals(string2.replaceAll("\r\n", "\n"));
+                return WINDOWS_NEWLINE.matcher(string1).replaceAll("\n")
+                        .equals(WINDOWS_NEWLINE.matcher(string2).replaceAll("\n"));
 
             }
         }
@@ -719,7 +721,7 @@ public class ForgeConfigSpec extends UnmodifiableConfigWrapper<UnmodifiableConfi
     }
 
     @SuppressWarnings("unused")
-    private static class Range<V extends Comparable<? super V>> implements Predicate<Object>
+    public static class Range<V extends Comparable<? super V>> implements Predicate<Object>
     {
         private final Class<? extends V> clazz;
         private final V min;

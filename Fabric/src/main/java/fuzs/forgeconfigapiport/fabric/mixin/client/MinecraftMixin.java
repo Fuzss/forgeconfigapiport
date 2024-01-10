@@ -1,6 +1,6 @@
 package fuzs.forgeconfigapiport.fabric.mixin.client;
 
-import fuzs.forgeconfigapiport.impl.network.config.ConfigSync;
+import fuzs.forgeconfigapiport.fabric.impl.network.config.ConfigSync;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;

@@ -1,9 +1,9 @@
 package fuzs.forgeconfigapiport.fabric.impl.client;
 
 import com.mojang.brigadier.CommandDispatcher;
+import fuzs.forgeconfigapiport.fabric.impl.client.commands.ConfigCommand;
 import fuzs.forgeconfigapiport.fabric.impl.network.client.config.ConfigSyncClient;
 import fuzs.forgeconfigapiport.fabric.impl.network.config.ConfigSync;
-import fuzs.forgeconfigapiport.fabric.impl.client.commands.ConfigCommand;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import net.fabricmc.api.ClientModInitializer;
@@ -14,7 +14,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientHandshakePacketListenerImpl;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.fml.config.ConfigTracker;
+import net.minecraftforge.fml.config.ModConfig;
 
+import java.util.List;
 import java.util.function.Consumer;
 
 public class ForgeConfigAPIPortFabricClient implements ClientModInitializer {
@@ -34,7 +37,40 @@ public class ForgeConfigAPIPortFabricClient implements ClientModInitializer {
 
     private static void registerHandlers() {
         ClientCommandRegistrationCallback.EVENT.register((CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) -> {
-            ConfigCommand.register(dispatcher, FabricClientCommandSource::sendFeedback);
+            ConfigCommand.register(new ConfigCommand.ConfigCommandContext<ModConfig.Type>() {
+
+                @Override
+                public String name() {
+                    return "forgeconfig";
+                }
+
+                @Override
+                public Class<ModConfig.Type> getType() {
+                    return ModConfig.Type.class;
+                }
+
+                @Override
+                public List<String> getConfigFileNames(String modId, ModConfig.Type type) {
+                    return ConfigTracker.INSTANCE.getConfigFileNames(modId, type);
+                }
+            }, dispatcher, FabricClientCommandSource::sendFeedback);
+            ConfigCommand.register(new ConfigCommand.ConfigCommandContext<net.neoforged.fml.config.ModConfig.Type>() {
+
+                @Override
+                public String name() {
+                    return "neoforgeconfig";
+                }
+
+                @Override
+                public Class<net.neoforged.fml.config.ModConfig.Type> getType() {
+                    return net.neoforged.fml.config.ModConfig.Type.class;
+                }
+
+                @Override
+                public List<String> getConfigFileNames(String modId, net.neoforged.fml.config.ModConfig.Type type) {
+                    return net.neoforged.fml.config.ConfigTracker.INSTANCE.getConfigFileNames(modId, type);
+                }
+            }, dispatcher, FabricClientCommandSource::sendFeedback);
         });
     }
 }

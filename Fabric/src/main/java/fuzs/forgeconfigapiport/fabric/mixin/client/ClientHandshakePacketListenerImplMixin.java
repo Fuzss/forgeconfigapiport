@@ -1,9 +1,9 @@
 package fuzs.forgeconfigapiport.fabric.mixin.client;
 
+import fuzs.forgeconfigapiport.fabric.impl.network.client.NetworkHooks;
 import net.minecraft.client.multiplayer.ClientHandshakePacketListenerImpl;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.login.ClientboundGameProfilePacket;
-import fuzs.forgeconfigapiport.impl.network.client.NetworkHooks;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;

@@ -20,4 +20,8 @@ public final class CommonAbstractions {
     public static Map<String, Object> getDefaultMap(FileConfig fileConfig) {
         throw new RuntimeException();
     }
+
+    public static boolean includeTestConfigs() {
+        return false;
+    }
 }

@@ -16,7 +16,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
 public class ModIdArgument implements ArgumentType<String> {
-    private static final List<String> EXAMPLES = Arrays.asList(ForgeConfigAPIPort.MOD_ID, "jei");
+    private static final List<String> EXAMPLES = Arrays.asList(ForgeConfigAPIPort.MOD_ID, "fabric", "modmenu");
 
     private final Predicate<String> filter;
 

@@ -7,6 +7,7 @@ import java.nio.file.Path;
 /**
  * Access to paths where different kinds of config files are stored by Forge.
  */
+@Deprecated(forRemoval = true)
 public interface ForgeConfigPaths {
     /**
      * Implementation instance for retrieving config paths.

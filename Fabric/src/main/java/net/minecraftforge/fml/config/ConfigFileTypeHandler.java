@@ -12,10 +12,11 @@ import com.electronwill.nightconfig.core.io.ParsingException;
 import com.electronwill.nightconfig.core.io.WritingMode;
 import com.electronwill.nightconfig.toml.TomlFormat;
 import com.mojang.logging.LogUtils;
-import fuzs.forgeconfigapiport.impl.CommonAbstractions;
+import fuzs.forgeconfigapiport.api.config.v2.ModConfigEvents;
+import fuzs.forgeconfigapiport.fabric.api.forge.v4.ForgeModConfigEvents;
 import fuzs.forgeconfigapiport.fabric.impl.config.ForgeConfigApiPortConfig;
 import fuzs.forgeconfigapiport.fabric.impl.util.ConfigLoadingHelper;
-import fuzs.forgeconfigapiport.fabric.impl.OtherCommonAbstractions;
+import net.fabricmc.loader.api.FabricLoader;
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 
@@ -30,16 +31,13 @@ public class ConfigFileTypeHandler {
     private static final Logger LOGGER = LogUtils.getLogger();
     static ConfigFileTypeHandler TOML = new ConfigFileTypeHandler();
     // Forge Config Api Port: adapted for Fabric
-    private static final Path defaultConfigPath = OtherCommonAbstractions.getDefaultConfigsDirectory();
+    private static final Path defaultConfigPath = ForgeConfigApiPortConfig.getDefaultConfigsDirectory();
 
     public Function<ModConfig, CommentedFileConfig> reader(Path configBasePath) {
         return (c) -> {
             // Forge Config API Port: if the server config exists locally in the world directory use that, otherwise use global server configs
             // idea from https://github.com/MinecraftForge/MinecraftForge/issues/9465
-            Path configPath = configBasePath.resolve(c.getFileName());
-            if (ForgeConfigApiPortConfig.INSTANCE.<Boolean>getValue("forceGlobalServerConfigs") && Files.notExists(configPath)) {
-                configPath = OtherCommonAbstractions.getConfigDirectory().resolve(c.getFileName());
-            }
+            Path configPath = ForgeConfigApiPortConfig.getConfigPath(configBasePath, c.getFileName());
             // Forge Config API Port:
             // force toml format which is normally auto-detected by night config from the file extension
             // there have been reports of this failing and the auto-detection not working
@@ -65,20 +63,25 @@ public class ConfigFileTypeHandler {
             // Forge Config API Port: store values from default config, so we can retrieve them when correcting individual values
             ConfigLoadingHelper.tryRegisterDefaultConfig(c.getFileName());
             LOGGER.debug(CONFIG, "Loaded TOML config file {}", configPath);
-            try {
-                FileWatcher.defaultInstance().addWatch(configPath, new ConfigWatcher(c, configData, Thread.currentThread().getContextClassLoader()));
-                LOGGER.debug(CONFIG, "Watching TOML config file {} for changes", configPath);
-            } catch (IOException e) {
-                throw new RuntimeException("Couldn't watch config file", e);
+            if (!ForgeConfigApiPortConfig.INSTANCE.<Boolean>getValue("disableConfigWatcher")) {
+                try {
+                    FileWatcher.defaultInstance().addWatch(configPath, new ConfigWatcher(c, configData, Thread.currentThread().getContextClassLoader()));
+                    LOGGER.debug(CONFIG, "Watching TOML config file {} for changes", configPath);
+                } catch (IOException e) {
+                    throw new RuntimeException("Couldn't watch config file", e);
+                }
             }
             return configData;
         };
     }
 
     public void unload(Path configBasePath, ModConfig config) {
-        Path configPath = configBasePath.resolve(config.getFileName());
+        if (ForgeConfigApiPortConfig.INSTANCE.<Boolean>getValue("disableConfigWatcher")) {
+            return;
+        }
+        Path configPath = ForgeConfigApiPortConfig.getConfigPath(configBasePath, config.getFileName());
         try {
-            FileWatcher.defaultInstance().removeWatch(configBasePath.resolve(config.getFileName()));
+            FileWatcher.defaultInstance().removeWatch(configPath);
         } catch (RuntimeException e) {
             LOGGER.error("Failed to remove config {} from tracker!", configPath, e);
         }
@@ -164,7 +167,8 @@ public class ConfigFileTypeHandler {
                 LOGGER.debug(CONFIG, "Config file {} changed, sending notifies", this.modConfig.getFileName());
                 this.modConfig.getSpec().afterReload();
                 // Forge Config API Port: invoke Fabric style callback instead of Forge event
-                CommonAbstractions.INSTANCE.fireConfigReloadingV2(this.modConfig.getModId(), this.modConfig);
+                ForgeModConfigEvents.reloading(this.modConfig.getModId()).invoker().onModConfigReloading(this.modConfig);
+                ModConfigEvents.reloading(this.modConfig.getModId()).invoker().onModConfigReloading(this.modConfig);
             }
         }
     }

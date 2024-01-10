@@ -12,3 +12,5 @@ recreateConfigsWhenParsingFails = true
 #Forge restores the built-in default value for that option, but ignores a value that is set in a possibly present default config in 'defaultconfigs'.
 #This option fixes this behavior and checks for a value in a default config from 'defaultconfigs' before falling back to the built-in default.
 correctConfigValuesFromDefaultConfig = true
+#Disables File Watcher. Used to automatically update config if its file has been modified.
+disableConfigWatcher = false

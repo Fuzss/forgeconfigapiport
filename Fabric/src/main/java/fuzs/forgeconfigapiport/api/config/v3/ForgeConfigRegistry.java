@@ -8,6 +8,7 @@ import net.neoforged.fml.config.ModConfig;
  * Registry for adding your configs. On Forge this is done using <code>net.minecraftforge.fml.ModLoadingContext</code>, which does not exist in Forge Config Api Port.
  * <p>Note that opposed to Forge, configs are loaded and usable immediately after registration.
  */
+@Deprecated(forRemoval = true)
 public interface ForgeConfigRegistry {
     /**
      * Implementation instance for registering configs.
