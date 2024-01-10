@@ -1,45 +1,6 @@
-apply plugin: "com.github.johnrengelman.shadow"
-
-architectury {
-    platformSetupLoomIde()
-    forge()
-}
-
-loom {
-    accessWidenerPath = project(":Common").loom.accessWidenerPath
-
-    forge {
-        convertAccessWideners = true
-        extraAccessWideners.add loom.accessWidenerPath.get().asFile.name
-
-        if (project(":Common").file("src/main/resources/${modId}.common.mixins.json").exists()) {
-            mixinConfig "${modId}.common.mixins.json"
-        }
-        if (project.file("src/main/resources/${modId}.forge.mixins.json").exists()) {
-            mixinConfig "${modId}.forge.mixins.json"
-        }
-    }
-
-    runs {
-        configureEach {
-            ideConfigGenerated(true)
-            runDir("../run")
-            vmArgs '-Xms1G', '-Xmx4G', '-Dmixin.debug.export=true'
-        }
-        client {
-            client()
-            setConfigName("Forge Client ${libs.versions.minecraft.get()}")
-        }
-        server {
-            server()
-            setConfigName("Forge Server ${libs.versions.minecraft.get()}")
-        }
-    }
-}
+apply from: "https://raw.githubusercontent.com/Fuzss/modresources/main/gradle/v2/forge.gradle"
 
 configurations {
-    common
-    shadowCommon
     commonNeoForgeApi
     shadowCommonNeoForgeApi
     compileClasspath.extendsFrom common, commonNeoForgeApi
@@ -47,26 +8,10 @@ configurations {
     developmentForge.extendsFrom common, commonNeoForgeApi
 }
 
-repositories {
-    maven {
-        name = "Minecraft Forge"
-        url = "https://maven.minecraftforge.net/"
-    }
-}
-
 dependencies {
     // Common Project
-    common(project(path: ":Common", configuration: "namedElements")) { transitive false }
-    shadowCommon(project(path: ":Common", configuration: "transformProductionForge")) { transitive = false }
     commonNeoForgeApi(project(path: ":Common-NeoForgeApi", configuration: "namedElements")) { transitive false }
     shadowCommonNeoForgeApi(project(path: ":Common-NeoForgeApi", configuration: "transformProductionForge")) { transitive false }
-
-    // Minecraft Forge
-    forge libs.minecraftforge.forge
-
-    // Mixin Extras
-    compileOnly(annotationProcessor(libs.mixinextras.common.get()))
-    api(include(libs.mixinextras.forge.get()))
 
     // Puzzles Lib
 //    modApi libs.puzzleslib.forge
@@ -84,29 +29,10 @@ dependencies {
 
 shadowJar {
     configurations = [project.configurations.shadowCommon, project.configurations.shadowCommonNeoForgeApi]
-    archiveClassifier = "dev-shadow"
-}
-
-remapJar {
-    input.set shadowJar.archiveFile
-    dependsOn shadowJar
-    archiveClassifier.set("")
-    atAccessWideners.add("${modId}.accesswidener")
 }
 
 sourcesJar {
-    def commonSources = project(":Common").sourcesJar
-    dependsOn commonSources
-    from commonSources.archiveFile.map { zipTree(it) }
     def commonNeoForgeApiSources = project(":Common-NeoForgeApi").sourcesJar
     dependsOn commonNeoForgeApiSources
     from commonNeoForgeApiSources.archiveFile.map { zipTree(it) }
 }
-
-components.java {
-    withVariantsFromConfiguration(project.configurations.shadowRuntimeElements) {
-        skip()
-    }
-}
-
-[tasks.modrinth, tasks.curseforge].each { it.finalizedBy project.tasks.refreshUpdateJson }

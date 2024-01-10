@@ -1,35 +1,8 @@
-architectury {
-    common rootProject.subprojects.name.collect { it.toLowerCase() }.findAll { !it.contains("common") }
-}
-
-loom {
-    accessWidenerPath = file("src/main/resources/${modId}.accesswidener")
-
-    runs {
-        configureEach {
-            ideConfigGenerated(false)
-            // this should hopeful prevent an empty run directory being generated in common during initial project setup
-            runDir("../run")
-            vmArgs '-Xms1G', '-Xmx4G', '-Dmixin.debug.export=true'
-        }
-        client {
-            client()
-            setConfigName("Common Client ${libs.versions.minecraft.get()}")
-        }
-        server {
-            server()
-            setConfigName("Common Server ${libs.versions.minecraft.get()}")
-        }
-    }
-}
+apply from: "https://raw.githubusercontent.com/Fuzss/modresources/main/gradle/v2/common.gradle"
 
 dependencies {
-    // Fabric Loader
-    modApi libs.fabricloader.fabric
-
-    // Mixin Extras
-    api libs.mixinextras.common
-    annotationProcessor libs.mixinextras.common
+    // Puzzles Lib
+//    modApi libs.puzzleslib.common
 
     // Night Config
     api libs.nightconfigcore
