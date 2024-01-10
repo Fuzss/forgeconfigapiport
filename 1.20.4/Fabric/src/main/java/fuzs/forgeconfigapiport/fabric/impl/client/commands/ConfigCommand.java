@@ -12,8 +12,6 @@ import net.minecraft.commands.arguments.StringRepresentableArgument;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.StringRepresentable;
-import net.neoforged.fml.config.ConfigTracker;
-import net.neoforged.fml.config.ModConfig;
 
 import java.io.File;
 import java.util.List;
@@ -25,24 +23,24 @@ public class ConfigCommand {
     private static final Dynamic2CommandExceptionType ERROR_NO_CONFIG = new Dynamic2CommandExceptionType((modId, type) -> Component.translatable("commands.config.noconfig", modId, type));
 
     @SuppressWarnings("unchecked")
-    public static <T extends SharedSuggestionProvider> void register(CommandDispatcher<T> dispatcher, BiConsumer<T, Component> feedbackSender) {
-        dispatcher.register(LiteralArgumentBuilder.<T>literal("config")
-                .then(LiteralArgumentBuilder.<T>literal("showfile")
-                        .then(RequiredArgumentBuilder.<T, String>argument("mod", ModIdArgument.modIdArgument(ConfigCommand::anyModConfigsExist))
-                                .then(((RequiredArgumentBuilder<T, ?>) (RequiredArgumentBuilder<?, ?>) RequiredArgumentBuilder.argument("type", enumConstant(ModConfig.Type.class)))
-                                        .executes(context -> ConfigCommand.showFile(component -> feedbackSender.accept(context.getSource(), component), context.getArgument("mod", String.class), context.getArgument("type", ModConfig.Type.class)))))));
+    public static <T extends Enum<T> & StringRepresentable, P extends SharedSuggestionProvider> void register(ConfigCommandContext<T> context, CommandDispatcher<P> dispatcher, BiConsumer<P, Component> feedbackSender) {
+        dispatcher.register(LiteralArgumentBuilder.<P>literal(context.name())
+                .then(LiteralArgumentBuilder.<P>literal("showfile")
+                        .then(RequiredArgumentBuilder.<P, String>argument("mod", ModIdArgument.modIdArgument(modId -> anyModConfigsExist(context, modId)))
+                                .then(((RequiredArgumentBuilder<P, ?>) (RequiredArgumentBuilder<?, ?>) RequiredArgumentBuilder.argument("type", enumConstant(context.getType())))
+                                        .executes(commandContext -> ConfigCommand.showFile(context, component -> feedbackSender.accept(commandContext.getSource(), component), commandContext.getArgument("mod", String.class), commandContext.getArgument("type", context.getType())))))));
     }
 
     public static <T extends Enum<T> & StringRepresentable> StringRepresentableArgument<T> enumConstant(Class<? extends T> enumClazz) {
         return new StringRepresentableArgument<>(StringRepresentable.fromEnum(enumClazz::getEnumConstants), enumClazz::getEnumConstants) {};
     }
 
-    private static boolean anyModConfigsExist(String modId) {
-        return Stream.of(ModConfig.Type.values()).flatMap(type -> ConfigTracker.INSTANCE.getConfigFileNames(modId, type).stream()).findAny().isPresent();
+    private static <T extends Enum<T> & StringRepresentable> boolean anyModConfigsExist(ConfigCommandContext<T> context, String modId) {
+        return Stream.of(context.getType().getEnumConstants()).flatMap(type -> context.getConfigFileNames(modId, type).stream()).findAny().isPresent();
     }
 
-    private static int showFile(Consumer<Component> feedbackSender, String modId, ModConfig.Type type) throws CommandSyntaxException {
-        List<String> configFileNames = ConfigTracker.INSTANCE.getConfigFileNames(modId, type);
+    private static <T extends Enum<T> & StringRepresentable> int showFile(ConfigCommandContext<T> context, Consumer<Component> feedbackSender, String modId, T type) throws CommandSyntaxException {
+        List<String> configFileNames = context.getConfigFileNames(modId, type);
         if (configFileNames.isEmpty()) {
             throw ERROR_NO_CONFIG.create(modId, type.getSerializedName());
         }
@@ -53,5 +51,14 @@ public class ConfigCommand {
 
     private static Component fileComponent(File file) {
         return Component.literal(file.getName()).withStyle(ChatFormatting.UNDERLINE).withStyle(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, file.getAbsolutePath())));
+    }
+
+    public interface ConfigCommandContext<T extends Enum<T> & StringRepresentable> {
+
+        String name();
+
+        Class<T> getType();
+
+        List<String> getConfigFileNames(String modId, T type);
     }
 }

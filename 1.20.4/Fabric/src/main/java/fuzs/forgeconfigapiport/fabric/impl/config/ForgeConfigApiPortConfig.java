@@ -8,7 +8,8 @@ import com.electronwill.nightconfig.core.io.WritingMode;
 import com.electronwill.nightconfig.toml.TomlFormat;
 import com.google.common.collect.ImmutableMap;
 import fuzs.forgeconfigapiport.impl.ForgeConfigAPIPort;
-import fuzs.forgeconfigapiport.fabric.impl.OtherCommonAbstractions;
+import net.fabricmc.loader.api.FabricLoader;
+import net.neoforged.fml.config.ModConfig;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -20,7 +21,7 @@ import java.util.Objects;
 public class ForgeConfigApiPortConfig {
     public static final ForgeConfigApiPortConfig INSTANCE;
     private static final String CONFIG_FILE_NAME = ForgeConfigAPIPort.MOD_ID + ".toml";
-    private static final Map<String, Object> CONFIG_VALUES = ImmutableMap.<String, Object>builder().put("defaultConfigsPath", "defaultconfigs").put("forceGlobalServerConfigs", true).put("recreateConfigsWhenParsingFails", true).put("correctConfigValuesFromDefaultConfig", true).build();
+    private static final Map<String, Object> CONFIG_VALUES = ImmutableMap.<String, Object>builder().put("defaultConfigsPath", "defaultconfigs").put("forceGlobalServerConfigs", true).put("recreateConfigsWhenParsingFails", true).put("correctConfigValuesFromDefaultConfig", true).put("disableConfigWatcher", false).build();
     private static final ConfigSpec CONFIG_SPEC;
 
     static {
@@ -34,7 +35,7 @@ public class ForgeConfigApiPortConfig {
     private CommentedFileConfig configData;
 
     private ForgeConfigApiPortConfig() {
-        this.loadFrom(OtherCommonAbstractions.getConfigDirectory().resolve(CONFIG_FILE_NAME));
+        this.loadFrom(FabricLoader.getInstance().getConfigDir().resolve(CONFIG_FILE_NAME));
     }
 
     // Copied from FML config
@@ -55,7 +56,7 @@ public class ForgeConfigApiPortConfig {
 
     // Copied from net.minecraftforge.fml.loading.FMLPaths
     private static Path getOrCreateGameRelativePath(Path path) {
-        Path gameFolderPath = OtherCommonAbstractions.getGameDirectory().resolve(path);
+        Path gameFolderPath = FabricLoader.getInstance().getGameDir().resolve(path);
         if (!Files.isDirectory(gameFolderPath)) {
             try {
                 Files.createDirectories(gameFolderPath);
@@ -72,5 +73,17 @@ public class ForgeConfigApiPortConfig {
             throw new IllegalArgumentException("%s is not a know config value key".formatted(key));
         }
         return this.configData.<T>getOptional(key).orElse((T) CONFIG_VALUES.get(key));
+    }
+
+    public static Path getDefaultConfigsDirectory() {
+        return FabricLoader.getInstance().getGameDir().resolve(INSTANCE.<String>getValue("defaultConfigsPath"));
+    }
+
+    public static Path getConfigPath(Path configBasePath, String fileName) {
+        Path configPath = configBasePath.resolve(fileName);
+        if (INSTANCE.<Boolean>getValue("forceGlobalServerConfigs") && Files.notExists(configPath)) {
+            configPath = FabricLoader.getInstance().getConfigDir().resolve(fileName);
+        }
+        return configPath;
     }
 }

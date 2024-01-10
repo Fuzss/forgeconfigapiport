@@ -1,5 +1,5 @@
 architectury {
-    common rootProject.subprojects.name.stream().filter { !it.toLowerCase().contains("common") }.map { it.toLowerCase() }.toArray() as String[]
+    common rootProject.subprojects.name.collect { it.toLowerCase() }.findAll { !it.contains("common") }
 }
 
 loom {
@@ -33,6 +33,7 @@ configurations {
 dependencies {
     // Common Project
     common(project(path: ":Common", configuration: "namedElements")) { transitive false }
+    shadowCommon(project(path: ":Common", configuration: "namedElements")) { transitive false }
 
     // Fabric Loader
     modApi libs.fabricloader.fabric
@@ -44,6 +45,34 @@ dependencies {
     // Night Config
     api libs.nightconfigcore
     api libs.nightconfigtoml
+}
+
+shadowJar {
+    configurations = [project.configurations.shadowCommon]
+    archiveClassifier = "dev-shadow"
+}
+
+remapJar {
+    input.set shadowJar.archiveFile
+    dependsOn shadowJar
+    archiveClassifier = ""
+    injectAccessWidener = true
+}
+
+jar {
+    archiveClassifier = "dev"
+}
+
+sourcesJar {
+    def commonSources = project(":Common").sourcesJar
+    dependsOn commonSources
+    from commonSources.archiveFile.map { zipTree(it) }
+}
+
+components.java {
+    withVariantsFromConfiguration(project.configurations.shadowRuntimeElements) {
+        skip()
+    }
 }
 
 tasks.withType(net.fabricmc.loom.task.AbstractRemapJarTask).configureEach {

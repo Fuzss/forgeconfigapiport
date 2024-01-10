@@ -23,10 +23,10 @@
 
   "entrypoints": {
     "main": [
-      "${modGroup}.impl.ForgeConfigAPIPortFabric"
+      "${modGroup}.fabric.impl.ForgeConfigAPIPortFabric"
     ],
     "client": [
-      "${modGroup}.impl.client.ForgeConfigAPIPortFabricClient"
+      "${modGroup}.fabric.impl.client.ForgeConfigAPIPortFabricClient"
     ]
   },
 

@@ -32,6 +32,6 @@ public final class ForgeConfigPathsV2Impl implements ForgeConfigPaths {
 
     @Override
     public Path getDefaultConfigsDirectory() {
-        return fuzs.forgeconfigapiport.api.config.v3.ForgeConfigPaths.INSTANCE.getDefaultConfigsDirectory();
+        return ForgeConfigApiPortConfig.getDefaultConfigsDirectory();
     }
 }

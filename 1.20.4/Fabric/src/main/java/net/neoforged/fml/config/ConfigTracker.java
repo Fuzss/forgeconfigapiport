@@ -9,9 +9,9 @@ import com.electronwill.nightconfig.core.CommentedConfig;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.electronwill.nightconfig.core.file.FileConfig;
 import com.mojang.logging.LogUtils;
-import fuzs.forgeconfigapiport.fabric.impl.OtherCommonAbstractions;
-import fuzs.forgeconfigapiport.impl.neoforgeapi.NeoForgeApiCommonAbstractions;
-import org.jetbrains.annotations.ApiStatus;
+import fuzs.forgeconfigapiport.api.config.v3.ModConfigEvents;
+import fuzs.forgeconfigapiport.fabric.api.neoforge.v4.NeoForgeModConfigEvents;
+import net.fabricmc.loader.api.FabricLoader;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.Marker;
@@ -54,7 +54,7 @@ public class ConfigTracker {
         // unlike on forge there isn't really more than one loading stage for mods on fabric, therefore we load configs immediately
         // server configs are not handled here, they are all loaded at once when a world is loaded
         if (config.getType() != ModConfig.Type.SERVER) {
-            this.openConfig(config, OtherCommonAbstractions.getConfigDirectory());
+            this.openConfig(config, FabricLoader.getInstance().getConfigDir());
         }
     }
 
@@ -73,7 +73,8 @@ public class ConfigTracker {
         final CommentedFileConfig configData = config.getHandler().reader(configBasePath).apply(config);
         config.setConfigData(configData);
         // Forge Config API Port: invoke Fabric style callback instead of Forge event
-        NeoForgeApiCommonAbstractions.fireConfigLoadingV3(config.getModId(), config);
+        NeoForgeModConfigEvents.loading(config.getModId()).invoker().onModConfigLoading(config);
+        ModConfigEvents.loading(config.getModId()).invoker().onModConfigLoading(config);
         config.save();
     }
 
@@ -83,19 +84,21 @@ public class ConfigTracker {
             // stop the filewatcher before we save the file and close it, so reload doesn't fire
             config.getHandler().unload(configBasePath, config);
             // Forge Config API Port: invoke Fabric style callback instead of Forge event
-            NeoForgeApiCommonAbstractions.fireConfigUnloadingV3(config.getModId(), config);
+            NeoForgeModConfigEvents.unloading(config.getModId()).invoker().onModConfigUnloading(config);
+            ModConfigEvents.unloading(config.getModId()).invoker().onModConfigUnloading(config);
             config.save();
             config.setConfigData(null);
         }
     }
 
     public void loadDefaultServerConfigs() {
-        this.configSets.get(ModConfig.Type.SERVER).forEach(modConfig -> {
+        this.configSets.get(ModConfig.Type.SERVER).forEach(config -> {
             final CommentedConfig commentedConfig = CommentedConfig.inMemory();
-            modConfig.getSpec().correct(commentedConfig);
-            modConfig.setConfigData(commentedConfig);
+            config.getSpec().correct(commentedConfig);
+            config.setConfigData(commentedConfig);
             // Forge Config API Port: invoke Fabric style callback instead of Forge event
-            NeoForgeApiCommonAbstractions.fireConfigLoadingV3(modConfig.getModId(), modConfig);
+            NeoForgeModConfigEvents.loading(config.getModId()).invoker().onModConfigLoading(config);
+            ModConfigEvents.loading(config.getModId()).invoker().onModConfigLoading(config);
         });
     }
 
@@ -108,7 +111,6 @@ public class ConfigTracker {
 
     // Forge Config API Port: support mods with multiple configs for the same type, does not exist on Forge, therefore marked as internal
     // It's ok to use this in a Fabric/Quilt project, just don't use it in Common, that's what the annotation is for
-    @ApiStatus.Internal
     public List<String> getConfigFileNames(String modId, ModConfig.Type type) {
         return Optional.ofNullable(this.configsByMod.get(modId))
                 .map(map -> map.get(type))

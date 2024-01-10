@@ -30,9 +30,11 @@ configurations {
     shadowCommon
     commonNeoForgeApi
     shadowCommonNeoForgeApi
-    compileClasspath.extendsFrom common, commonNeoForgeApi
-    runtimeClasspath.extendsFrom common, commonNeoForgeApi
-    developmentFabric.extendsFrom common, commonNeoForgeApi
+    commonForgeApi
+    shadowCommonForgeApi
+    compileClasspath.extendsFrom common, commonNeoForgeApi, commonForgeApi
+    runtimeClasspath.extendsFrom common, commonNeoForgeApi, commonForgeApi
+    developmentFabric.extendsFrom common, commonNeoForgeApi, commonForgeApi
 }
 
 repositories {
@@ -56,6 +58,8 @@ dependencies {
     shadowCommon(project(path: ":Common", configuration: "transformProductionFabric")) { transitive false }
     commonNeoForgeApi(project(path: ":Common-NeoForgeApi", configuration: "namedElements")) { transitive false }
     shadowCommonNeoForgeApi(project(path: ":Common-NeoForgeApi", configuration: "transformProductionFabric")) { transitive false }
+    commonForgeApi(project(path: ":Common-ForgeApi", configuration: "namedElements")) { transitive false }
+    shadowCommonForgeApi(project(path: ":Common-ForgeApi", configuration: "transformProductionFabric")) { transitive false }
 
     // Fabric Loader
     modApi libs.fabricloader.fabric
@@ -92,7 +96,7 @@ dependencies {
 }
 
 shadowJar {
-    configurations = [project.configurations.shadowCommon, project.configurations.shadowCommonNeoForgeApi]
+    configurations = [project.configurations.shadowCommon, project.configurations.shadowCommonNeoForgeApi, project.configurations.shadowCommonForgeApi]
     archiveClassifier.set("dev-shadow")
 }
 
@@ -114,6 +118,9 @@ sourcesJar {
     def commonNeoForgeApiSources = project(":Common-NeoForgeApi").sourcesJar
     dependsOn commonNeoForgeApiSources
     from commonNeoForgeApiSources.archiveFile.map { zipTree(it) }
+    def commonForgeApiSources = project(":Common-ForgeApi").sourcesJar
+    dependsOn commonForgeApiSources
+    from commonForgeApiSources.archiveFile.map { zipTree(it) }
 }
 
 components.java {

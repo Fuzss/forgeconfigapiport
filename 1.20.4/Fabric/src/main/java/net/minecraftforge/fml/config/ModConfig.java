@@ -8,10 +8,10 @@ package net.minecraftforge.fml.config;
 import com.electronwill.nightconfig.core.CommentedConfig;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.electronwill.nightconfig.toml.TomlFormat;
-import fuzs.forgeconfigapiport.impl.CommonAbstractions;
+import fuzs.forgeconfigapiport.api.config.v2.ModConfigEvents;
+import fuzs.forgeconfigapiport.fabric.api.forge.v4.ForgeModConfigEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.util.StringRepresentable;
-import org.jetbrains.annotations.ApiStatus;
 
 import java.io.ByteArrayInputStream;
 import java.nio.file.Path;
@@ -30,7 +30,6 @@ public class ModConfig {
 
     // Forge Config API Port: replace ModContainer with mod id, marked as internal for common project as no mod id constructor exists on Forge
     // It's ok to use this in a Fabric/Quilt project, just don't use it in Common, that's what the annotation is for
-    @ApiStatus.Internal
     public ModConfig(final Type type, final IConfigSpec<?> spec, String modId, final String fileName) {
         this.type = type;
         this.spec = spec;
@@ -46,7 +45,6 @@ public class ModConfig {
 
     // Forge Config API Port: replace ModContainer with mod id, marked as internal for common project as no mod id constructor exists on Forge
     // It's ok to use this in a Fabric/Quilt project, just don't use it in Common, that's what the annotation is for
-    @ApiStatus.Internal
     public ModConfig(final Type type, final IConfigSpec<?> spec, String modId) {
         this(type, spec, modId, defaultConfigName(type, modId));
     }
@@ -57,20 +55,20 @@ public class ModConfig {
     }
 
     public Type getType() {
-        return type;
+        return this.type;
     }
 
     public String getFileName() {
-        return fileName;
+        return this.fileName;
     }
 
     public ConfigFileTypeHandler getHandler() {
-        return configHandler;
+        return this.configHandler;
     }
 
     @SuppressWarnings("unchecked")
     public <T extends IConfigSpec<T>> IConfigSpec<T> getSpec() {
-        return (IConfigSpec<T>) spec;
+        return (IConfigSpec<T>) this.spec;
     }
 
     public String getModId() {
@@ -101,13 +99,15 @@ public class ModConfig {
 
     public void acceptSyncedConfig(byte[] bytes) {
         if (bytes != null) {
-            setConfigData(TomlFormat.instance().createParser().parse(new ByteArrayInputStream(bytes)));
+            this.setConfigData(TomlFormat.instance().createParser().parse(new ByteArrayInputStream(bytes)));
             // Forge Config API Port: invoke Fabric style callback instead of Forge event
-            CommonAbstractions.INSTANCE.fireConfigReloadingV2(this.getModId(), this);
+            ForgeModConfigEvents.reloading(this.getModId()).invoker().onModConfigReloading(this);
+            ModConfigEvents.reloading(this.getModId()).invoker().onModConfigReloading(this);
         } else {
-            setConfigData(null);
+            this.setConfigData(null);
             // Forge Config API Port: invoke Fabric style callback instead of Forge event
-            CommonAbstractions.INSTANCE.fireConfigUnloadingV2(this.getModId(), this);
+            ForgeModConfigEvents.unloading(this.getModId()).invoker().onModConfigUnloading(this);
+            ModConfigEvents.unloading(this.getModId()).invoker().onModConfigUnloading(this);
         }
     }
 
@@ -149,7 +149,6 @@ public class ModConfig {
 
         // Forge Config API Port: implements StringRepresentable to allow using vanilla argument type for /config
         // It's ok to use this in a Fabric/Quilt project, just don't use it in Common, that's what the annotation is for
-        @ApiStatus.Internal
         @Override
         public String getSerializedName() {
             return this.extension();

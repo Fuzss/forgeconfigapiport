@@ -8,10 +8,10 @@ package net.neoforged.fml.config;
 import com.electronwill.nightconfig.core.CommentedConfig;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.electronwill.nightconfig.toml.TomlFormat;
-import fuzs.forgeconfigapiport.impl.neoforgeapi.NeoForgeApiCommonAbstractions;
+import fuzs.forgeconfigapiport.api.config.v3.ModConfigEvents;
+import fuzs.forgeconfigapiport.fabric.api.neoforge.v4.NeoForgeModConfigEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.util.StringRepresentable;
-import org.jetbrains.annotations.ApiStatus;
 
 import java.io.ByteArrayInputStream;
 import java.nio.file.Path;
@@ -30,7 +30,6 @@ public class ModConfig {
 
     // Forge Config API Port: replace ModContainer with mod id, marked as internal for common project as no mod id constructor exists on Forge
     // It's ok to use this in a Fabric/Quilt project, just don't use it in Common, that's what the annotation is for
-    @ApiStatus.Internal
     public ModConfig(final Type type, final IConfigSpec<?> spec, String modId, final String fileName) {
         this.type = type;
         this.spec = spec;
@@ -46,7 +45,6 @@ public class ModConfig {
 
     // Forge Config API Port: replace ModContainer with mod id, marked as internal for common project as no mod id constructor exists on Forge
     // It's ok to use this in a Fabric/Quilt project, just don't use it in Common, that's what the annotation is for
-    @ApiStatus.Internal
     public ModConfig(final Type type, final IConfigSpec<?> spec, String modId) {
         this(type, spec, modId, defaultConfigName(type, modId));
     }
@@ -103,11 +101,13 @@ public class ModConfig {
         if (bytes != null) {
             this.setConfigData(TomlFormat.instance().createParser().parse(new ByteArrayInputStream(bytes)));
             // Forge Config API Port: invoke Fabric style callback instead of Forge event
-            NeoForgeApiCommonAbstractions.fireConfigReloadingV3(this.getModId(), this);
+            NeoForgeModConfigEvents.reloading(this.getModId()).invoker().onModConfigReloading(this);
+            ModConfigEvents.reloading(this.getModId()).invoker().onModConfigReloading(this);
         } else {
             this.setConfigData(null);
             // Forge Config API Port: invoke Fabric style callback instead of Forge event
-            NeoForgeApiCommonAbstractions.fireConfigUnloadingV3(this.getModId(), this);
+            NeoForgeModConfigEvents.unloading(this.getModId()).invoker().onModConfigUnloading(this);
+            ModConfigEvents.unloading(this.getModId()).invoker().onModConfigUnloading(this);
         }
     }
 
@@ -148,7 +148,6 @@ public class ModConfig {
 
         // Forge Config API Port: implements StringRepresentable to allow using vanilla argument type for /config
         // It's ok to use this in a Fabric/Quilt project, just don't use it in Common, that's what the annotation is for
-        @ApiStatus.Internal
         @Override
         public String getSerializedName() {
             return this.extension();

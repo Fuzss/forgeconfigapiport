@@ -1,9 +1,11 @@
 package fuzs.forgeconfigapiport.fabric.impl;
 
-import fuzs.forgeconfigapiport.api.config.v3.ForgeConfigRegistry;
-import fuzs.forgeconfigapiport.impl.ForgeConfigAPIPort;
+import fuzs.forgeconfigapiport.fabric.api.forge.v4.ForgeConfigRegistry;
+import fuzs.forgeconfigapiport.fabric.api.neoforge.v4.NeoForgeConfigRegistry;
 import fuzs.forgeconfigapiport.fabric.impl.handler.ServerLifecycleHandler;
 import fuzs.forgeconfigapiport.fabric.impl.network.config.ConfigSync;
+import fuzs.forgeconfigapiport.impl.CommonAbstractions;
+import fuzs.forgeconfigapiport.impl.ForgeConfigAPIPort;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
@@ -11,6 +13,7 @@ import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerLoginConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerLoginNetworking;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.common.ForgeConfigSpec;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.common.ModConfigSpec;
 import org.apache.commons.lang3.tuple.Pair;
@@ -23,7 +26,10 @@ public class ForgeConfigAPIPortFabric implements ModInitializer {
     public void onInitialize() {
         registerMessages();
         registerHandlers();
-        ForgeConfigRegistry.INSTANCE.register(ForgeConfigAPIPort.MOD_ID, ModConfig.Type.SERVER, new ModConfigSpec.Builder().comment("Hello world").define("dummy_optoin", true).next().build());
+        if (CommonAbstractions.isDevelopmentEnvironment() && CommonAbstractions.includeTestConfigs()) {
+            NeoForgeConfigRegistry.INSTANCE.register(ForgeConfigAPIPort.MOD_ID, ModConfig.Type.SERVER, new ModConfigSpec.Builder().comment("hello world").define("dummy_entry", true).next().build(), "forgeconfigapiport-server-neoforge.toml");
+            ForgeConfigRegistry.INSTANCE.register(ForgeConfigAPIPort.MOD_ID, net.minecraftforge.fml.config.ModConfig.Type.SERVER, new ForgeConfigSpec.Builder().comment("hello world").define("dummy_entry", true).next().build(), "forgeconfigapiport-server-forge.toml");
+        }
     }
 
     private static void registerMessages() {
