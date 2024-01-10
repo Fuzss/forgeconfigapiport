@@ -39,8 +39,7 @@ dependencies {
     modApi libs.fabricloader.fabric
 
     // Mixin Extras
-    api libs.mixinextras.common
-    annotationProcessor libs.mixinextras.common
+    api(annotationProcessor(libs.mixinextras.common.get()))
 
     // Night Config
     api libs.nightconfigcore

@@ -1,33 +1,6 @@
-apply plugin: "com.github.johnrengelman.shadow"
-
-architectury {
-    platformSetupLoomIde()
-    fabric()
-}
-
-loom {
-    accessWidenerPath = project(":Common").loom.accessWidenerPath
-
-    runs {
-        configureEach {
-            ideConfigGenerated(true)
-            runDir("../run")
-            vmArgs '-Xms1G', '-Xmx4G', '-Dmixin.debug.export=true'
-        }
-        client {
-            client()
-            setConfigName("Fabric Client ${libs.versions.minecraft.get()}")
-        }
-        server {
-            server()
-            setConfigName("Fabric Server ${libs.versions.minecraft.get()}")
-        }
-    }
-}
+apply from: "https://raw.githubusercontent.com/Fuzss/modresources/main/gradle/v2/fabric.gradle"
 
 configurations {
-    common
-    shadowCommon
     commonNeoForgeApi
     shadowCommonNeoForgeApi
     commonForgeApi
@@ -37,32 +10,12 @@ configurations {
     developmentFabric.extendsFrom common, commonNeoForgeApi, commonForgeApi
 }
 
-repositories {
-    maven {
-        name = "Modmuss"
-        url = "https://maven.modmuss50.me/"
-    }
-    maven {
-        name = "ladysnake"
-        url = 'https://ladysnake.jfrog.io/artifactory/mods'
-    }
-    maven {
-        name = "jamieswhiteshirt"
-        url = "https://maven.jamieswhiteshirt.com/libs-release/"
-    }
-}
-
 dependencies {
     // Common Project
-    common(project(path: ":Common", configuration: "namedElements")) { transitive false }
-    shadowCommon(project(path: ":Common", configuration: "transformProductionFabric")) { transitive false }
     commonNeoForgeApi(project(path: ":Common-NeoForgeApi", configuration: "namedElements")) { transitive false }
     shadowCommonNeoForgeApi(project(path: ":Common-NeoForgeApi", configuration: "transformProductionFabric")) { transitive false }
     commonForgeApi(project(path: ":Common-ForgeApi", configuration: "namedElements")) { transitive false }
     shadowCommonForgeApi(project(path: ":Common-ForgeApi", configuration: "transformProductionFabric")) { transitive false }
-
-    // Fabric Loader
-    modApi libs.fabricloader.fabric
 
     // Fabric Api
     modApi libs.fabricapi.fabric
@@ -97,34 +50,13 @@ dependencies {
 
 shadowJar {
     configurations = [project.configurations.shadowCommon, project.configurations.shadowCommonNeoForgeApi, project.configurations.shadowCommonForgeApi]
-    archiveClassifier.set("dev-shadow")
-}
-
-remapJar {
-    input.set shadowJar.archiveFile
-    dependsOn shadowJar
-    archiveClassifier.set("")
-    injectAccessWidener = true
-}
-
-jar {
-    archiveClassifier.set("dev")
 }
 
 sourcesJar {
-    def commonSources = project(":Common").sourcesJar
-    dependsOn commonSources
-    from commonSources.archiveFile.map { zipTree(it) }
     def commonNeoForgeApiSources = project(":Common-NeoForgeApi").sourcesJar
     dependsOn commonNeoForgeApiSources
     from commonNeoForgeApiSources.archiveFile.map { zipTree(it) }
     def commonForgeApiSources = project(":Common-ForgeApi").sourcesJar
     dependsOn commonForgeApiSources
     from commonForgeApiSources.archiveFile.map { zipTree(it) }
-}
-
-components.java {
-    withVariantsFromConfiguration(project.configurations.shadowRuntimeElements) {
-        skip()
-    }
 }
