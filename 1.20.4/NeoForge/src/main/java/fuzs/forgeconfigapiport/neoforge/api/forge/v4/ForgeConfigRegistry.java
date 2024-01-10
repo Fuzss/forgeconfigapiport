@@ -8,7 +8,7 @@ import net.neoforged.fml.config.ModConfig;
 /**
  * Registry for adding configs built using {@link net.neoforged.neoforge.common.ModConfigSpec}. Serves as a bridge between NeoForge's and Forge's config systems.
  *
- * <p>Methods must be called only during {@link FMLConstructModEvent}, as would be done for Forge's configs. Do not call during any of the setup events.
+ * <p>Methods must be called only during {@link net.neoforged.fml.event.lifecycle.FMLConstructModEvent}, as would be done for Forge's configs. Do not call during any of the setup events.
  */
 public interface ForgeConfigRegistry {
     ForgeConfigRegistry INSTANCE = new ForgeConfigRegistryImpl();
