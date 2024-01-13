@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog].
 
+## [v20.4.2-1.20.4] - 2024-01-13
+### Changed
+- Implement `UnmodifiableConfigWrapper` for `IConfigSpec` adapters on NeoForge & Forge
+
 ## [v20.4.1-1.20.4] - 2024-01-10
 - Huge internal restructure, including new publications for NeoForge (for using Forge configs) and Forge (for using NeoForge configs)
 - The Fabric publication still includes all classes for both config systems, the api package has been split from `fuzs.forgeconfigapiport.api.config` into `fuzs.forgeconfigapiport.fabric.api.forge` and `fuzs.forgeconfigapiport.fabric.api.neoforge`
