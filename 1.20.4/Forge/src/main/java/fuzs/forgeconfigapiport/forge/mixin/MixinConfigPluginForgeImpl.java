@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
 import java.util.List;
 import java.util.Set;
 
-public class MixinConfigPluginImpl implements IMixinConfigPlugin {
+public class MixinConfigPluginForgeImpl implements IMixinConfigPlugin {
 
     @Override
     public void onLoad(String s) {
