@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog].
 
+## [v20.4.3-1.20.4] - 2024-01-22
+### Fixed
+- Fix `mods.toml` entries for NeoForge
+
 ## [v20.4.2-1.20.4] - 2024-01-13
 ### Changed
 - Implement `UnmodifiableConfigWrapper` for `IConfigSpec` adapters on NeoForge & Forge
