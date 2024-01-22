@@ -15,16 +15,6 @@ dependencies {
 
     // Puzzles Lib
 //    modApi libs.puzzleslib.neoforge
-
-    var versionCatalog = rootProject.extensions.getByType(VersionCatalogsExtension).named("libs")
-
-    // Quality of Life Mods
-    versionCatalog.findLibrary("bettermodsbutton.neoforge").ifPresent {
-        modLocalRuntime it
-    }
-    versionCatalog.findLibrary("forgeconfigscreens.neoforge").ifPresent {
-        modLocalRuntime it
-    }
 }
 
 shadowJar {

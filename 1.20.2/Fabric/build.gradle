@@ -36,16 +36,6 @@ dependencies {
 
     // Extensible Enums
 //    modApi(include(libs.extensibleenums.fabric.get()))
-
-    var versionCatalog = rootProject.extensions.getByType(VersionCatalogsExtension).named("libs")
-
-    // Quality of Life Mods
-    versionCatalog.findLibrary("modmenu.fabric").ifPresent {
-        modLocalRuntime it
-    }
-    versionCatalog.findLibrary("forgeconfigscreens.fabric").ifPresent {
-        modLocalRuntime it
-    }
 }
 
 shadowJar {

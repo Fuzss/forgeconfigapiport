@@ -3,7 +3,7 @@
   "minVersion": "0.8",
   "compatibilityLevel": "JAVA_17",
   "package": "${modGroup}.forge.mixin",
-  "plugin": "${modGroup}.forge.mixin.MixinConfigPluginImpl",
+  "plugin": "${modGroup}.forge.mixin.MixinConfigPluginForgeImpl",
   "mixins": [
   ],
   "client": [

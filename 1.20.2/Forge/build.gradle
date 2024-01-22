@@ -13,18 +13,11 @@ dependencies {
     commonNeoForgeApi(project(path: ":Common-NeoForgeApi", configuration: "namedElements")) { transitive false }
     shadowCommonNeoForgeApi(project(path: ":Common-NeoForgeApi", configuration: "transformProductionForge")) { transitive false }
 
+    // Mixin Extras
+    include libs.mixinextras.forge
+
     // Puzzles Lib
 //    modApi libs.puzzleslib.forge
-
-    var versionCatalog = rootProject.extensions.getByType(VersionCatalogsExtension).named("libs")
-
-    // Quality of Life Mods
-    versionCatalog.findLibrary("bettermodsbutton.forge").ifPresent {
-        modLocalRuntime it
-    }
-    versionCatalog.findLibrary("forgeconfigscreens.forge").ifPresent {
-        modLocalRuntime it
-    }
 }
 
 shadowJar {
