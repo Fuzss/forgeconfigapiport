@@ -23,9 +23,7 @@ import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
+import java.util.function.*;
 import java.util.stream.Collectors;
 
 import static com.electronwill.nightconfig.core.ConfigSpec.CorrectionAction.*;
@@ -64,16 +62,26 @@ public class ModConfigSpec extends UnmodifiableConfigWrapper<UnmodifiableConfig>
     public void setConfig(CommentedConfig config) {
         this.childConfig = config;
         if (config != null && !this.isCorrect(config)) {
-            String configName = config instanceof FileConfig ? ((FileConfig) config).getNioPath().toString() : config.toString();
+            String configName = config instanceof FileConfig ?
+                    ((FileConfig) config).getNioPath().toString() :
+                    config.toString();
             // Forge Config API Port: replace with SLF4J logger
             ForgeConfigAPIPort.LOGGER.warn("Configuration file {} is not correct. Correcting", configName);
             this.correct(config, (action, path, incorrectValue, correctedValue) -> {
-                        // Forge Config API Port: replace with SLF4J logger
-                        ForgeConfigAPIPort.LOGGER.warn("Incorrect key {} was corrected from {} to its default, {}. {}", DOT_JOINER.join(path), incorrectValue, correctedValue, incorrectValue == correctedValue ? "This seems to be an error." : "");
-                    }, (action, path, incorrectValue, correctedValue) -> {
-                        // Forge Config API Port: replace with SLF4J logger
-                        ForgeConfigAPIPort.LOGGER.debug("The comment on key {} does not match the spec. This may create a backup.", DOT_JOINER.join(path));
-                    });
+                // Forge Config API Port: replace with SLF4J logger
+                ForgeConfigAPIPort.LOGGER.warn("Incorrect key {} was corrected from {} to its default, {}. {}",
+                        DOT_JOINER.join(path),
+                        incorrectValue,
+                        correctedValue,
+                        incorrectValue == correctedValue ? "This seems to be an error." : ""
+                );
+            }, (action, path, incorrectValue, correctedValue) -> {
+                // Forge Config API Port: replace with SLF4J logger
+                ForgeConfigAPIPort.LOGGER.debug(
+                        "The comment on key {} does not match the spec. This may create a backup.",
+                        DOT_JOINER.join(path)
+                );
+            });
 
             if (config instanceof FileConfig) {
                 ((FileConfig) config).save();
@@ -117,8 +125,7 @@ public class ModConfigSpec extends UnmodifiableConfigWrapper<UnmodifiableConfig>
         });
     }
 
-    public void save()
-    {
+    public void save() {
         Preconditions.checkNotNull(this.childConfig, "Cannot save config value without assigned Config object present");
         if (this.childConfig instanceof FileConfig) {
             ((FileConfig) this.childConfig).save();
@@ -128,15 +135,31 @@ public class ModConfigSpec extends UnmodifiableConfigWrapper<UnmodifiableConfig>
     public synchronized boolean isCorrect(CommentedConfig config) {
         LinkedList<String> parentPath = new LinkedList<>();
         // Forge Config API Port: add default values map read from 'defaultconfigs' directory as method parameter
-        return this.correct(this.config, config, null, parentPath, Collections.unmodifiableList( parentPath ), (a, b, c, d) -> {}, null, true) == 0;
+        return this.correct(this.config,
+                config,
+                null,
+                parentPath,
+                Collections.unmodifiableList(parentPath),
+                (a, b, c, d) -> {
+                },
+                null,
+                true
+        ) == 0;
     }
 
     public int correct(CommentedConfig config) {
         // Forge Config API Port: add proper listeners for corrections
         return this.correct(config, (action, path, incorrectValue, correctedValue) -> {
-            ForgeConfigAPIPort.LOGGER.warn("Incorrect key {} was corrected from {} to its default, {}. {}", DOT_JOINER.join(path), incorrectValue, correctedValue, incorrectValue == correctedValue ? "This seems to be an error." : "");
+            ForgeConfigAPIPort.LOGGER.warn("Incorrect key {} was corrected from {} to its default, {}. {}",
+                    DOT_JOINER.join(path),
+                    incorrectValue,
+                    correctedValue,
+                    incorrectValue == correctedValue ? "This seems to be an error." : ""
+            );
         }, (action, path, incorrectValue, correctedValue) -> {
-            ForgeConfigAPIPort.LOGGER.debug("The comment on key {} does not match the spec. This may create a backup.", DOT_JOINER.join(path));
+            ForgeConfigAPIPort.LOGGER.debug("The comment on key {} does not match the spec. This may create a backup.",
+                    DOT_JOINER.join(path)
+            );
         });
     }
 
@@ -156,7 +179,15 @@ public class ModConfigSpec extends UnmodifiableConfigWrapper<UnmodifiableConfig>
             } else {
                 defaultMap = null;
             }
-            ret = this.correct(this.config, config, defaultMap, parentPath, Collections.unmodifiableList(parentPath), listener, commentListener, false);
+            ret = this.correct(this.config,
+                    config,
+                    defaultMap,
+                    parentPath,
+                    Collections.unmodifiableList(parentPath),
+                    listener,
+                    commentListener,
+                    false
+            );
         } finally {
             this.isCorrecting = false;
         }
@@ -164,15 +195,13 @@ public class ModConfigSpec extends UnmodifiableConfigWrapper<UnmodifiableConfig>
     }
 
     // Forge Config API Port: add default values map read from 'defaultconfigs' directory as method parameter
-    private int correct(UnmodifiableConfig spec, CommentedConfig config, @Nullable Map<String, Object> defaultMap, LinkedList<String> parentPath, List<String> parentPathUnmodifiable, CorrectionListener listener, CorrectionListener commentListener, boolean dryRun)
-    {
+    private int correct(UnmodifiableConfig spec, CommentedConfig config, @Nullable Map<String, Object> defaultMap, LinkedList<String> parentPath, List<String> parentPathUnmodifiable, CorrectionListener listener, CorrectionListener commentListener, boolean dryRun) {
         int count = 0;
 
         Map<String, Object> specMap = spec.valueMap();
         Map<String, Object> configMap = config.valueMap();
 
-        for (Map.Entry<String, Object> specEntry : specMap.entrySet())
-        {
+        for (Map.Entry<String, Object> specEntry : specMap.entrySet()) {
             final String key = specEntry.getKey();
             final Object specValue = specEntry.getValue();
             final Object configValue = configMap.get(key);
@@ -180,49 +209,57 @@ public class ModConfigSpec extends UnmodifiableConfigWrapper<UnmodifiableConfig>
 
             parentPath.addLast(key);
 
-            if (specValue instanceof Config)
-            {
-                if (configValue instanceof CommentedConfig)
-                {
+            if (specValue instanceof Config) {
+                if (configValue instanceof CommentedConfig) {
                     // Forge Config API Port: add default values map read from 'defaultconfigs' directory as method parameter
-                    count += this.correct((Config)specValue, (CommentedConfig)configValue, defaultMap != null && defaultMap.get(key) instanceof Config defaultConfig ? defaultConfig.valueMap() : null, parentPath, parentPathUnmodifiable, listener, commentListener, dryRun);
-                    if (count > 0 && dryRun)
-                        return count;
-                }
-                else if (dryRun)
-                {
+                    count += this.correct((Config) specValue,
+                            (CommentedConfig) configValue,
+                            defaultMap != null && defaultMap.get(key) instanceof Config defaultConfig ?
+                                    defaultConfig.valueMap() :
+                                    null,
+                            parentPath,
+                            parentPathUnmodifiable,
+                            listener,
+                            commentListener,
+                            dryRun
+                    );
+                    if (count > 0 && dryRun) return count;
+                } else if (dryRun) {
                     return 1;
-                }
-                else
-                {
+                } else {
                     CommentedConfig newValue = config.createSubConfig();
                     configMap.put(key, newValue);
                     listener.onCorrect(action, parentPathUnmodifiable, configValue, newValue);
                     count++;
                     // Forge Config API Port: add default values map read from 'defaultconfigs' directory as method parameter
-                    count += this.correct((Config)specValue, newValue, defaultMap != null && defaultMap.get(key) instanceof Config defaultConfig ? defaultConfig.valueMap() : null, parentPath, parentPathUnmodifiable, listener, commentListener, dryRun);
+                    count += this.correct((Config) specValue,
+                            newValue,
+                            defaultMap != null && defaultMap.get(key) instanceof Config defaultConfig ?
+                                    defaultConfig.valueMap() :
+                                    null,
+                            parentPath,
+                            parentPathUnmodifiable,
+                            listener,
+                            commentListener,
+                            dryRun
+                    );
                 }
 
                 String newComment = this.levelComments.get(parentPath);
                 String oldComment = config.getComment(key);
-                if (!this.stringsMatchIgnoringNewlines(oldComment, newComment))
-                {
-                    if(commentListener != null)
+                if (!this.stringsMatchIgnoringNewlines(oldComment, newComment)) {
+                    if (commentListener != null) {
                         commentListener.onCorrect(action, parentPathUnmodifiable, oldComment, newComment);
+                    }
 
-                    if (dryRun)
-                        return 1;
+                    if (dryRun) return 1;
 
                     config.setComment(key, newComment);
                 }
-            }
-            else
-            {
-                ValueSpec valueSpec = (ValueSpec)specValue;
-                if (!valueSpec.test(configValue))
-                {
-                    if (dryRun)
-                        return 1;
+            } else {
+                ValueSpec valueSpec = (ValueSpec) specValue;
+                if (!valueSpec.test(configValue)) {
+                    if (dryRun) return 1;
 
                     // Forge Config API Port: try to get the value from the default config first before falling back to the built-in default config value
                     Object newValue;
@@ -244,13 +281,12 @@ public class ModConfigSpec extends UnmodifiableConfigWrapper<UnmodifiableConfig>
                     count++;
                 }
                 String oldComment = config.getComment(key);
-                if (!this.stringsMatchIgnoringNewlines(oldComment, valueSpec.getComment()))
-                {
-                    if (commentListener != null)
+                if (!this.stringsMatchIgnoringNewlines(oldComment, valueSpec.getComment())) {
+                    if (commentListener != null) {
                         commentListener.onCorrect(action, parentPathUnmodifiable, oldComment, valueSpec.getComment());
+                    }
 
-                    if (dryRun)
-                        return 1;
+                    if (dryRun) return 1;
 
                     config.setComment(key, valueSpec.getComment());
                 }
@@ -260,13 +296,10 @@ public class ModConfigSpec extends UnmodifiableConfigWrapper<UnmodifiableConfig>
         }
 
         // Second step: removes the unspecified values
-        for (Iterator<Map.Entry<String, Object>> ittr = configMap.entrySet().iterator(); ittr.hasNext();)
-        {
+        for (Iterator<Map.Entry<String, Object>> ittr = configMap.entrySet().iterator(); ittr.hasNext(); ) {
             Map.Entry<String, Object> entry = ittr.next();
-            if (!specMap.containsKey(entry.getKey()))
-            {
-                if (dryRun)
-                    return 1;
+            if (!specMap.containsKey(entry.getKey())) {
+                if (dryRun) return 1;
 
                 ittr.remove();
                 parentPath.addLast(entry.getKey());
@@ -278,14 +311,10 @@ public class ModConfigSpec extends UnmodifiableConfigWrapper<UnmodifiableConfig>
         return count;
     }
 
-    private boolean stringsMatchIgnoringNewlines(@Nullable Object obj1, @Nullable Object obj2)
-    {
-        if (obj1 instanceof String string1 && obj2 instanceof String string2)
-        {
-            if (string1.length() > 0 && string2.length() > 0)
-            {
-                return string1.replaceAll("\r\n", "\n")
-                        .equals(string2.replaceAll("\r\n", "\n"));
+    private boolean stringsMatchIgnoringNewlines(@Nullable Object obj1, @Nullable Object obj2) {
+        if (obj1 instanceof String string1 && obj2 instanceof String string2) {
+            if (string1.length() > 0 && string2.length() > 0) {
+                return string1.replaceAll("\r\n", "\n").equals(string2.replaceAll("\r\n", "\n"));
 
             }
         }
@@ -293,9 +322,10 @@ public class ModConfigSpec extends UnmodifiableConfigWrapper<UnmodifiableConfig>
         return Objects.equals(obj1, obj2);
     }
 
-    public static class Builder
-    {
-        private final Config storage = Config.of(LinkedHashMap::new, InMemoryFormat.withUniversalSupport()); // Use LinkedHashMap for consistent ordering
+    public static class Builder {
+        private final Config storage = Config.of(LinkedHashMap::new,
+                InMemoryFormat.withUniversalSupport()
+        ); // Use LinkedHashMap for consistent ordering
         private BuilderContext context = new BuilderContext();
         private final Map<List<String>, String> levelComments = new HashMap<>();
         private final Map<List<String>, String> levelTranslationKeys = new HashMap<>();
@@ -306,26 +336,36 @@ public class ModConfigSpec extends UnmodifiableConfigWrapper<UnmodifiableConfig>
         public <T> ConfigValue<T> define(String path, T defaultValue) {
             return this.define(split(path), defaultValue);
         }
+
         public <T> ConfigValue<T> define(List<String> path, T defaultValue) {
-            return this.define(path, defaultValue, o -> o != null && defaultValue.getClass().isAssignableFrom(o.getClass()));
+            return this.define(path,
+                    defaultValue,
+                    o -> o != null && defaultValue.getClass().isAssignableFrom(o.getClass())
+            );
         }
+
         public <T> ConfigValue<T> define(String path, T defaultValue, Predicate<Object> validator) {
             return this.define(split(path), defaultValue, validator);
         }
+
         public <T> ConfigValue<T> define(List<String> path, T defaultValue, Predicate<Object> validator) {
             Objects.requireNonNull(defaultValue, "Default value can not be null");
             return this.define(path, () -> defaultValue, validator);
         }
+
         public <T> ConfigValue<T> define(String path, Supplier<T> defaultSupplier, Predicate<Object> validator) {
             return this.define(split(path), defaultSupplier, validator);
         }
+
         public <T> ConfigValue<T> define(List<String> path, Supplier<T> defaultSupplier, Predicate<Object> validator) {
             return this.define(path, defaultSupplier, validator, Object.class);
         }
+
         public <T> ConfigValue<T> define(List<String> path, Supplier<T> defaultSupplier, Predicate<Object> validator, Class<?> clazz) {
             this.context.setClazz(clazz);
             return this.define(path, new ValueSpec(defaultSupplier, validator, this.context, path), defaultSupplier);
         }
+
         public <T> ConfigValue<T> define(List<String> path, ValueSpec value, Supplier<T> defaultSupplier) { // This is the root where everything at the end of the day ends up.
             if (!this.currentPath.isEmpty()) {
                 List<String> tmp = new ArrayList<>(this.currentPath.size() + path.size());
@@ -337,135 +377,187 @@ public class ModConfigSpec extends UnmodifiableConfigWrapper<UnmodifiableConfig>
             this.context = new BuilderContext();
             return new ConfigValue<>(this, path, defaultSupplier);
         }
+
         public <V extends Comparable<? super V>> ConfigValue<V> defineInRange(String path, V defaultValue, V min, V max, Class<V> clazz) {
             return this.defineInRange(split(path), defaultValue, min, max, clazz);
         }
-        public <V extends Comparable<? super V>> ConfigValue<V> defineInRange(List<String> path,  V defaultValue, V min, V max, Class<V> clazz) {
-            return this.defineInRange(path, (Supplier<V>)() -> defaultValue, min, max, clazz);
+
+        public <V extends Comparable<? super V>> ConfigValue<V> defineInRange(List<String> path, V defaultValue, V min, V max, Class<V> clazz) {
+            return this.defineInRange(path, (Supplier<V>) () -> defaultValue, min, max, clazz);
         }
+
         public <V extends Comparable<? super V>> ConfigValue<V> defineInRange(String path, Supplier<V> defaultSupplier, V min, V max, Class<V> clazz) {
             return this.defineInRange(split(path), defaultSupplier, min, max, clazz);
         }
+
         public <V extends Comparable<? super V>> ConfigValue<V> defineInRange(List<String> path, Supplier<V> defaultSupplier, V min, V max, Class<V> clazz) {
             Range<V> range = new Range<>(clazz, min, max);
             this.context.setRange(range);
             this.comment("Range: " + range);
-            if (min.compareTo(max) > 0)
-                throw new IllegalArgumentException("Range min most be less then max.");
+            if (min.compareTo(max) > 0) throw new IllegalArgumentException("Range min most be less then max.");
             return this.define(path, defaultSupplier, range);
         }
+
         public <T> ConfigValue<T> defineInList(String path, T defaultValue, Collection<? extends T> acceptableValues) {
             return this.defineInList(split(path), defaultValue, acceptableValues);
         }
+
         public <T> ConfigValue<T> defineInList(String path, Supplier<T> defaultSupplier, Collection<? extends T> acceptableValues) {
             return this.defineInList(split(path), defaultSupplier, acceptableValues);
         }
+
         public <T> ConfigValue<T> defineInList(List<String> path, T defaultValue, Collection<? extends T> acceptableValues) {
             return this.defineInList(path, () -> defaultValue, acceptableValues);
         }
+
         public <T> ConfigValue<T> defineInList(List<String> path, Supplier<T> defaultSupplier, Collection<? extends T> acceptableValues) {
             // Forge Config API Port: add null check, some immutable collection implementations (like List::of) throw a NullPointerException here
             return this.define(path, defaultSupplier, o -> o != null && acceptableValues.contains(o));
         }
+
         public <T> ConfigValue<List<? extends T>> defineList(String path, List<? extends T> defaultValue, Predicate<Object> elementValidator) {
             return this.defineList(split(path), defaultValue, elementValidator);
         }
+
         public <T> ConfigValue<List<? extends T>> defineList(String path, Supplier<List<? extends T>> defaultSupplier, Predicate<Object> elementValidator) {
             return this.defineList(split(path), defaultSupplier, elementValidator);
         }
+
         public <T> ConfigValue<List<? extends T>> defineList(List<String> path, List<? extends T> defaultValue, Predicate<Object> elementValidator) {
             return this.defineList(path, () -> defaultValue, elementValidator);
         }
+
         public <T> ConfigValue<List<? extends T>> defineList(List<String> path, Supplier<List<? extends T>> defaultSupplier, Predicate<Object> elementValidator) {
             this.context.setClazz(List.class);
-            return this.define(path, new ValueSpec(defaultSupplier, x -> x instanceof List && ((List<?>) x).stream().allMatch( elementValidator ), this.context, path) {
-                @Override
-                public Object correct(Object value) {
-                    if (value == null || !(value instanceof List) || ((List<?>)value).isEmpty()) {
-                        // Forge Config API Port: replace with SLF4J logger
-                        ForgeConfigAPIPort.LOGGER.debug("List on key {} is deemed to need correction. It is null, not a list, or an empty list. Modders, consider defineListAllowEmpty?", path.get(path.size() - 1));
-                        return this.getDefault();
-                    }
-                    List<?> list = Lists.newArrayList((List<?>) value);
-                    list.removeIf(elementValidator.negate());
-                    if (list.isEmpty()) {
-                        // Forge Config API Port: replace with SLF4J logger
-                        ForgeConfigAPIPort.LOGGER.debug("List on key {} is deemed to need correction. It failed validation.", path.get(path.size() - 1));
-                        return this.getDefault();
-                    }
-                    return list;
-                }
-            }, defaultSupplier);
+            return this.define(path,
+                    new ValueSpec(defaultSupplier,
+                            x -> x instanceof List && ((List<?>) x).stream().allMatch(elementValidator),
+                            this.context,
+                            path
+                    ) {
+                        @Override
+                        public Object correct(Object value) {
+                            if (value == null || !(value instanceof List) || ((List<?>) value).isEmpty()) {
+                                // Forge Config API Port: replace with SLF4J logger
+                                ForgeConfigAPIPort.LOGGER.debug(
+                                        "List on key {} is deemed to need correction. It is null, not a list, or an empty list. Modders, consider defineListAllowEmpty?",
+                                        path.get(path.size() - 1)
+                                );
+                                return this.getDefault();
+                            }
+                            List<?> list = Lists.newArrayList((List<?>) value);
+                            list.removeIf(elementValidator.negate());
+                            if (list.isEmpty()) {
+                                // Forge Config API Port: replace with SLF4J logger
+                                ForgeConfigAPIPort.LOGGER.debug(
+                                        "List on key {} is deemed to need correction. It failed validation.",
+                                        path.get(path.size() - 1)
+                                );
+                                return this.getDefault();
+                            }
+                            return list;
+                        }
+                    },
+                    defaultSupplier
+            );
         }
+
         public <T> ConfigValue<List<? extends T>> defineListAllowEmpty(String path, List<? extends T> defaultValue, Predicate<Object> elementValidator) {
             return this.defineListAllowEmpty(split(path), defaultValue, elementValidator);
         }
+
         public <T> ConfigValue<List<? extends T>> defineListAllowEmpty(String path, Supplier<List<? extends T>> defaultSupplier, Predicate<Object> elementValidator) {
             return this.defineListAllowEmpty(split(path), defaultSupplier, elementValidator);
         }
+
         public <T> ConfigValue<List<? extends T>> defineListAllowEmpty(List<String> path, List<? extends T> defaultValue, Predicate<Object> elementValidator) {
             return this.defineListAllowEmpty(path, () -> defaultValue, elementValidator);
         }
+
         public <T> ConfigValue<List<? extends T>> defineListAllowEmpty(List<String> path, Supplier<List<? extends T>> defaultSupplier, Predicate<Object> elementValidator) {
             this.context.setClazz(List.class);
-            return this.define(path, new ValueSpec(defaultSupplier, x -> x instanceof List && ((List<?>) x).stream().allMatch( elementValidator ), this.context, path) {
-                @Override
-                public Object correct(Object value) {
-                    if (value == null || !(value instanceof List)) {
-                        // Forge Config API Port: replace with SLF4J logger
-                        ForgeConfigAPIPort.LOGGER.debug("List on key {} is deemed to need correction, as it is null or not a list.", path.get(path.size() - 1));
-                        return this.getDefault();
-                    }
-                    List<?> list = Lists.newArrayList((List<?>) value);
-                    list.removeIf(elementValidator.negate());
-                    if (list.isEmpty()) {
-                        // Forge Config API Port: replace with SLF4J logger
-                        ForgeConfigAPIPort.LOGGER.debug("List on key {} is deemed to need correction. It failed validation.", path.get(path.size() - 1));
-                        return this.getDefault();
-                    }
-                    return list;
-                }
-            }, defaultSupplier);
+            return this.define(path,
+                    new ValueSpec(defaultSupplier,
+                            x -> x instanceof List && ((List<?>) x).stream().allMatch(elementValidator),
+                            this.context,
+                            path
+                    ) {
+                        @Override
+                        public Object correct(Object value) {
+                            if (value == null || !(value instanceof List)) {
+                                // Forge Config API Port: replace with SLF4J logger
+                                ForgeConfigAPIPort.LOGGER.debug(
+                                        "List on key {} is deemed to need correction, as it is null or not a list.",
+                                        path.get(path.size() - 1)
+                                );
+                                return this.getDefault();
+                            }
+                            List<?> list = Lists.newArrayList((List<?>) value);
+                            list.removeIf(elementValidator.negate());
+                            if (list.isEmpty()) {
+                                // Forge Config API Port: replace with SLF4J logger
+                                ForgeConfigAPIPort.LOGGER.debug(
+                                        "List on key {} is deemed to need correction. It failed validation.",
+                                        path.get(path.size() - 1)
+                                );
+                                return this.getDefault();
+                            }
+                            return list;
+                        }
+                    },
+                    defaultSupplier
+            );
         }
 
         //Enum
         public <V extends Enum<V>> EnumValue<V> defineEnum(String path, V defaultValue) {
             return this.defineEnum(split(path), defaultValue);
         }
+
         public <V extends Enum<V>> EnumValue<V> defineEnum(String path, V defaultValue, EnumGetMethod converter) {
             return this.defineEnum(split(path), defaultValue, converter);
         }
+
         public <V extends Enum<V>> EnumValue<V> defineEnum(List<String> path, V defaultValue) {
             return this.defineEnum(path, defaultValue, defaultValue.getDeclaringClass().getEnumConstants());
         }
+
         public <V extends Enum<V>> EnumValue<V> defineEnum(List<String> path, V defaultValue, EnumGetMethod converter) {
             return this.defineEnum(path, defaultValue, converter, defaultValue.getDeclaringClass().getEnumConstants());
         }
+
         @SuppressWarnings("unchecked")
         public <V extends Enum<V>> EnumValue<V> defineEnum(String path, V defaultValue, V... acceptableValues) {
             return this.defineEnum(split(path), defaultValue, acceptableValues);
         }
+
         @SuppressWarnings("unchecked")
         public <V extends Enum<V>> EnumValue<V> defineEnum(String path, V defaultValue, EnumGetMethod converter, V... acceptableValues) {
             return this.defineEnum(split(path), defaultValue, converter, acceptableValues);
         }
+
         @SuppressWarnings("unchecked")
         public <V extends Enum<V>> EnumValue<V> defineEnum(List<String> path, V defaultValue, V... acceptableValues) {
             return this.defineEnum(path, defaultValue, Arrays.asList(acceptableValues));
         }
+
         @SuppressWarnings("unchecked")
         public <V extends Enum<V>> EnumValue<V> defineEnum(List<String> path, V defaultValue, EnumGetMethod converter, V... acceptableValues) {
             return this.defineEnum(path, defaultValue, converter, Arrays.asList(acceptableValues));
         }
+
         public <V extends Enum<V>> EnumValue<V> defineEnum(String path, V defaultValue, Collection<V> acceptableValues) {
             return this.defineEnum(split(path), defaultValue, acceptableValues);
         }
+
         public <V extends Enum<V>> EnumValue<V> defineEnum(String path, V defaultValue, EnumGetMethod converter, Collection<V> acceptableValues) {
             return this.defineEnum(split(path), defaultValue, converter, acceptableValues);
         }
+
         public <V extends Enum<V>> EnumValue<V> defineEnum(List<String> path, V defaultValue, Collection<V> acceptableValues) {
             return this.defineEnum(path, defaultValue, EnumGetMethod.NAME_IGNORECASE, acceptableValues);
         }
+
         public <V extends Enum<V>> EnumValue<V> defineEnum(List<String> path, V defaultValue, EnumGetMethod converter, Collection<V> acceptableValues) {
             return this.defineEnum(path, defaultValue, converter, obj -> {
                 if (obj instanceof Enum) {
@@ -481,47 +573,67 @@ public class ModConfigSpec extends UnmodifiableConfigWrapper<UnmodifiableConfig>
                 }
             });
         }
+
         public <V extends Enum<V>> EnumValue<V> defineEnum(String path, V defaultValue, Predicate<Object> validator) {
             return this.defineEnum(split(path), defaultValue, validator);
         }
+
         public <V extends Enum<V>> EnumValue<V> defineEnum(String path, V defaultValue, EnumGetMethod converter, Predicate<Object> validator) {
             return this.defineEnum(split(path), defaultValue, converter, validator);
         }
+
         public <V extends Enum<V>> EnumValue<V> defineEnum(List<String> path, V defaultValue, Predicate<Object> validator) {
             return this.defineEnum(path, () -> defaultValue, validator, defaultValue.getDeclaringClass());
         }
+
         public <V extends Enum<V>> EnumValue<V> defineEnum(List<String> path, V defaultValue, EnumGetMethod converter, Predicate<Object> validator) {
             return this.defineEnum(path, () -> defaultValue, converter, validator, defaultValue.getDeclaringClass());
         }
+
         public <V extends Enum<V>> EnumValue<V> defineEnum(String path, Supplier<V> defaultSupplier, Predicate<Object> validator, Class<V> clazz) {
             return this.defineEnum(split(path), defaultSupplier, validator, clazz);
         }
+
         public <V extends Enum<V>> EnumValue<V> defineEnum(String path, Supplier<V> defaultSupplier, EnumGetMethod converter, Predicate<Object> validator, Class<V> clazz) {
             return this.defineEnum(split(path), defaultSupplier, converter, validator, clazz);
         }
+
         public <V extends Enum<V>> EnumValue<V> defineEnum(List<String> path, Supplier<V> defaultSupplier, Predicate<Object> validator, Class<V> clazz) {
             return this.defineEnum(path, defaultSupplier, EnumGetMethod.NAME_IGNORECASE, validator, clazz);
         }
+
         public <V extends Enum<V>> EnumValue<V> defineEnum(List<String> path, Supplier<V> defaultSupplier, EnumGetMethod converter, Predicate<Object> validator, Class<V> clazz) {
             this.context.setClazz(clazz);
             V[] allowedValues = clazz.getEnumConstants();
-            this.comment("Allowed Values: " + Arrays.stream(allowedValues).filter(validator).map(Enum::name).collect(Collectors.joining(", ")));
-            return new EnumValue<V>(this, this.define(path, new ValueSpec(defaultSupplier, validator, this.context, path), defaultSupplier).getPath(), defaultSupplier, converter, clazz);
+            this.comment("Allowed Values: " +
+                    Arrays.stream(allowedValues).filter(validator).map(Enum::name).collect(Collectors.joining(", ")));
+            return new EnumValue<V>(this,
+                    this.define(path, new ValueSpec(defaultSupplier, validator, this.context, path), defaultSupplier)
+                            .getPath(),
+                    defaultSupplier,
+                    converter,
+                    clazz
+            );
         }
 
         //boolean
         public BooleanValue define(String path, boolean defaultValue) {
             return this.define(split(path), defaultValue);
         }
+
         public BooleanValue define(List<String> path, boolean defaultValue) {
             return this.define(path, () -> defaultValue);
         }
+
         public BooleanValue define(String path, Supplier<Boolean> defaultSupplier) {
             return this.define(split(path), defaultSupplier);
         }
+
         public BooleanValue define(List<String> path, Supplier<Boolean> defaultSupplier) {
             return new BooleanValue(this, this.define(path, defaultSupplier, o -> {
-                if (o instanceof String) return ((String)o).equalsIgnoreCase("true") || ((String)o).equalsIgnoreCase("false");
+                if (o instanceof String) {
+                    return ((String) o).equalsIgnoreCase("true") || ((String) o).equalsIgnoreCase("false");
+                }
                 return o instanceof Boolean;
             }, Boolean.class).getPath(), defaultSupplier);
         }
@@ -530,51 +642,68 @@ public class ModConfigSpec extends UnmodifiableConfigWrapper<UnmodifiableConfig>
         public DoubleValue defineInRange(String path, double defaultValue, double min, double max) {
             return this.defineInRange(split(path), defaultValue, min, max);
         }
+
         public DoubleValue defineInRange(List<String> path, double defaultValue, double min, double max) {
             return this.defineInRange(path, () -> defaultValue, min, max);
         }
+
         public DoubleValue defineInRange(String path, Supplier<Double> defaultSupplier, double min, double max) {
             return this.defineInRange(split(path), defaultSupplier, min, max);
         }
+
         public DoubleValue defineInRange(List<String> path, Supplier<Double> defaultSupplier, double min, double max) {
-            return new DoubleValue(this, this.defineInRange(path, defaultSupplier, min, max, Double.class).getPath(), defaultSupplier);
+            return new DoubleValue(this,
+                    this.defineInRange(path, defaultSupplier, min, max, Double.class).getPath(),
+                    defaultSupplier
+            );
         }
 
         //Ints
         public IntValue defineInRange(String path, int defaultValue, int min, int max) {
             return this.defineInRange(split(path), defaultValue, min, max);
         }
+
         public IntValue defineInRange(List<String> path, int defaultValue, int min, int max) {
             return this.defineInRange(path, () -> defaultValue, min, max);
         }
+
         public IntValue defineInRange(String path, Supplier<Integer> defaultSupplier, int min, int max) {
             return this.defineInRange(split(path), defaultSupplier, min, max);
         }
+
         public IntValue defineInRange(List<String> path, Supplier<Integer> defaultSupplier, int min, int max) {
-            return new IntValue(this, this.defineInRange(path, defaultSupplier, min, max, Integer.class).getPath(), defaultSupplier);
+            return new IntValue(this,
+                    this.defineInRange(path, defaultSupplier, min, max, Integer.class).getPath(),
+                    defaultSupplier
+            );
         }
 
         //Longs
         public LongValue defineInRange(String path, long defaultValue, long min, long max) {
             return this.defineInRange(split(path), defaultValue, min, max);
         }
+
         public LongValue defineInRange(List<String> path, long defaultValue, long min, long max) {
             return this.defineInRange(path, () -> defaultValue, min, max);
         }
+
         public LongValue defineInRange(String path, Supplier<Long> defaultSupplier, long min, long max) {
             return this.defineInRange(split(path), defaultSupplier, min, max);
         }
+
         public LongValue defineInRange(List<String> path, Supplier<Long> defaultSupplier, long min, long max) {
-            return new LongValue(this, this.defineInRange(path, defaultSupplier, min, max, Long.class).getPath(), defaultSupplier);
+            return new LongValue(this,
+                    this.defineInRange(path, defaultSupplier, min, max, Long.class).getPath(),
+                    defaultSupplier
+            );
         }
 
-        public Builder comment(String comment)
-        {
+        public Builder comment(String comment) {
             this.context.addComment(comment);
             return this;
         }
-        public Builder comment(String... comment)
-        {
+
+        public Builder comment(String... comment) {
             // Iterate list first, to throw meaningful errors
             // Don't add any comments until we make sure there is no nulls
             for (int i = 0; i < comment.length; i++)
@@ -586,14 +715,12 @@ public class ModConfigSpec extends UnmodifiableConfigWrapper<UnmodifiableConfig>
             return this;
         }
 
-        public Builder translation(String translationKey)
-        {
+        public Builder translation(String translationKey) {
             this.context.setTranslationKey(translationKey);
             return this;
         }
 
-        public Builder worldRestart()
-        {
+        public Builder worldRestart() {
             this.context.worldRestart();
             return this;
         }
@@ -609,7 +736,9 @@ public class ModConfigSpec extends UnmodifiableConfigWrapper<UnmodifiableConfig>
                 this.context.clearComment(); // Set to empty
             }
             if (this.context.getTranslationKey() != null) {
-                this.levelTranslationKeys.put(new ArrayList<String>(this.currentPath), this.context.getTranslationKey());
+                this.levelTranslationKeys.put(new ArrayList<String>(this.currentPath),
+                        this.context.getTranslationKey()
+                );
                 this.context.setTranslationKey(null);
             }
             this.context.ensureEmpty();
@@ -621,8 +750,10 @@ public class ModConfigSpec extends UnmodifiableConfigWrapper<UnmodifiableConfig>
         }
 
         public Builder pop(int count) {
-            if (count > this.currentPath.size())
-                throw new IllegalArgumentException("Attempted to pop " + count + " elements when we only had: " + this.currentPath);
+            if (count > this.currentPath.size()) {
+                throw new IllegalArgumentException(
+                        "Attempted to pop " + count + " elements when we only had: " + this.currentPath);
+            }
             for (int x = 0; x < count; x++)
                 this.currentPath.remove(this.currentPath.size() - 1);
             return this;
@@ -633,13 +764,18 @@ public class ModConfigSpec extends UnmodifiableConfigWrapper<UnmodifiableConfig>
             return Pair.of(o, this.build());
         }
 
-        public ModConfigSpec build()
-        {
+        public ModConfigSpec build() {
             this.context.ensureEmpty();
-            Config valueCfg = Config.of(Config.getDefaultMapCreator(true, true), InMemoryFormat.withSupport(ConfigValue.class::isAssignableFrom));
+            Config valueCfg = Config.of(Config.getDefaultMapCreator(true, true),
+                    InMemoryFormat.withSupport(ConfigValue.class::isAssignableFrom)
+            );
             this.values.forEach(v -> valueCfg.set(v.getPath(), v));
 
-            ModConfigSpec ret = new ModConfigSpec(this.storage, valueCfg, this.levelComments, this.levelTranslationKeys);
+            ModConfigSpec ret = new ModConfigSpec(this.storage,
+                    valueCfg,
+                    this.levelComments,
+                    this.levelTranslationKeys
+            );
             this.values.forEach(v -> v.spec = ret);
             return ret;
         }
@@ -649,16 +785,14 @@ public class ModConfigSpec extends UnmodifiableConfigWrapper<UnmodifiableConfig>
         }
     }
 
-    private static class BuilderContext
-    {
+    private static class BuilderContext {
         private final List<String> comment = new LinkedList<>();
         private String langKey;
         private Range<?> range;
         private boolean worldRestart = false;
         private Class<?> clazz;
 
-        public void addComment(String value)
-        {
+        public void addComment(String value) {
             // Don't use `validate` because it throws IllegalStateException, not NullPointerException
             Preconditions.checkNotNull(value, "Passed in null value for comment");
 
@@ -666,92 +800,126 @@ public class ModConfigSpec extends UnmodifiableConfigWrapper<UnmodifiableConfig>
         }
 
         public void clearComment() {
-            this.comment.clear(); }
-        public boolean hasComment() { return this.comment.size() > 0; }
-        public String buildComment() { return this.buildComment(List.of("unknown", "unknown")); }
-        public String buildComment(final List<String> path)
-        {
-            if (this.comment.stream().allMatch(String::isBlank))
-            {
-                if (!CommonAbstractions.isDevelopmentEnvironment())
-                    ForgeConfigAPIPort.LOGGER.warn("Detected a comment that is all whitespace for config option {}, which causes obscure bugs in NeoForge's config system and will cause a crash in the future. Please report this to the mod author.",
-                            DOT_JOINER.join(path));
-                else
-                    throw new IllegalStateException("Can not build comment for config option " + DOT_JOINER.join(path) + " as it comprises entirely of blank lines/whitespace. This is not allowed as it causes a \"constantly correcting config\" bug with NightConfig in NeoForge's config system.");
+            this.comment.clear();
+        }
+
+        public boolean hasComment() {
+            return this.comment.size() > 0;
+        }
+
+        public String buildComment() {
+            return this.buildComment(List.of("unknown", "unknown"));
+        }
+
+        public String buildComment(final List<String> path) {
+            if (this.comment.stream().allMatch(String::isBlank)) {
+                if (!CommonAbstractions.isDevelopmentEnvironment()) {
+                    ForgeConfigAPIPort.LOGGER.warn(
+                            "Detected a comment that is all whitespace for config option {}, which causes obscure bugs in NeoForge's config system and will cause a crash in the future. Please report this to the mod author.",
+                            DOT_JOINER.join(path)
+                    );
+                } else {
+                    throw new IllegalStateException("Can not build comment for config option " + DOT_JOINER.join(path) +
+                            " as it comprises entirely of blank lines/whitespace. This is not allowed as it causes a \"constantly correcting config\" bug with NightConfig in NeoForge's config system.");
+                }
 
                 return "A developer of this mod has defined this config option with a blank comment, which causes obscure bugs in NeoForge's config system and will cause a crash in the future. Please report this to the mod author.";
             }
 
             return LINE_JOINER.join(this.comment);
         }
-        public void setTranslationKey(String value) { this.langKey = value; }
-        public String getTranslationKey() { return this.langKey; }
-        public <V extends Comparable<? super V>> void setRange(Range<V> value)
-        {
+
+        public void setTranslationKey(String value) {
+            this.langKey = value;
+        }
+
+        public String getTranslationKey() {
+            return this.langKey;
+        }
+
+        public <V extends Comparable<? super V>> void setRange(Range<V> value) {
             this.range = value;
             this.setClazz(value.getClazz());
         }
-        @SuppressWarnings("unchecked")
-        public <V extends Comparable<? super V>> Range<V> getRange() { return (Range<V>)this.range; }
-        public void worldRestart() { this.worldRestart = true; }
-        public boolean needsWorldRestart() { return this.worldRestart; }
-        public void setClazz(Class<?> clazz) { this.clazz = clazz; }
-        public Class<?> getClazz(){ return this.clazz; }
 
-        public void ensureEmpty()
-        {
+        @SuppressWarnings("unchecked")
+        public <V extends Comparable<? super V>> Range<V> getRange() {
+            return (Range<V>) this.range;
+        }
+
+        public void worldRestart() {
+            this.worldRestart = true;
+        }
+
+        public boolean needsWorldRestart() {
+            return this.worldRestart;
+        }
+
+        public void setClazz(Class<?> clazz) {
+            this.clazz = clazz;
+        }
+
+        public Class<?> getClazz() {
+            return this.clazz;
+        }
+
+        public void ensureEmpty() {
             this.validate(this.hasComment(), "Non-empty comment when empty expected");
             this.validate(this.langKey, "Non-null translation key when null expected");
             this.validate(this.range, "Non-null range when null expected");
             this.validate(this.worldRestart, "Dangeling world restart value set to true");
         }
 
-        private void validate(Object value, String message)
-        {
-            if (value != null)
-                throw new IllegalStateException(message);
+        private void validate(Object value, String message) {
+            if (value != null) throw new IllegalStateException(message);
         }
-        private void validate(boolean value, String message)
-        {
-            if (value)
-                throw new IllegalStateException(message);
+
+        private void validate(boolean value, String message) {
+            if (value) throw new IllegalStateException(message);
         }
     }
 
     @SuppressWarnings("unused")
-    public static class Range<V extends Comparable<? super V>> implements Predicate<Object>
-    {
+    public static class Range<V extends Comparable<? super V>> implements Predicate<Object> {
         private final Class<? extends V> clazz;
         private final V min;
         private final V max;
 
-        private Range(Class<V> clazz, V min, V max)
-        {
+        private Range(Class<V> clazz, V min, V max) {
             this.clazz = clazz;
             this.min = min;
             this.max = max;
         }
 
-        public Class<? extends V> getClazz() { return this.clazz; }
-        public V getMin() { return this.min; }
-        public V getMax() { return this.max; }
+        public Class<? extends V> getClazz() {
+            return this.clazz;
+        }
 
-        private boolean isNumber(Object other)
-        {
+        public V getMin() {
+            return this.min;
+        }
+
+        public V getMax() {
+            return this.max;
+        }
+
+        private boolean isNumber(Object other) {
             return Number.class.isAssignableFrom(this.clazz) && other instanceof Number;
         }
 
         @Override
-        public boolean test(Object t)
-        {
-            if (this.isNumber(t))
-            {
+        public boolean test(Object t) {
+            if (this.isNumber(t)) {
                 Number n = (Number) t;
-                boolean result = ((Number) this.min).doubleValue() <= n.doubleValue() && n.doubleValue() <= ((Number) this.max).doubleValue();
-                if(!result)
-                {
+                boolean result = ((Number) this.min).doubleValue() <= n.doubleValue() &&
+                        n.doubleValue() <= ((Number) this.max).doubleValue();
+                if (!result) {
                     // Forge Config API Port: replace with SLF4J logger
-                    ForgeConfigAPIPort.LOGGER.debug("Range value {} is not within its bounds {}-{}", n.doubleValue(), ((Number) this.min).doubleValue(), ((Number) this.max).doubleValue());
+                    ForgeConfigAPIPort.LOGGER.debug("Range value {} is not within its bounds {}-{}",
+                            n.doubleValue(),
+                            ((Number) this.min).doubleValue(),
+                            ((Number) this.max).doubleValue()
+                    );
                 }
                 return result;
             }
@@ -759,20 +927,19 @@ public class ModConfigSpec extends UnmodifiableConfigWrapper<UnmodifiableConfig>
             V c = this.clazz.cast(t);
 
             boolean result = c.compareTo(this.min) >= 0 && c.compareTo(this.max) <= 0;
-            if(!result)
-            {
+            if (!result) {
                 // Forge Config API Port: replace with SLF4J logger
                 ForgeConfigAPIPort.LOGGER.debug("Range value {} is not within its bounds {}-{}", c, this.min, this.max);
             }
             return result;
         }
 
-        public Object correct(Object value, Object def)
-        {
-            if (this.isNumber(value))
-            {
+        public Object correct(Object value, Object def) {
+            if (this.isNumber(value)) {
                 Number n = (Number) value;
-                return n.doubleValue() < ((Number) this.min).doubleValue() ? this.min : n.doubleValue() > ((Number) this.max).doubleValue() ? this.max : value;
+                return n.doubleValue() < ((Number) this.min).doubleValue() ?
+                        this.min :
+                        n.doubleValue() > ((Number) this.max).doubleValue() ? this.max : value;
             }
             if (!this.clazz.isInstance(value)) return def;
             V c = this.clazz.cast(value);
@@ -780,8 +947,7 @@ public class ModConfigSpec extends UnmodifiableConfigWrapper<UnmodifiableConfig>
         }
 
         @Override
-        public String toString()
-        {
+        public String toString() {
             if (this.clazz == Integer.class) {
                 if (this.max.equals(Integer.MAX_VALUE)) {
                     return "> " + this.min;
@@ -793,8 +959,7 @@ public class ModConfigSpec extends UnmodifiableConfigWrapper<UnmodifiableConfig>
         }
     }
 
-    public static class ValueSpec
-    {
+    public static class ValueSpec {
         private final String comment;
         private final String langKey;
         private final Range<?> range;
@@ -803,8 +968,7 @@ public class ModConfigSpec extends UnmodifiableConfigWrapper<UnmodifiableConfig>
         private final Supplier<?> supplier;
         private final Predicate<Object> validator;
 
-        private ValueSpec(Supplier<?> supplier, Predicate<Object> validator, BuilderContext context, List<String> path)
-        {
+        private ValueSpec(Supplier<?> supplier, Predicate<Object> validator, BuilderContext context, List<String> path) {
             Objects.requireNonNull(supplier, "Default supplier can not be null");
             Objects.requireNonNull(validator, "Validator can not be null");
 
@@ -817,20 +981,41 @@ public class ModConfigSpec extends UnmodifiableConfigWrapper<UnmodifiableConfig>
             this.validator = validator;
         }
 
-        public String getComment() { return this.comment; }
-        public String getTranslationKey() { return this.langKey; }
-        @SuppressWarnings("unchecked")
-        public <V extends Comparable<? super V>> Range<V> getRange() { return (Range<V>)this.range; }
-        public boolean needsWorldRestart() { return this.worldRestart; }
-        public Class<?> getClazz(){ return this.clazz; }
-        public boolean test(Object value) { return this.validator.test(value); }
-        public Object correct(Object value) { return this.range == null ? this.getDefault() : this.range.correct(value, this.getDefault()); }
+        public String getComment() {
+            return this.comment;
+        }
 
-        public Object getDefault() { return this.supplier.get(); }
+        public String getTranslationKey() {
+            return this.langKey;
+        }
+
+        @SuppressWarnings("unchecked")
+        public <V extends Comparable<? super V>> Range<V> getRange() {
+            return (Range<V>) this.range;
+        }
+
+        public boolean needsWorldRestart() {
+            return this.worldRestart;
+        }
+
+        public Class<?> getClazz() {
+            return this.clazz;
+        }
+
+        public boolean test(Object value) {
+            return this.validator.test(value);
+        }
+
+        public Object correct(Object value) {
+            return this.range == null ? this.getDefault() : this.range.correct(value, this.getDefault());
+        }
+
+        public Object getDefault() {
+            return this.supplier.get();
+        }
     }
 
-    public static class ConfigValue<T> implements Supplier<T>
-    {
+    public static class ConfigValue<T> implements Supplier<T> {
         private static final boolean USE_CACHES = true;
 
         private final Builder parent;
@@ -841,16 +1026,14 @@ public class ModConfigSpec extends UnmodifiableConfigWrapper<UnmodifiableConfig>
 
         private ModConfigSpec spec;
 
-        ConfigValue(Builder parent, List<String> path, Supplier<T> defaultSupplier)
-        {
+        ConfigValue(Builder parent, List<String> path, Supplier<T> defaultSupplier) {
             this.parent = parent;
             this.path = path;
             this.defaultSupplier = defaultSupplier;
             this.parent.values.add(this);
         }
 
-        public List<String> getPath()
-        {
+        public List<String> getPath() {
             return Lists.newArrayList(this.path);
         }
 
@@ -858,65 +1041,62 @@ public class ModConfigSpec extends UnmodifiableConfigWrapper<UnmodifiableConfig>
          * Returns the actual value for the configuration setting, throwing if the config has not yet been loaded.
          *
          * @return the actual value for the setting
-         * @throws NullPointerException if the {@link ModConfigSpec config spec} object that will contain this has
-         *                              not yet been built
+         *
+         * @throws NullPointerException  if the {@link ModConfigSpec config spec} object that will contain this has not
+         *                               yet been built
          * @throws IllegalStateException if the associated config has not yet been loaded
          */
         @Override
-        public T get()
-        {
+        public T get() {
             Preconditions.checkNotNull(this.spec, "Cannot get config value before spec is built");
             // TODO: Remove this dev-time check so this errors out on both production and dev
             // This is dev-time-only in 1.19.x, to avoid breaking already published mods while forcing devs to fix their errors
-            if (CommonAbstractions.isDevelopmentEnvironment())
-            {
+            if (CommonAbstractions.isDevelopmentEnvironment()) {
                 // When the above if-check is removed, change message to "Cannot get config value before config is loaded"
                 Preconditions.checkState(this.spec.childConfig != null, """
-                        Cannot get config value before config is loaded.
-                        This error is currently only thrown in the development environment, to avoid breaking published mods.
-                        In a future version, this will also throw in the production environment.
-                        """);
+                                                                        Cannot get config value before config is loaded.
+                                                                        This error is currently only thrown in the development environment, to avoid breaking published mods.
+                                                                        In a future version, this will also throw in the production environment.
+                                                                        """);
             }
 
-            if (this.spec.childConfig == null)
-                return this.defaultSupplier.get();
+            if (this.spec.childConfig == null) return this.defaultSupplier.get();
 
-            if (USE_CACHES && this.cachedValue == null) this.cachedValue = this.getRaw(this.spec.childConfig, this.path, this.defaultSupplier);
-            else if (!USE_CACHES)
-                return this.getRaw(this.spec.childConfig, this.path, this.defaultSupplier);
+            if (USE_CACHES && this.cachedValue == null) {
+                this.cachedValue = this.getRaw(this.spec.childConfig, this.path, this.defaultSupplier);
+            } else if (!USE_CACHES) return this.getRaw(this.spec.childConfig, this.path, this.defaultSupplier);
 
             return this.cachedValue;
         }
 
-        protected T getRaw(Config config, List<String> path, Supplier<T> defaultSupplier)
-        {
+        protected T getRaw(Config config, List<String> path, Supplier<T> defaultSupplier) {
             return config.getOrElse(path, defaultSupplier);
         }
 
         /**
          * {@return the default value for the configuration setting}
          */
-        public T getDefault()
-        {
+        public T getDefault() {
             return this.defaultSupplier.get();
         }
 
-        public Builder next()
-        {
+        public Builder next() {
             return this.parent;
         }
 
-        public void save()
-        {
+        public void save() {
             Preconditions.checkNotNull(this.spec, "Cannot save config value before spec is built");
-            Preconditions.checkNotNull(this.spec.childConfig, "Cannot save config value without assigned Config object present");
+            Preconditions.checkNotNull(this.spec.childConfig,
+                    "Cannot save config value without assigned Config object present"
+            );
             this.spec.save();
         }
 
-        public void set(T value)
-        {
+        public void set(T value) {
             Preconditions.checkNotNull(this.spec, "Cannot set config value before spec is built");
-            Preconditions.checkNotNull(this.spec.childConfig, "Cannot set config value without assigned Config object present");
+            Preconditions.checkNotNull(this.spec.childConfig,
+                    "Cannot set config value without assigned Config object present"
+            );
             this.spec.childConfig.set(this.path, value);
             this.cachedValue = value;
         }
@@ -926,72 +1106,86 @@ public class ModConfigSpec extends UnmodifiableConfigWrapper<UnmodifiableConfig>
         }
     }
 
-    public static class BooleanValue extends ConfigValue<Boolean>
-    {
-        BooleanValue(Builder parent, List<String> path, Supplier<Boolean> defaultSupplier)
-        {
-            super(parent, path, defaultSupplier);
-        }
-    }
-
-    public static class IntValue extends ConfigValue<Integer>
-    {
-        IntValue(Builder parent, List<String> path, Supplier<Integer> defaultSupplier)
-        {
+    public static class BooleanValue extends ConfigValue<Boolean> implements BooleanSupplier {
+        BooleanValue(Builder parent, List<String> path, Supplier<Boolean> defaultSupplier) {
             super(parent, path, defaultSupplier);
         }
 
         @Override
-        protected Integer getRaw(Config config, List<String> path, Supplier<Integer> defaultSupplier)
-        {
+        public boolean getAsBoolean() {
+            return this.get();
+        }
+
+        public boolean isTrue() {
+            return this.getAsBoolean();
+        }
+
+        public boolean isFalse() {
+            return !this.getAsBoolean();
+        }
+    }
+
+    public static class IntValue extends ConfigValue<Integer> implements IntSupplier {
+        IntValue(Builder parent, List<String> path, Supplier<Integer> defaultSupplier) {
+            super(parent, path, defaultSupplier);
+        }
+
+        @Override
+        protected Integer getRaw(Config config, List<String> path, Supplier<Integer> defaultSupplier) {
             return config.getIntOrElse(path, () -> defaultSupplier.get());
         }
+
+        @Override
+        public int getAsInt() {
+            return this.get();
+        }
     }
 
-    public static class LongValue extends ConfigValue<Long>
-    {
-        LongValue(Builder parent, List<String> path, Supplier<Long> defaultSupplier)
-        {
+    public static class LongValue extends ConfigValue<Long> implements LongSupplier {
+        LongValue(Builder parent, List<String> path, Supplier<Long> defaultSupplier) {
             super(parent, path, defaultSupplier);
         }
 
         @Override
-        protected Long getRaw(Config config, List<String> path, Supplier<Long> defaultSupplier)
-        {
+        protected Long getRaw(Config config, List<String> path, Supplier<Long> defaultSupplier) {
             return config.getLongOrElse(path, () -> defaultSupplier.get());
         }
+
+        @Override
+        public long getAsLong() {
+            return this.get();
+        }
     }
 
-    public static class DoubleValue extends ConfigValue<Double>
-    {
-        DoubleValue(Builder parent, List<String> path, Supplier<Double> defaultSupplier)
-        {
+    public static class DoubleValue extends ConfigValue<Double> implements DoubleSupplier {
+        DoubleValue(Builder parent, List<String> path, Supplier<Double> defaultSupplier) {
             super(parent, path, defaultSupplier);
         }
 
         @Override
-        protected Double getRaw(Config config, List<String> path, Supplier<Double> defaultSupplier)
-        {
+        protected Double getRaw(Config config, List<String> path, Supplier<Double> defaultSupplier) {
             Number n = config.get(path);
             return n == null ? defaultSupplier.get() : n.doubleValue();
         }
+
+        @Override
+        public double getAsDouble() {
+            return this.get();
+        }
     }
 
-    public static class EnumValue<T extends Enum<T>> extends ConfigValue<T>
-    {
+    public static class EnumValue<T extends Enum<T>> extends ConfigValue<T> {
         private final EnumGetMethod converter;
         private final Class<T> clazz;
 
-        EnumValue(Builder parent, List<String> path, Supplier<T> defaultSupplier, EnumGetMethod converter, Class<T> clazz)
-        {
+        EnumValue(Builder parent, List<String> path, Supplier<T> defaultSupplier, EnumGetMethod converter, Class<T> clazz) {
             super(parent, path, defaultSupplier);
             this.converter = converter;
             this.clazz = clazz;
         }
 
         @Override
-        protected T getRaw(Config config, List<String> path, Supplier<T> defaultSupplier)
-        {
+        protected T getRaw(Config config, List<String> path, Supplier<T> defaultSupplier) {
             return config.getEnumOrElse(path, this.clazz, this.converter, defaultSupplier);
         }
     }
@@ -999,8 +1193,8 @@ public class ModConfigSpec extends UnmodifiableConfigWrapper<UnmodifiableConfig>
     private static final Joiner LINE_JOINER = Joiner.on("\n");
     private static final Joiner DOT_JOINER = Joiner.on(".");
     private static final Splitter DOT_SPLITTER = Splitter.on(".");
-    private static List<String> split(String path)
-    {
+
+    private static List<String> split(String path) {
         return Lists.newArrayList(DOT_SPLITTER.split(path));
     }
 }

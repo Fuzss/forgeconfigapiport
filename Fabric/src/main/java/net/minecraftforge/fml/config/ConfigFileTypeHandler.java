@@ -12,11 +12,9 @@ import com.electronwill.nightconfig.core.io.ParsingException;
 import com.electronwill.nightconfig.core.io.WritingMode;
 import com.electronwill.nightconfig.toml.TomlFormat;
 import com.mojang.logging.LogUtils;
-import fuzs.forgeconfigapiport.api.config.v2.ModConfigEvents;
 import fuzs.forgeconfigapiport.fabric.api.forge.v4.ForgeModConfigEvents;
 import fuzs.forgeconfigapiport.fabric.impl.config.ForgeConfigApiPortConfig;
 import fuzs.forgeconfigapiport.fabric.impl.util.ConfigLoadingHelper;
-import net.fabricmc.loader.api.FabricLoader;
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 
@@ -168,7 +166,6 @@ public class ConfigFileTypeHandler {
                 this.modConfig.getSpec().afterReload();
                 // Forge Config API Port: invoke Fabric style callback instead of Forge event
                 ForgeModConfigEvents.reloading(this.modConfig.getModId()).invoker().onModConfigReloading(this.modConfig);
-                ModConfigEvents.reloading(this.modConfig.getModId()).invoker().onModConfigReloading(this.modConfig);
             }
         }
     }

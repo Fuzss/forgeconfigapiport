@@ -8,7 +8,6 @@ package net.minecraftforge.fml.config;
 import com.electronwill.nightconfig.core.CommentedConfig;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.electronwill.nightconfig.toml.TomlFormat;
-import fuzs.forgeconfigapiport.api.config.v2.ModConfigEvents;
 import fuzs.forgeconfigapiport.fabric.api.forge.v4.ForgeModConfigEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.util.StringRepresentable;
@@ -102,12 +101,10 @@ public class ModConfig {
             this.setConfigData(TomlFormat.instance().createParser().parse(new ByteArrayInputStream(bytes)));
             // Forge Config API Port: invoke Fabric style callback instead of Forge event
             ForgeModConfigEvents.reloading(this.getModId()).invoker().onModConfigReloading(this);
-            ModConfigEvents.reloading(this.getModId()).invoker().onModConfigReloading(this);
         } else {
             this.setConfigData(null);
             // Forge Config API Port: invoke Fabric style callback instead of Forge event
             ForgeModConfigEvents.unloading(this.getModId()).invoker().onModConfigUnloading(this);
-            ModConfigEvents.unloading(this.getModId()).invoker().onModConfigUnloading(this);
         }
     }
 

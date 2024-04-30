@@ -2,40 +2,37 @@ package fuzs.forgeconfigapiport.fabric.impl.client;
 
 import com.mojang.brigadier.CommandDispatcher;
 import fuzs.forgeconfigapiport.fabric.impl.client.commands.ConfigCommand;
-import fuzs.forgeconfigapiport.fabric.impl.network.client.config.ConfigSyncClient;
-import fuzs.forgeconfigapiport.fabric.impl.network.config.ConfigSync;
-import io.netty.util.concurrent.Future;
-import io.netty.util.concurrent.GenericFutureListener;
+import fuzs.forgeconfigapiport.fabric.impl.network.ConfigSync;
+import fuzs.forgeconfigapiport.fabric.impl.network.payload.ConfigFilePayload;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.fabricmc.fabric.api.client.networking.v1.ClientLoginNetworking;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientHandshakePacketListenerImpl;
+import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationConnectionEvents;
+import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworking;
 import net.minecraft.commands.CommandBuildContext;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.fml.config.ConfigTracker;
 import net.minecraftforge.fml.config.ModConfig;
 
 import java.util.List;
-import java.util.function.Consumer;
 
 public class ForgeConfigAPIPortFabricClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
         registerMessages();
-        registerHandlers();
+        registerEventHandlers();
     }
 
     private static void registerMessages() {
-        ClientLoginNetworking.registerGlobalReceiver(ConfigSync.SYNC_CONFIGS_CHANNEL, (Minecraft client1, ClientHandshakePacketListenerImpl handler1, FriendlyByteBuf buf1, Consumer<GenericFutureListener<? extends Future<? super Void>>> listenerAdder1) -> {
-            return ConfigSyncClient.onSyncConfigs(client1, handler1, buf1);
+        ClientConfigurationNetworking.registerGlobalReceiver(ConfigFilePayload.TYPE, (payload, context) -> {
+            ConfigSync.receiveSyncedConfig(payload.contents(), payload.fileName());
         });
-        ClientLoginNetworking.registerGlobalReceiver(ConfigSync.ESTABLISH_MODDED_CONNECTION_CHANNEL, (client, handler, buf, listenerAdder) -> ConfigSyncClient.onEstablishModdedConnection(client, handler, buf));
+        ClientConfigurationConnectionEvents.READY.register((handler, client) -> {
+            ConfigSync.handleClientLoginSuccess();
+        });
     }
 
-    private static void registerHandlers() {
+    private static void registerEventHandlers() {
         ClientCommandRegistrationCallback.EVENT.register((CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) -> {
             ConfigCommand.register(new ConfigCommand.ConfigCommandContext<ModConfig.Type>() {
 
