@@ -9,9 +9,9 @@ import com.electronwill.nightconfig.core.CommentedConfig;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.electronwill.nightconfig.core.file.FileConfig;
 import com.mojang.logging.LogUtils;
-import fuzs.forgeconfigapiport.api.config.v3.ModConfigEvents;
 import fuzs.forgeconfigapiport.fabric.api.neoforge.v4.NeoForgeModConfigEvents;
 import net.fabricmc.loader.api.FabricLoader;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.Marker;
@@ -40,8 +40,11 @@ public class ConfigTracker {
         this.configSets.put(ModConfig.Type.SERVER, Collections.synchronizedSet(new LinkedHashSet<>()));
     }
 
-    void trackConfig(final ModConfig config) {
-        if (this.fileMap.containsKey(config.getFileName())) {
+    // Forge Config API Port: widened access level for internal use
+    @ApiStatus.Internal
+    public void trackConfig(final ModConfig config) {
+        // Forge Config API Port: also check for duplicates in NeoForge config system, will cause issues otherwise during server config syncing
+        if (this.fileMap.containsKey(config.getFileName()) || net.minecraftforge.fml.config.ConfigTracker.INSTANCE.fileMap().containsKey(config.getFileName())) {
             LOGGER.error(CONFIG,"Detected config file conflict {} between {} and {}", config.getFileName(), this.fileMap.get(config.getFileName()).getModId(), config.getModId());
             throw new RuntimeException("Config conflict detected!");
         }
@@ -74,7 +77,6 @@ public class ConfigTracker {
         config.setConfigData(configData);
         // Forge Config API Port: invoke Fabric style callback instead of Forge event
         NeoForgeModConfigEvents.loading(config.getModId()).invoker().onModConfigLoading(config);
-        ModConfigEvents.loading(config.getModId()).invoker().onModConfigLoading(config);
         config.save();
     }
 
@@ -85,7 +87,6 @@ public class ConfigTracker {
             config.getHandler().unload(configBasePath, config);
             // Forge Config API Port: invoke Fabric style callback instead of Forge event
             NeoForgeModConfigEvents.unloading(config.getModId()).invoker().onModConfigUnloading(config);
-            ModConfigEvents.unloading(config.getModId()).invoker().onModConfigUnloading(config);
             config.save();
             config.setConfigData(null);
         }
@@ -98,7 +99,6 @@ public class ConfigTracker {
             config.setConfigData(commentedConfig);
             // Forge Config API Port: invoke Fabric style callback instead of Forge event
             NeoForgeModConfigEvents.loading(config.getModId()).invoker().onModConfigLoading(config);
-            ModConfigEvents.loading(config.getModId()).invoker().onModConfigLoading(config);
         });
     }
 
@@ -106,7 +106,7 @@ public class ConfigTracker {
     public String getConfigFileName(String modId, ModConfig.Type type) {
         // Forge Config API Port: support mods with multiple configs for the same type
         List<String> fileNames = this.getConfigFileNames(modId, type);
-        return fileNames.isEmpty() ? null : fileNames.get(0);
+        return fileNames.isEmpty() ? null : fileNames.getFirst();
     }
 
     // Forge Config API Port: support mods with multiple configs for the same type, does not exist on Forge, therefore marked as internal
