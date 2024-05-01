@@ -8,7 +8,6 @@ pluginManagement {
     }
 }
 
-//include("Common", "Common-NeoForgeApi", "Common-ForgeApi", "Fabric", "NeoForge", "Forge")
-include("Common", "Common-NeoForgeApi", "Common-ForgeApi", "Fabric", "NeoForge")
+include("Common", "Common-NeoForgeApi", "Common-ForgeApi", "Fabric", "NeoForge", "Forge")
 
 apply from: "https://raw.githubusercontent.com/Fuzss/modresources/main/gradle/v2/settings.gradle"
