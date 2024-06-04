@@ -11,6 +11,7 @@ import com.electronwill.nightconfig.toml.TomlFormat;
 import fuzs.forgeconfigapiport.fabric.api.forge.v4.ForgeModConfigEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.util.StringRepresentable;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.io.ByteArrayInputStream;
 import java.nio.file.Path;
@@ -28,7 +29,7 @@ public class ModConfig {
     private Callable<Void> saveHandler;
 
     // Forge Config API Port: replace ModContainer with mod id, marked as internal for common project as no mod id constructor exists on Forge
-    // It's ok to use this in a Fabric/Quilt project, just don't use it in Common, that's what the annotation is for
+    @ApiStatus.Experimental
     public ModConfig(final Type type, final IConfigSpec<?> spec, String modId, final String fileName) {
         this.type = type;
         this.spec = spec;
@@ -43,7 +44,7 @@ public class ModConfig {
     }
 
     // Forge Config API Port: replace ModContainer with mod id, marked as internal for common project as no mod id constructor exists on Forge
-    // It's ok to use this in a Fabric/Quilt project, just don't use it in Common, that's what the annotation is for
+    @ApiStatus.Experimental
     public ModConfig(final Type type, final IConfigSpec<?> spec, String modId) {
         this(type, spec, modId, defaultConfigName(type, modId));
     }

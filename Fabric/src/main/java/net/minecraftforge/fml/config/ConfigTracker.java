@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -40,9 +41,7 @@ public class ConfigTracker {
         this.configSets.put(ModConfig.Type.SERVER, Collections.synchronizedSet(new LinkedHashSet<>()));
     }
 
-    // Forge Config API Port: widened access level for internal use
-    @ApiStatus.Internal
-    public void trackConfig(final ModConfig config) {
+    void trackConfig(final ModConfig config) {
         // Forge Config API Port: also check for duplicates in NeoForge config system, will cause issues otherwise during server config syncing
         if (this.fileMap.containsKey(config.getFileName()) || net.neoforged.fml.config.ConfigTracker.INSTANCE.fileMap().containsKey(config.getFileName())) {
             LOGGER.error(CONFIG,"Detected config file conflict {} between {} and {}", config.getFileName(), this.fileMap.get(config.getFileName()).getModId(), config.getModId());
@@ -62,18 +61,46 @@ public class ConfigTracker {
     }
 
     public void loadConfigs(ModConfig.Type type, Path configBasePath) {
-        LOGGER.debug(CONFIG, "Loading configs type {}", type);
-        this.configSets.get(type).forEach(config -> this.openConfig(config, configBasePath));
+        // Forge Config API Port: turned into overload for new method with additional parameter
+        this.loadConfigs(type, configBasePath, null);
     }
 
-    public void unloadConfigs(ModConfig.Type type, Path configBasePath) {
+    // Forge Config API Port: new method for resolving server config file path
+    @ApiStatus.Experimental
+    public void loadConfigs(ModConfig.Type type, Path configBasePath, @Nullable Path configOverrideBasePath) {
+        LOGGER.debug(CONFIG, "Loading configs type {}", type);
+        this.configSets.get(type).forEach(config -> this.openConfig(config, configBasePath, configOverrideBasePath));
+    }
+
+    public void unloadConfigs(ModConfig.Type type) {
         LOGGER.debug(CONFIG, "Unloading configs type {}", type);
-        this.configSets.get(type).forEach(config -> this.closeConfig(config, configBasePath));
+        this.configSets.get(type).forEach(this::closeConfig);
+    }
+
+    // Forge Config API Port: new method for resolving server config file path
+    @ApiStatus.Experimental
+    private Path resolveBasePath(ModConfig config, Path configBasePath, @Nullable Path configOverrideBasePath) {
+        if (configOverrideBasePath != null) {
+            Path overrideFilePath = configOverrideBasePath.resolve(config.getFileName());
+            if (Files.exists(overrideFilePath)) {
+                LOGGER.info(CONFIG, "Found config file override in path {}", overrideFilePath);
+                return configOverrideBasePath;
+            }
+        }
+        return configBasePath;
     }
 
     private void openConfig(final ModConfig config, final Path configBasePath) {
+        // Forge Config API Port: turned into overload for new method with additional parameter
+        this.openConfig(config, configBasePath, null);
+    }
+
+    // Forge Config API Port: new method for resolving server config file path
+    @ApiStatus.Experimental
+    private void openConfig(final ModConfig config, final Path configBasePath, @Nullable Path configOverrideBasePath) {
         LOGGER.trace(CONFIG, "Loading config file type {} at {} for {}", config.getType(), config.getFileName(), config.getModId());
-        final CommentedFileConfig configData = config.getHandler().reader(configBasePath).apply(config);
+        final Path basePath = this.resolveBasePath(config, configBasePath, configOverrideBasePath);
+        final CommentedFileConfig configData = config.getHandler().reader(basePath).apply(config);
         config.setConfigData(configData);
         // Forge Config API Port: invoke Fabric style callback instead of Forge event
         ForgeModConfigEvents.loading(config.getModId()).invoker().onModConfigLoading(config);
@@ -81,10 +108,17 @@ public class ConfigTracker {
     }
 
     private void closeConfig(final ModConfig config, final Path configBasePath) {
+        // Forge Config API Port: turned into overload for new method with removed parameter
+        this.closeConfig(config);
+    }
+
+    // Forge Config API Port: new method for removing unnecessary parameter
+    @ApiStatus.Experimental
+    private void closeConfig(final ModConfig config) {
         if (config.getConfigData() != null) {
             LOGGER.trace(CONFIG, "Closing config file type {} at {} for {}", config.getType(), config.getFileName(), config.getModId());
             // stop the filewatcher before we save the file and close it, so reload doesn't fire
-            config.getHandler().unload(configBasePath, config);
+            config.getHandler().unload(config);
             // Forge Config API Port: invoke Fabric style callback instead of Forge event
             ForgeModConfigEvents.unloading(config.getModId()).invoker().onModConfigUnloading(config);
             config.save();
@@ -109,8 +143,8 @@ public class ConfigTracker {
         return fileNames.isEmpty() ? null : fileNames.getFirst();
     }
 
-    // Forge Config API Port: support mods with multiple configs for the same type, does not exist on Forge, therefore marked as internal
-    // It's ok to use this in a Fabric/Quilt project, just don't use it in Common, that's what the annotation is for
+    // Forge Config API Port: support mods with multiple configs for the same type
+    @ApiStatus.Experimental
     public List<String> getConfigFileNames(String modId, ModConfig.Type type) {
         return Optional.ofNullable(this.configsByMod.get(modId))
                 .map(map -> map.get(type))
