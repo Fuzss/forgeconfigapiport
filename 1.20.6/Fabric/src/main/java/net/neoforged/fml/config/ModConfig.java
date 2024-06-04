@@ -11,11 +11,11 @@ import com.electronwill.nightconfig.toml.TomlFormat;
 import fuzs.forgeconfigapiport.fabric.api.neoforge.v4.NeoForgeModConfigEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.util.StringRepresentable;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.io.ByteArrayInputStream;
 import java.nio.file.Path;
 import java.util.Locale;
-import java.util.concurrent.Callable;
 
 public class ModConfig {
     private final Type type;
@@ -23,12 +23,10 @@ public class ModConfig {
     private final String fileName;
     // Forge Config API Port: replace ModContainer with mod id
     private final String modId;
-    private final ConfigFileTypeHandler configHandler;
     private CommentedConfig configData;
-    private Callable<Void> saveHandler;
 
     // Forge Config API Port: replace ModContainer with mod id, marked as internal for common project as no mod id constructor exists on Forge
-    // It's ok to use this in a Fabric/Quilt project, just don't use it in Common, that's what the annotation is for
+    @ApiStatus.Experimental
     public ModConfig(final Type type, final IConfigSpec<?> spec, String modId, final String fileName) {
         this.type = type;
         this.spec = spec;
@@ -38,12 +36,11 @@ public class ModConfig {
             throw new IllegalArgumentException("No mod with id '%s'".formatted(modId));
         }
         this.modId = modId;
-        this.configHandler = ConfigFileTypeHandler.TOML;
         ConfigTracker.INSTANCE.trackConfig(this);
     }
 
     // Forge Config API Port: replace ModContainer with mod id, marked as internal for common project as no mod id constructor exists on Forge
-    // It's ok to use this in a Fabric/Quilt project, just don't use it in Common, that's what the annotation is for
+    @ApiStatus.Experimental
     public ModConfig(final Type type, final IConfigSpec<?> spec, String modId) {
         this(type, spec, modId, defaultConfigName(type, modId));
     }
@@ -59,10 +56,6 @@ public class ModConfig {
 
     public String getFileName() {
         return this.fileName;
-    }
-
-    public ConfigFileTypeHandler getHandler() {
-        return this.configHandler;
     }
 
     @SuppressWarnings("unchecked")
@@ -83,10 +76,6 @@ public class ModConfig {
         this.configData = configData;
         this.spec.acceptConfig(this.configData);
     }
-
-//    void fireEvent(final IConfigEvent configEvent) {
-//        this.container.dispatchConfigEvent(configEvent);
-//    }
 
     public void save() {
         ((CommentedFileConfig) this.configData).save();
@@ -125,11 +114,6 @@ public class ModConfig {
          * Suffix is "-client" by default.
          */
         CLIENT,
-//        /**
-//         * Player type config is configuration that is associated with a player.
-//         * Preferences around machine states, for example.
-//         */
-//        PLAYER,
         /**
          * Server type config is configuration that is associated with a server instance.
          * Only loaded during server startup.
@@ -137,7 +121,17 @@ public class ModConfig {
          * Synced to clients during connection.
          * Suffix is "-server" by default.
          */
-        SERVER;
+        SERVER,
+        /**
+         * Startup configs are for configurations that need to run as early as possible.
+         * Loaded as soon as the config is registered to FML.
+         * Please be aware when using them, as using these configs to enable/disable registration and anything that must be present on both sides
+         * can cause clients to have issues connecting to servers with different config values.
+         * Stored in the global config directory.
+         * Not synced.
+         * Suffix is "-startup" by default.
+         */
+        STARTUP;
 
         public String extension() {
             return this.name().toLowerCase(Locale.ROOT);

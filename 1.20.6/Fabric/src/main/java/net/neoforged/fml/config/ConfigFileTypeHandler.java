@@ -27,43 +27,51 @@ import static net.neoforged.fml.config.ConfigTracker.CONFIG;
 
 public class ConfigFileTypeHandler {
     private static final Logger LOGGER = LogUtils.getLogger();
-    static ConfigFileTypeHandler TOML = new ConfigFileTypeHandler();
+    public final static ConfigFileTypeHandler TOML = new ConfigFileTypeHandler();
     // Forge Config Api Port: adapted for Fabric
     private static final Path defaultConfigPath = ForgeConfigApiPortConfig.getDefaultConfigsDirectory();
 
     public Function<ModConfig, CommentedFileConfig> reader(Path configBasePath) {
         return (c) -> {
-            // Forge Config API Port: if the server config exists locally in the world directory use that, otherwise use global server configs
-            // idea from https://github.com/MinecraftForge/MinecraftForge/issues/9465
-            Path configPath = ForgeConfigApiPortConfig.getConfigPath(configBasePath, c.getFileName());
+            final Path configPath = configBasePath.resolve(c.getFileName());
             // Forge Config API Port:
             // force toml format which is normally auto-detected by night config from the file extension
             // there have been reports of this failing and the auto-detection not working
             // my guess is this is caused by the toml format not having been registered as the registration is done in a static initializer in the class itself
             // due to the clazz not having been initialized by the classloader (see java language specification 12.2)
             // forcing the format or calling any static method on the class will guarantee it to be initialized
-            final CommentedFileConfig configData = CommentedFileConfig.builder(configPath, TomlFormat.instance()).sync().
-                    preserveInsertionOrder().
-                    autosave().
-                    onFileNotFound((newfile, configFormat)-> this.setupConfigFile(c, newfile, configFormat)).
-                    writingMode(WritingMode.REPLACE).
-                    build();
+            final CommentedFileConfig configData = CommentedFileConfig.builder(configPath, TomlFormat.instance())
+                    .sync()
+                    .preserveInsertionOrder()
+                    .autosave()
+                    .onFileNotFound((newfile, configFormat) -> this.setupConfigFile(c, newfile, configFormat))
+                    .writingMode(WritingMode.REPLACE)
+                    .build();
             LOGGER.debug(ConfigTracker.CONFIG, "Built TOML config for {}", configPath);
-            try
-            {
-                // Forge Config API Port: wrap config loading to better handle com.electronwill.nightconfig.core.io.ParsingException: Not enough data available
-                ConfigLoadingHelper.tryLoadConfigFile(configData);
+            try {
+                configData.load();
+            } catch (ParsingException ex) {
+                LOGGER.warn(CONFIG, "Attempting to recreate {}", configPath);
+                try {
+                    backUpConfig(configData.getNioPath(), 5);
+                    Files.delete(configData.getNioPath());
+
+                    configData.load();
+                } catch (Throwable t) {
+                    ex.addSuppressed(t);
+
+                    throw new ConfigLoadingException(c, ex);
+                }
             }
-            catch (ParsingException ex)
-            {
-                throw new ConfigLoadingException(c, ex);
-            }
+            LOGGER.debug(CONFIG, "Loaded TOML config file {}", configPath);
             // Forge Config API Port: store values from default config, so we can retrieve them when correcting individual values
             ConfigLoadingHelper.tryRegisterDefaultConfig(c.getFileName());
-            LOGGER.debug(CONFIG, "Loaded TOML config file {}", configPath);
             if (!ForgeConfigApiPortConfig.INSTANCE.<Boolean>getValue("disableConfigWatcher")) {
                 try {
-                    FileWatcher.defaultInstance().addWatch(configPath, new ConfigWatcher(c, configData, Thread.currentThread().getContextClassLoader()));
+                    FileWatcher.defaultInstance()
+                            .addWatch(configPath,
+                                    new ConfigWatcher(c, configData, Thread.currentThread().getContextClassLoader())
+                            );
                     LOGGER.debug(CONFIG, "Watching TOML config file {} for changes", configPath);
                 } catch (IOException e) {
                     throw new RuntimeException("Couldn't watch config file", e);
@@ -73,11 +81,11 @@ public class ConfigFileTypeHandler {
         };
     }
 
-    public void unload(Path configBasePath, ModConfig config) {
+    public void unload(ModConfig config) {
         if (ForgeConfigApiPortConfig.INSTANCE.<Boolean>getValue("disableConfigWatcher")) {
             return;
         }
-        Path configPath = ForgeConfigApiPortConfig.getConfigPath(configBasePath, config.getFileName());
+        Path configPath = config.getFullPath();
         try {
             FileWatcher.defaultInstance().removeWatch(configPath);
         } catch (RuntimeException e) {
@@ -98,35 +106,32 @@ public class ConfigFileTypeHandler {
         return true;
     }
 
-    public static void backUpConfig(final CommentedFileConfig commentedFileConfig)
-    {
+    public static void backUpConfig(final CommentedFileConfig commentedFileConfig) {
         backUpConfig(commentedFileConfig, 5); //TODO: Think of a way for mods to set their own preference (include a sanity check as well, no disk stuffing)
     }
 
-    public static void backUpConfig(final CommentedFileConfig commentedFileConfig, final int maxBackups)
-    {
-        Path bakFileLocation = commentedFileConfig.getNioPath().getParent();
-        String bakFileName = FilenameUtils.removeExtension(commentedFileConfig.getFile().getName());
-        String bakFileExtension = FilenameUtils.getExtension(commentedFileConfig.getFile().getName()) + ".bak";
+    public static void backUpConfig(final CommentedFileConfig commentedFileConfig, final int maxBackups) {
+        backUpConfig(commentedFileConfig.getNioPath(), maxBackups);
+    }
+
+    public static void backUpConfig(final Path commentedFileConfig, final int maxBackups) {
+        Path bakFileLocation = commentedFileConfig.getParent();
+        String bakFileName = FilenameUtils.removeExtension(commentedFileConfig.getFileName().toString());
+        String bakFileExtension = FilenameUtils.getExtension(commentedFileConfig.getFileName().toString()) + ".bak";
         Path bakFile = bakFileLocation.resolve(bakFileName + "-1" + "." + bakFileExtension);
-        try
-        {
-            for(int i = maxBackups; i > 0; i--)
-            {
+        try {
+            for (int i = maxBackups; i > 0; i--) {
                 Path oldBak = bakFileLocation.resolve(bakFileName + "-" + i + "." + bakFileExtension);
-                if(Files.exists(oldBak))
-                {
-                    if(i >= maxBackups)
+                if (Files.exists(oldBak)) {
+                    if (i >= maxBackups)
                         Files.delete(oldBak);
                     else
                         Files.move(oldBak, bakFileLocation.resolve(bakFileName + "-" + (i + 1) + "." + bakFileExtension));
                 }
             }
-            Files.copy(commentedFileConfig.getNioPath(), bakFile);
-        }
-        catch (IOException exception)
-        {
-            LOGGER.warn(CONFIG, "Failed to back up config file {}", commentedFileConfig.getNioPath(), exception);
+            Files.copy(commentedFileConfig, bakFile);
+        } catch (IOException exception) {
+            LOGGER.warn(CONFIG, "Failed to back up config file {}", commentedFileConfig, exception);
         }
     }
 
@@ -146,34 +151,34 @@ public class ConfigFileTypeHandler {
             // Force the regular classloader onto the special thread
             Thread.currentThread().setContextClassLoader(this.realClassLoader);
             if (!this.modConfig.getSpec().isCorrecting()) {
-                try
-                {
+                try {
                     this.commentedFileConfig.load();
-                    if(!this.modConfig.getSpec().isCorrect(this.commentedFileConfig))
-                    {
-                        LOGGER.warn(CONFIG, "Configuration file {} is not correct. Correcting", this.commentedFileConfig.getFile().getAbsolutePath());
+                    if (!this.modConfig.getSpec().isCorrect(this.commentedFileConfig)) {
+                        LOGGER.warn(CONFIG,
+                                "Configuration file {} is not correct. Correcting",
+                                this.commentedFileConfig.getFile().getAbsolutePath()
+                        );
                         ConfigFileTypeHandler.backUpConfig(this.commentedFileConfig);
                         this.modConfig.getSpec().correct(this.commentedFileConfig);
                         this.commentedFileConfig.save();
                     }
-                }
-                catch (ParsingException ex)
-                {
+                } catch (ParsingException ex) {
                     throw new ConfigLoadingException(this.modConfig, ex);
                 }
                 LOGGER.debug(CONFIG, "Config file {} changed, sending notifies", this.modConfig.getFileName());
                 this.modConfig.getSpec().afterReload();
                 // Forge Config API Port: invoke Fabric style callback instead of Forge event
-                NeoForgeModConfigEvents.reloading(this.modConfig.getModId()).invoker().onModConfigReloading(this.modConfig);
+                NeoForgeModConfigEvents.reloading(this.modConfig.getModId())
+                        .invoker()
+                        .onModConfigReloading(this.modConfig);
             }
         }
     }
 
-    private static class ConfigLoadingException extends RuntimeException
-    {
-        public ConfigLoadingException(ModConfig config, Exception cause)
-        {
-            super("Failed loading config file " + config.getFileName() + " of type " + config.getType() + " for modid " + config.getModId(), cause);
+    private static class ConfigLoadingException extends RuntimeException {
+        public ConfigLoadingException(ModConfig config, Exception cause) {
+            super("Failed loading config file " + config.getFileName() + " of type " + config.getType() +
+                    " for modid " + config.getModId(), cause);
         }
     }
 }

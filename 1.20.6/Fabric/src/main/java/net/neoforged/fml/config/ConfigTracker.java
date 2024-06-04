@@ -17,10 +17,12 @@ import org.slf4j.Logger;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+@ApiStatus.Internal
 public class ConfigTracker {
     private static final Logger LOGGER = LogUtils.getLogger();
     static final Marker CONFIG = MarkerFactory.getMarker("CONFIG");
@@ -36,14 +38,12 @@ public class ConfigTracker {
         this.configsByMod = new ConcurrentHashMap<>();
         this.configSets.put(ModConfig.Type.CLIENT, Collections.synchronizedSet(new LinkedHashSet<>()));
         this.configSets.put(ModConfig.Type.COMMON, Collections.synchronizedSet(new LinkedHashSet<>()));
-//        this.configSets.put(ModConfig.Type.PLAYER, new ConcurrentSkipListSet<>());
         this.configSets.put(ModConfig.Type.SERVER, Collections.synchronizedSet(new LinkedHashSet<>()));
+        this.configSets.put(ModConfig.Type.STARTUP, Collections.synchronizedSet(new LinkedHashSet<>()));
     }
 
-    // Forge Config API Port: widened access level for internal use
-    @ApiStatus.Internal
-    public void trackConfig(final ModConfig config) {
-        // Forge Config API Port: also check for duplicates in NeoForge config system, will cause issues otherwise during server config syncing
+    void trackConfig(final ModConfig config) {
+        // Forge Config API Port: also check for duplicates in Forge config system, will cause issues otherwise during server config syncing
         if (this.fileMap.containsKey(config.getFileName()) || net.minecraftforge.fml.config.ConfigTracker.INSTANCE.fileMap().containsKey(config.getFileName())) {
             LOGGER.error(CONFIG,"Detected config file conflict {} between {} and {}", config.getFileName(), this.fileMap.get(config.getFileName()).getModId(), config.getModId());
             throw new RuntimeException("Config conflict detected!");
@@ -57,34 +57,50 @@ public class ConfigTracker {
         // unlike on forge there isn't really more than one loading stage for mods on fabric, therefore we load configs immediately
         // server configs are not handled here, they are all loaded at once when a world is loaded
         if (config.getType() != ModConfig.Type.SERVER) {
-            this.openConfig(config, FabricLoader.getInstance().getConfigDir());
+            this.openConfig(config, FabricLoader.getInstance().getConfigDir(), null);
         }
     }
 
     public void loadConfigs(ModConfig.Type type, Path configBasePath) {
+        this.loadConfigs(type, configBasePath, null);
+    }
+
+    public void loadConfigs(ModConfig.Type type, Path configBasePath, @Nullable Path configOverrideBasePath) {
         LOGGER.debug(CONFIG, "Loading configs type {}", type);
-        this.configSets.get(type).forEach(config -> this.openConfig(config, configBasePath));
+        this.configSets.get(type).forEach(config -> this.openConfig(config, configBasePath, configOverrideBasePath));
     }
 
-    public void unloadConfigs(ModConfig.Type type, Path configBasePath) {
+    public void unloadConfigs(ModConfig.Type type) {
         LOGGER.debug(CONFIG, "Unloading configs type {}", type);
-        this.configSets.get(type).forEach(config -> this.closeConfig(config, configBasePath));
+        this.configSets.get(type).forEach(this::closeConfig);
     }
 
-    private void openConfig(final ModConfig config, final Path configBasePath) {
+    private Path resolveBasePath(ModConfig config, Path configBasePath, @Nullable Path configOverrideBasePath) {
+        if (configOverrideBasePath != null) {
+            Path overrideFilePath = configOverrideBasePath.resolve(config.getFileName());
+            if (Files.exists(overrideFilePath)) {
+                LOGGER.info(CONFIG, "Found config file override in path {}", overrideFilePath);
+                return configOverrideBasePath;
+            }
+        }
+        return configBasePath;
+    }
+
+    public void openConfig(final ModConfig config, final Path configBasePath, @Nullable Path configOverrideBasePath) {
         LOGGER.trace(CONFIG, "Loading config file type {} at {} for {}", config.getType(), config.getFileName(), config.getModId());
-        final CommentedFileConfig configData = config.getHandler().reader(configBasePath).apply(config);
+        final Path basePath = this.resolveBasePath(config, configBasePath, configOverrideBasePath);
+        final CommentedFileConfig configData = ConfigFileTypeHandler.TOML.reader(basePath).apply(config);
         config.setConfigData(configData);
         // Forge Config API Port: invoke Fabric style callback instead of Forge event
         NeoForgeModConfigEvents.loading(config.getModId()).invoker().onModConfigLoading(config);
         config.save();
     }
 
-    private void closeConfig(final ModConfig config, final Path configBasePath) {
+    private void closeConfig(final ModConfig config) {
         if (config.getConfigData() != null) {
             LOGGER.trace(CONFIG, "Closing config file type {} at {} for {}", config.getType(), config.getFileName(), config.getModId());
             // stop the filewatcher before we save the file and close it, so reload doesn't fire
-            config.getHandler().unload(configBasePath, config);
+            ConfigFileTypeHandler.TOML.unload(config);
             // Forge Config API Port: invoke Fabric style callback instead of Forge event
             NeoForgeModConfigEvents.unloading(config.getModId()).invoker().onModConfigUnloading(config);
             config.save();
@@ -93,12 +109,12 @@ public class ConfigTracker {
     }
 
     public void loadDefaultServerConfigs() {
-        this.configSets.get(ModConfig.Type.SERVER).forEach(config -> {
+        this.configSets.get(ModConfig.Type.SERVER).forEach(modConfig -> {
             final CommentedConfig commentedConfig = CommentedConfig.inMemory();
-            config.getSpec().correct(commentedConfig);
-            config.setConfigData(commentedConfig);
+            modConfig.getSpec().correct(commentedConfig);
+            modConfig.setConfigData(commentedConfig);
             // Forge Config API Port: invoke Fabric style callback instead of Forge event
-            NeoForgeModConfigEvents.loading(config.getModId()).invoker().onModConfigLoading(config);
+            NeoForgeModConfigEvents.loading(modConfig.getModId()).invoker().onModConfigLoading(modConfig);
         });
     }
 
@@ -109,8 +125,8 @@ public class ConfigTracker {
         return fileNames.isEmpty() ? null : fileNames.getFirst();
     }
 
-    // Forge Config API Port: support mods with multiple configs for the same type, does not exist on Forge, therefore marked as internal
-    // It's ok to use this in a Fabric/Quilt project, just don't use it in Common, that's what the annotation is for
+    // Forge Config API Port: support mods with multiple configs for the same type
+    @ApiStatus.Experimental
     public List<String> getConfigFileNames(String modId, ModConfig.Type type) {
         return Optional.ofNullable(this.configsByMod.get(modId))
                 .map(map -> map.get(type))

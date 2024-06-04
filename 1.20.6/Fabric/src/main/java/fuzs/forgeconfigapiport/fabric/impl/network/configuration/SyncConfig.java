@@ -30,7 +30,7 @@ public record SyncConfig(ServerConfigurationPacketListenerImpl listener) impleme
         ConfigSync.syncConfigs().forEach(configFilePayload -> {
             task.accept(ServerConfigurationNetworking.createS2CPacket(configFilePayload));
         });
-        listener().finishCurrentTask(type());
+        this.listener().finishCurrentTask(this.type());
     }
 
     @Override

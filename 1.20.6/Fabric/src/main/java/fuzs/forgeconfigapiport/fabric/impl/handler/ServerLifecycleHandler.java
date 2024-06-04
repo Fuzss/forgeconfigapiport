@@ -1,6 +1,7 @@
 package fuzs.forgeconfigapiport.fabric.impl.handler;
 
 import fuzs.forgeconfigapiport.impl.ForgeConfigAPIPort;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.storage.LevelResource;
@@ -8,6 +9,7 @@ import net.minecraftforge.fml.config.ConfigTracker;
 import net.minecraftforge.fml.config.ModConfig;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -17,21 +19,39 @@ public class ServerLifecycleHandler {
     private static final LevelResource SERVER_CONFIG_LEVEL_RESOURCE = new LevelResource("serverconfig");
 
     public static void onServerStarting(MinecraftServer server) {
-        ConfigTracker.INSTANCE.loadConfigs(ModConfig.Type.SERVER, getServerConfigPath(server));
-        net.neoforged.fml.config.ConfigTracker.INSTANCE.loadConfigs(net.neoforged.fml.config.ModConfig.Type.SERVER, getServerConfigPath(server));
+        ConfigTracker.INSTANCE.loadConfigs(ModConfig.Type.SERVER,
+                FabricLoader.getInstance().getConfigDir(),
+                getServerConfigPath(server)
+        );
+        net.neoforged.fml.config.ConfigTracker.INSTANCE.loadConfigs(net.neoforged.fml.config.ModConfig.Type.SERVER,
+                FabricLoader.getInstance().getConfigDir(),
+                getServerConfigPath(server)
+        );
     }
 
     public static void onServerStopped(MinecraftServer server) {
-        ConfigTracker.INSTANCE.unloadConfigs(ModConfig.Type.SERVER, getServerConfigPath(server));
-        net.neoforged.fml.config.ConfigTracker.INSTANCE.unloadConfigs(net.neoforged.fml.config.ModConfig.Type.SERVER, getServerConfigPath(server));
+        ConfigTracker.INSTANCE.unloadConfigs(ModConfig.Type.SERVER);
+        net.neoforged.fml.config.ConfigTracker.INSTANCE.unloadConfigs(net.neoforged.fml.config.ModConfig.Type.SERVER);
     }
 
     // Copied from net.minecraftforge.server.ServerLifecycleHooks
-    public static Path getServerConfigPath(final MinecraftServer server) {
+    private static Path getServerConfigPath(final MinecraftServer server) {
         final Path serverConfig = server.getWorldPath(SERVER_CONFIG_LEVEL_RESOURCE);
         if (!Files.isDirectory(serverConfig)) {
             try {
                 Files.createDirectories(serverConfig);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        final Path explanation = serverConfig.resolve("readme.txt");
+        if (!Files.exists(explanation)) {
+            try {
+                Files.writeString(explanation, """
+                                               Any server configs put in this folder will override the corresponding server config from <instance path>/config/<config path>.
+                                               If the config being transferred is in a subfolder of the base config folder make sure to include that folder here in the path to the file you are overwriting.
+                                               For example if you are overwriting a config with the path <instance path>/config/ExampleMod/config-server.toml, you would need to put it in serverconfig/ExampleMod/config-server.toml
+                                               """, StandardCharsets.UTF_8);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
