@@ -1,0 +1,41 @@
+modLoader = "javafml"
+loaderVersion = "*"
+license = "${modLicense}"
+issueTrackerURL = "${modIssueUrl}"
+
+[[mods]]
+modId = "${modId}"
+displayName = "${modName}"
+description = "${modDescription}"
+version = "${modVersion}"
+authors = "${modAuthor}"
+logoFile = "mod_banner.png"
+logoBlur = false
+displayURL = "${modPageUrl}"
+updateJSONURL = "${modUpdateUrl}"
+displayTest = "${modForgeDisplayTest}"
+
+[[mixins]]
+config="${modId}.common.mixins.json"
+
+[[mixins]]
+config="${modId}.neoforge.mixins.json"
+
+[[dependencies.${ modId }]]
+modId = "neoforge"
+mandatory = true
+type = "required"
+versionRange = "[${minNeoForgeVersion},)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.${ modId }]]
+modId = "minecraft"
+mandatory = true
+type = "required"
+versionRange = "[${minecraftVersion}]"
+ordering = "NONE"
+side = "BOTH"
+
+[modproperties.${ modId }]
+catalogueImageIcon = "mod_logo.png"
