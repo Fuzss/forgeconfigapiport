@@ -38,10 +38,10 @@ dependencies {
     shadowCommon(project(path: ":Common", configuration: "namedElements")) { transitive false }
 
     // Fabric Loader
-    modApi libs.fabricloader.fabric
+    modCompileOnly libs.fabricloader.fabric
 
     // Mixin Extras
-    api(annotationProcessor(libs.mixinextras.common.get()))
+    compileOnly(annotationProcessor(libs.mixinextras.common.get()))
 
     // Night Config
     api libs.nightconfigcore
