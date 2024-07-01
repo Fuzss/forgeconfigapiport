@@ -77,7 +77,8 @@ public class ConfigFileTypeHandler {
                                     )
                             );
                     LOGGER.debug(ConfigTracker.CONFIG, "Watching TOML config file {} for changes", configPath);
-                } catch (IOException e) {
+                } catch (Exception e) {
+                    // Forge Config API Port: catch Exception, not just IOException for compatibility with Night Config v3.7+
                     throw new RuntimeException("Couldn't watch config file", e);
                 }
             }
