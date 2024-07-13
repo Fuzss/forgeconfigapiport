@@ -5,95 +5,80 @@
 
 package net.neoforged.fml.config;
 
-import com.electronwill.nightconfig.core.CommentedConfig;
-import com.electronwill.nightconfig.core.file.CommentedFileConfig;
-import com.electronwill.nightconfig.toml.TomlFormat;
-import fuzs.forgeconfigapiport.fabric.api.neoforge.v4.NeoForgeModConfigEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.util.StringRepresentable;
-import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Nullable;
 
-import java.io.ByteArrayInputStream;
 import java.nio.file.Path;
 import java.util.Locale;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
 
-public class ModConfig {
+public final class ModConfig {
     private final Type type;
-    private final IConfigSpec<?> spec;
+    private final IConfigSpec spec;
     private final String fileName;
-    // Forge Config API Port: replace ModContainer with mod id
+    // Forge Config Api Port: replace ModContainer with mod id
     private final String modId;
-    private CommentedConfig configData;
+    @Nullable
+    LoadedConfig loadedConfig;
+    /**
+     * NightConfig's own configs are threadsafe, but mod code is not necessarily.
+     * This lock is used to prevent multiple concurrent config reloads or event dispatches.
+     */
+    final Lock lock;
 
-    // Forge Config API Port: replace ModContainer with mod id, marked as internal for common project as no mod id constructor exists on Forge
-    @ApiStatus.Experimental
-    public ModConfig(final Type type, final IConfigSpec<?> spec, String modId, final String fileName) {
+    // Forge Config Api Port: replace ModContainer with mod id
+    ModConfig(Type type, IConfigSpec spec, String modId, String fileName, ReentrantLock lock) {
         this.type = type;
         this.spec = spec;
         this.fileName = fileName;
-        // Forge Config API Port: replace ModContainer with mod id, also additional check mod exists
+        // Forge Config Api Port: replace ModContainer with mod id, also additional check mod exists
         if (!FabricLoader.getInstance().isModLoaded(modId)) {
             throw new IllegalArgumentException("No mod with id '%s'".formatted(modId));
         }
         this.modId = modId;
-        ConfigTracker.INSTANCE.trackConfig(this);
-    }
-
-    // Forge Config API Port: replace ModContainer with mod id, marked as internal for common project as no mod id constructor exists on Forge
-    @ApiStatus.Experimental
-    public ModConfig(final Type type, final IConfigSpec<?> spec, String modId) {
-        this(type, spec, modId, defaultConfigName(type, modId));
-    }
-
-    private static String defaultConfigName(Type type, String modId) {
-        // config file name would be "forge-client.toml" and "forge-server.toml"
-        return String.format(Locale.ROOT, "%s-%s.toml", modId, type.extension());
+        this.lock = lock;
     }
 
     public Type getType() {
-        return this.type;
+        return type;
     }
 
     public String getFileName() {
-        return this.fileName;
+        return fileName;
     }
 
-    @SuppressWarnings("unchecked")
-    public <T extends IConfigSpec<T>> IConfigSpec<T> getSpec() {
-        return (IConfigSpec<T>) this.spec;
+    public IConfigSpec getSpec() {
+        return spec;
     }
 
     public String getModId() {
-        // Forge Config API Port: replace ModContainer with mod id
+        // Forge Config Api Port: replace ModContainer with mod id
         return this.modId;
     }
 
-    public CommentedConfig getConfigData() {
-        return this.configData;
-    }
-
-    void setConfigData(final CommentedConfig configData) {
-        this.configData = configData;
-        this.spec.acceptConfig(this.configData);
-    }
-
-    public void save() {
-        ((CommentedFileConfig) this.configData).save();
-    }
-
+    // TODO: remove from public API?
     public Path getFullPath() {
-        return ((CommentedFileConfig) this.configData).getNioPath();
+        if (this.loadedConfig != null && loadedConfig.path() != null) {
+            return loadedConfig.path();
+        } else {
+            throw new IllegalStateException("Cannot call getFullPath() on non-file config " + this.loadedConfig + " at path " + getFileName());
+        }
     }
 
-    public void acceptSyncedConfig(byte[] bytes) {
-        if (bytes != null) {
-            this.setConfigData(TomlFormat.instance().createParser().parse(new ByteArrayInputStream(bytes)));
-            // Forge Config API Port: invoke Fabric style callback instead of Forge event
-            NeoForgeModConfigEvents.reloading(this.getModId()).invoker().onModConfigReloading(this);
-        } else {
-            this.setConfigData(null);
-            // Forge Config API Port: invoke Fabric style callback instead of Forge event
-            NeoForgeModConfigEvents.unloading(this.getModId()).invoker().onModConfigUnloading(this);
+    // Forge Config Api Port: adapt event constructor for Fabric style callback instead of Forge event
+    void setConfig(@Nullable LoadedConfig loadedConfig, Consumer<ModConfig> eventConstructor) {
+        lock.lock();
+
+        try {
+            this.loadedConfig = loadedConfig;
+            spec.acceptConfig(loadedConfig);
+            // Forge Config Api Port: invoke Fabric style callback instead of Forge event
+            eventConstructor.accept(this);
+        } finally {
+            lock.unlock();
         }
     }
 
@@ -134,10 +119,11 @@ public class ModConfig {
         STARTUP;
 
         public String extension() {
+            // Forge Config Api Port: replace NeoForge helper class method call
             return this.name().toLowerCase(Locale.ROOT);
         }
 
-        // Forge Config API Port: implements StringRepresentable to allow using vanilla argument type for /config
+        // Forge Config Api Port: implements StringRepresentable to allow using vanilla argument type for /config
         // It's ok to use this in a Fabric/Quilt project, just don't use it in Common, that's what the annotation is for
         @Override
         public String getSerializedName() {

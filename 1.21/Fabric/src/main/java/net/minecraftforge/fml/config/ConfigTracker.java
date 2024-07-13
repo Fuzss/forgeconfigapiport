@@ -11,6 +11,7 @@ import com.electronwill.nightconfig.core.file.FileConfig;
 import com.mojang.logging.LogUtils;
 import fuzs.forgeconfigapiport.fabric.api.forge.v4.ForgeModConfigEvents;
 import net.fabricmc.loader.api.FabricLoader;
+import net.neoforged.fml.config.ModConfigs;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -43,7 +44,7 @@ public class ConfigTracker {
 
     void trackConfig(final ModConfig config) {
         // Forge Config API Port: also check for duplicates in NeoForge config system, will cause issues otherwise during server config syncing
-        if (this.fileMap.containsKey(config.getFileName()) || net.neoforged.fml.config.ConfigTracker.INSTANCE.fileMap().containsKey(config.getFileName())) {
+        if (this.fileMap.containsKey(config.getFileName()) || ModConfigs.getFileMap().containsKey(config.getFileName())) {
             LOGGER.error(CONFIG,"Detected config file conflict {} between {} and {}", config.getFileName(), this.fileMap.get(config.getFileName()).getModId(), config.getModId());
             throw new RuntimeException("Config conflict detected!");
         }

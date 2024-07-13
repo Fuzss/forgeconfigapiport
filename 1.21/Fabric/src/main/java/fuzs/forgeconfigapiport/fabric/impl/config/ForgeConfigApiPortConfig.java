@@ -22,7 +22,6 @@ public class ForgeConfigApiPortConfig {
     private static final String CONFIG_FILE_NAME = ForgeConfigAPIPort.MOD_ID + ".toml";
     private static final Map<String, Object> CONFIG_VALUES = ImmutableMap.<String, Object>builder()
             .put("defaultConfigsPath", "defaultconfigs")
-            .put("correctConfigValuesFromDefaultConfig", true)
             .put("disableConfigWatcher", false)
             .build();
     private static final ConfigSpec CONFIG_SPEC;

@@ -14,7 +14,6 @@ import com.electronwill.nightconfig.toml.TomlFormat;
 import com.mojang.logging.LogUtils;
 import fuzs.forgeconfigapiport.fabric.api.forge.v4.ForgeModConfigEvents;
 import fuzs.forgeconfigapiport.fabric.impl.config.ForgeConfigApiPortConfig;
-import fuzs.forgeconfigapiport.fabric.impl.util.ConfigLoadingHelper;
 import org.apache.commons.io.FilenameUtils;
 import org.jetbrains.annotations.ApiStatus;
 import org.slf4j.Logger;
@@ -65,8 +64,6 @@ public class ConfigFileTypeHandler {
                 }
             }
             LOGGER.debug(ConfigTracker.CONFIG, "Loaded TOML config file {}", configPath);
-            // Forge Config API Port: store values from default config, so we can retrieve them when correcting individual values
-            ConfigLoadingHelper.tryRegisterDefaultConfig(c.getFileName());
             if (!ForgeConfigApiPortConfig.INSTANCE.<Boolean>getValue("disableConfigWatcher")) {
                 try {
                     FileWatcher.defaultInstance()
@@ -167,8 +164,6 @@ public class ConfigFileTypeHandler {
             Thread.currentThread().setContextClassLoader(this.realClassLoader);
             if (!this.modConfig.getSpec().isCorrecting()) {
                 try {
-                    // Forge Config API Port: wrap config loading to better handle com.electronwill.nightconfig.core.io.ParsingException: Not enough data available
-                    ConfigLoadingHelper.tryLoadConfigFile(this.commentedFileConfig);
                     if (!this.modConfig.getSpec().isCorrect(this.commentedFileConfig)) {
                         LOGGER.warn(CONFIG,
                                 "Configuration file {} is not correct. Correcting",

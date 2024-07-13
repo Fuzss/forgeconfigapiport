@@ -6,76 +6,153 @@
 package net.neoforged.fml.config;
 
 import com.electronwill.nightconfig.core.CommentedConfig;
-import com.electronwill.nightconfig.core.file.CommentedFileConfig;
-import com.electronwill.nightconfig.core.file.FileConfig;
+import com.electronwill.nightconfig.core.InMemoryCommentedFormat;
+import com.electronwill.nightconfig.core.UnmodifiableCommentedConfig;
+import com.electronwill.nightconfig.core.concurrent.ConcurrentCommentedConfig;
+import com.electronwill.nightconfig.core.concurrent.SynchronizedConfig;
+import com.electronwill.nightconfig.core.file.FileWatcher;
+import com.electronwill.nightconfig.core.io.ParsingException;
+import com.electronwill.nightconfig.core.io.ParsingMode;
+import com.electronwill.nightconfig.core.io.WritingMode;
+import com.electronwill.nightconfig.toml.TomlFormat;
+import com.electronwill.nightconfig.toml.TomlParser;
+import com.electronwill.nightconfig.toml.TomlWriter;
 import com.mojang.logging.LogUtils;
 import fuzs.forgeconfigapiport.fabric.api.neoforge.v4.NeoForgeModConfigEvents;
+import fuzs.forgeconfigapiport.fabric.impl.config.ForgeConfigApiPortConfig;
 import net.fabricmc.loader.api.FabricLoader;
+import org.apache.commons.io.FilenameUtils;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.VisibleForTesting;
 import org.slf4j.Logger;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
 
+/**
+ * The configuration tracker manages various types of mod configurations.
+ * Due to the parallel nature of mod initialization, modifying the configuration state must be <strong>thread-safe</strong>.
+ */
 @ApiStatus.Internal
 public class ConfigTracker {
-    private static final Logger LOGGER = LogUtils.getLogger();
-    static final Marker CONFIG = MarkerFactory.getMarker("CONFIG");
     public static final ConfigTracker INSTANCE = new ConfigTracker();
-    private final ConcurrentHashMap<String, ModConfig> fileMap;
-    private final EnumMap<ModConfig.Type, Set<ModConfig>> configSets;
-    // Forge Config API Port: store a collection of mod configs since mods with multiple configs for the same type are supported
-    private final ConcurrentHashMap<String, Map<ModConfig.Type, Collection<ModConfig>>> configsByMod;
+    static final Marker CONFIG = MarkerFactory.getMarker("CONFIG");
+    private static final Logger LOGGER = LogUtils.getLogger();
+    // Forge Config Api Port: adapted for Fabric
+    private static final Path defaultConfigPath = ForgeConfigApiPortConfig.getDefaultConfigsDirectory();
 
-    private ConfigTracker() {
-        this.fileMap = new ConcurrentHashMap<>();
-        this.configSets = new EnumMap<>(ModConfig.Type.class);
-        this.configsByMod = new ConcurrentHashMap<>();
-        this.configSets.put(ModConfig.Type.CLIENT, Collections.synchronizedSet(new LinkedHashSet<>()));
-        this.configSets.put(ModConfig.Type.COMMON, Collections.synchronizedSet(new LinkedHashSet<>()));
-        this.configSets.put(ModConfig.Type.SERVER, Collections.synchronizedSet(new LinkedHashSet<>()));
-        this.configSets.put(ModConfig.Type.STARTUP, Collections.synchronizedSet(new LinkedHashSet<>()));
+    final ConcurrentHashMap<String, ModConfig> fileMap = new ConcurrentHashMap<>();
+    final EnumMap<ModConfig.Type, Set<ModConfig>> configSets = new EnumMap<>(ModConfig.Type.class);
+    final ConcurrentHashMap<String, List<ModConfig>> configsByMod = new ConcurrentHashMap<>();
+    private final Map<String, ReentrantLock> locksByMod = new ConcurrentHashMap<>();
+
+    @VisibleForTesting
+    public ConfigTracker() {
+        for (var type : ModConfig.Type.values()) {
+            this.configSets.put(type, Collections.synchronizedSet(new LinkedHashSet<>()));
+        }
     }
 
-    void trackConfig(final ModConfig config) {
-        // Forge Config API Port: also check for duplicates in Forge config system, will cause issues otherwise during server config syncing
-        if (this.fileMap.containsKey(config.getFileName()) || net.minecraftforge.fml.config.ConfigTracker.INSTANCE.fileMap().containsKey(config.getFileName())) {
-            LOGGER.error(CONFIG,"Detected config file conflict {} between {} and {}", config.getFileName(), this.fileMap.get(config.getFileName()).getModId(), config.getModId());
-            throw new RuntimeException("Config conflict detected!");
-        }
-        this.fileMap.put(config.getFileName(), config);
-        this.configSets.get(config.getType()).add(config);
-        // Forge Config API Port: store a collection of mod configs since mods with multiple configs for the same type are supported
-        this.configsByMod.computeIfAbsent(config.getModId(), (k)->new EnumMap<>(ModConfig.Type.class)).computeIfAbsent(config.getType(), type -> new ArrayList<>()).add(config);
-        LOGGER.debug(CONFIG, "Config file {} for {} tracking", config.getFileName(), config.getModId());
-        // Forge Config API Port: load configs immediately
+    /**
+     * Registers a new configuration of the given type for a mod, using the default filename for this type of config.
+     * <p>
+     * Registering a configuration is required to receive configuration events.
+     */
+    // Forge Config Api Port: replace ModContainer with mod id
+    public ModConfig registerConfig(ModConfig.Type type, IConfigSpec spec, String modId) {
+        return registerConfig(type, spec, modId, defaultConfigName(type, modId));
+    }
+
+    /**
+     * Registers a new configuration of the given type for a mod, using a custom filename.
+     * <p>
+     * Registering a configuration is required to receive configuration events.
+     */
+    // Forge Config Api Port: replace ModContainer with mod id
+    public ModConfig registerConfig(ModConfig.Type type, IConfigSpec spec, String modId, String fileName) {
+        var lock = locksByMod.computeIfAbsent(modId, m -> new ReentrantLock());
+        var modConfig = new ModConfig(type, spec, modId, fileName, lock);
+        trackConfig(modConfig);
+
+        // Forge Config Api Port: load configs immediately
         // unlike on forge there isn't really more than one loading stage for mods on fabric, therefore we load configs immediately
         // server configs are not handled here, they are all loaded at once when a world is loaded
-        if (config.getType() != ModConfig.Type.SERVER) {
-            this.openConfig(config, FabricLoader.getInstance().getConfigDir(), null);
+        if (modConfig.getType() != ModConfig.Type.SERVER) {
+            openConfig(modConfig, FabricLoader.getInstance().getConfigDir(), null);
         }
+
+        return modConfig;
+    }
+
+    private static String defaultConfigName(ModConfig.Type type, String modId) {
+        // for mod-id "forge", config file name would be "forge-client.toml" and "forge-server.toml"
+        return String.format(Locale.ROOT, "%s-%s.toml", modId, type.extension());
+    }
+
+    void trackConfig(ModConfig config) {
+        var previousValue = this.fileMap.putIfAbsent(config.getFileName(), config);
+        // Forge Config Api Port: also check for duplicates in Forge config system, will cause issues otherwise during server config syncing
+        if (previousValue == null && net.minecraftforge.fml.config.ConfigTracker.INSTANCE.fileMap().containsKey(config.getFileName())) {
+            String errorMessage = "Detected config file conflict on %s from %s (already registered by %s)".formatted(config.getFileName(), config.getModId(), net.minecraftforge.fml.config.ConfigTracker.INSTANCE.fileMap().get(config.getFileName()).getModId());
+            LOGGER.error(CONFIG, errorMessage);
+            throw new RuntimeException(errorMessage);
+        }
+        if (previousValue != null) {
+            String errorMessage = "Detected config file conflict on %s from %s (already registered by %s)".formatted(config.getFileName(), config.getModId(), previousValue.getModId());
+            LOGGER.error(CONFIG, errorMessage);
+            throw new RuntimeException(errorMessage);
+        }
+        this.configSets.get(config.getType()).add(config);
+        this.configsByMod.computeIfAbsent(config.getModId(), (k) -> Collections.synchronizedList(new ArrayList<>())).add(config);
+        LOGGER.debug(CONFIG, "Config file {} for {} tracking", config.getFileName(), config.getModId());
     }
 
     public void loadConfigs(ModConfig.Type type, Path configBasePath) {
-        this.loadConfigs(type, configBasePath, null);
+        loadConfigs(type, configBasePath, null);
     }
 
     public void loadConfigs(ModConfig.Type type, Path configBasePath, @Nullable Path configOverrideBasePath) {
         LOGGER.debug(CONFIG, "Loading configs type {}", type);
-        this.configSets.get(type).forEach(config -> this.openConfig(config, configBasePath, configOverrideBasePath));
+        this.configSets.get(type).forEach(config -> openConfig(config, configBasePath, configOverrideBasePath));
     }
 
     public void unloadConfigs(ModConfig.Type type) {
         LOGGER.debug(CONFIG, "Unloading configs type {}", type);
-        this.configSets.get(type).forEach(this::closeConfig);
+        this.configSets.get(type).forEach(ConfigTracker::closeConfig);
     }
 
-    private Path resolveBasePath(ModConfig config, Path configBasePath, @Nullable Path configOverrideBasePath) {
+    static void openConfig(ModConfig config, Path configBasePath, @Nullable Path configOverrideBasePath) {
+        LOGGER.trace(CONFIG, "Loading config file type {} at {} for {}", config.getType(), config.getFileName(), config.getModId());
+        if (config.loadedConfig != null) {
+            LOGGER.warn("Opening a config that was already loaded with value {} at path {}", config.loadedConfig, config.getFileName());
+        }
+        var basePath = resolveBasePath(config, configBasePath, configOverrideBasePath);
+        var configPath = basePath.resolve(config.getFileName());
+
+        // Forge Config Api Port: invoke Fabric style callback instead of Forge event
+        loadConfig(config, configPath, (ModConfig modConfig) -> {
+            NeoForgeModConfigEvents.loading(modConfig.getModId()).invoker().onModConfigLoading(modConfig);
+        });
+        LOGGER.debug(CONFIG, "Loaded TOML config file {}", configPath);
+
+        // Forge Config Api Port: switch out config access
+        if (!ForgeConfigApiPortConfig.INSTANCE.<Boolean>getValue("disableConfigWatcher")) {
+            FileWatcher.defaultInstance().addWatch(configPath, new ConfigWatcher(config, configPath, Thread.currentThread().getContextClassLoader()));
+            LOGGER.debug(CONFIG, "Watching TOML config file {} for changes", configPath);
+        }
+    }
+
+    private static Path resolveBasePath(ModConfig config, Path configBasePath, @Nullable Path configOverrideBasePath) {
         if (configOverrideBasePath != null) {
             Path overrideFilePath = configOverrideBasePath.resolve(config.getFileName());
             if (Files.exists(overrideFilePath)) {
@@ -86,63 +163,154 @@ public class ConfigTracker {
         return configBasePath;
     }
 
-    public void openConfig(final ModConfig config, final Path configBasePath, @Nullable Path configOverrideBasePath) {
-        LOGGER.trace(CONFIG, "Loading config file type {} at {} for {}", config.getType(), config.getFileName(), config.getModId());
-        final Path basePath = this.resolveBasePath(config, configBasePath, configOverrideBasePath);
-        final CommentedFileConfig configData = ConfigFileTypeHandler.TOML.reader(basePath).apply(config);
-        config.setConfigData(configData);
-        // Forge Config API Port: invoke Fabric style callback instead of Forge event
-        NeoForgeModConfigEvents.loading(config.getModId()).invoker().onModConfigLoading(config);
-        config.save();
+    // Forge Config Api Port: adapt event constructor for Fabric style callback instead of Forge event
+    static void loadConfig(ModConfig modConfig, Path path, Consumer<ModConfig> eventConstructor) {
+        CommentedConfig config;
+
+        try {
+            // Load existing config
+            config = readConfig(path);
+
+            if (!modConfig.getSpec().isCorrect(config)) {
+                LOGGER.warn(CONFIG, "Configuration file {} is not correct. Correcting", path);
+                backUpConfig(path);
+                modConfig.getSpec().correct(config);
+                writeConfig(path, config);
+            }
+        } catch (NoSuchFileException ignored) {
+            // Config file does not exist yet
+            try {
+                setupConfigFile(modConfig, path);
+                config = readConfig(path);
+            } catch (IOException | ParsingException ex) {
+                throw new RuntimeException("Failed to create default config file " + modConfig.getFileName() + " of type " + modConfig.getType() + " for modid " + modConfig.getModId(), ex);
+            }
+        } catch (IOException | ParsingException ex) {
+            // Failed to read existing file
+            LOGGER.warn(CONFIG, "Failed to load config {}: {}. Attempting to recreate", modConfig.getFileName(), ex);
+            try {
+                backUpConfig(path);
+                Files.delete(path);
+
+                setupConfigFile(modConfig, path);
+                config = readConfig(path);
+            } catch (Throwable t) {
+                ex.addSuppressed(t);
+
+                throw new RuntimeException("Failed to recreate config file " + modConfig.getFileName() + " of type " + modConfig.getType() + " for modid " + modConfig.getModId(), ex);
+            }
+        }
+
+        modConfig.setConfig(new LoadedConfig(config, path, modConfig), eventConstructor);
     }
 
-    private void closeConfig(final ModConfig config) {
-        if (config.getConfigData() != null) {
-            LOGGER.trace(CONFIG, "Closing config file type {} at {} for {}", config.getType(), config.getFileName(), config.getModId());
-            // stop the filewatcher before we save the file and close it, so reload doesn't fire
-            ConfigFileTypeHandler.TOML.unload(config);
-            // Forge Config API Port: invoke Fabric style callback instead of Forge event
-            NeoForgeModConfigEvents.unloading(config.getModId()).invoker().onModConfigUnloading(config);
-            config.save();
-            config.setConfigData(null);
+    public static void acceptSyncedConfig(ModConfig modConfig, byte[] bytes) {
+        if (modConfig.loadedConfig != null) {
+            LOGGER.warn("Overwriting non-null config {} at path {} with synced config", modConfig.loadedConfig, modConfig.getFileName());
         }
+        var newConfig = new SynchronizedConfig(InMemoryCommentedFormat.defaultInstance(), LinkedHashMap::new);
+        newConfig.bulkCommentedUpdate(view -> {
+            TomlFormat.instance().createParser().parse(new ByteArrayInputStream(bytes), view, ParsingMode.REPLACE);
+        });
+        // TODO: do we want to do any validation? (what do we do if acceptConfig fails?)
+        // Forge Config Api Port: invoke Fabric style callback instead of Forge event
+        modConfig.setConfig(new LoadedConfig(newConfig, null, modConfig), (ModConfig m) -> {
+            NeoForgeModConfigEvents.unloading(m.getModId()).invoker().onModConfigUnloading(m);
+        }); // TODO: should maybe be Loading on the first load?
     }
 
     public void loadDefaultServerConfigs() {
-        this.configSets.get(ModConfig.Type.SERVER).forEach(modConfig -> {
-            final CommentedConfig commentedConfig = CommentedConfig.inMemory();
-            modConfig.getSpec().correct(commentedConfig);
-            modConfig.setConfigData(commentedConfig);
-            // Forge Config API Port: invoke Fabric style callback instead of Forge event
-            NeoForgeModConfigEvents.loading(modConfig.getModId()).invoker().onModConfigLoading(modConfig);
+        configSets.get(ModConfig.Type.SERVER).forEach(modConfig -> {
+            if (modConfig.loadedConfig != null) {
+                LOGGER.warn("Overwriting non-null config {} at path {} with default server config", modConfig.loadedConfig, modConfig.getFileName());
+            }
+
+            // Forge Config Api Port: invoke Fabric style callback instead of Forge event
+            modConfig.setConfig(new LoadedConfig(createDefaultConfig(modConfig.getSpec()), null, modConfig), (ModConfig m) -> {
+                NeoForgeModConfigEvents.loading(m.getModId()).invoker().onModConfigLoading(m);
+            });
         });
     }
 
-    @Nullable
-    public String getConfigFileName(String modId, ModConfig.Type type) {
-        // Forge Config API Port: support mods with multiple configs for the same type
-        List<String> fileNames = this.getConfigFileNames(modId, type);
-        return fileNames.isEmpty() ? null : fileNames.getFirst();
+    private static CommentedConfig createDefaultConfig(IConfigSpec spec) {
+        var commentedConfig = new SynchronizedConfig(InMemoryCommentedFormat.defaultInstance(), LinkedHashMap::new);
+        commentedConfig.bulkCommentedUpdate(spec::correct);
+        return commentedConfig;
     }
 
-    // Forge Config API Port: support mods with multiple configs for the same type
-    @ApiStatus.Experimental
-    public List<String> getConfigFileNames(String modId, ModConfig.Type type) {
-        return Optional.ofNullable(this.configsByMod.get(modId))
-                .map(map -> map.get(type))
-                .map(configs -> configs.stream()
-                        .filter(config -> config.getConfigData() instanceof FileConfig)
-                        .map(ModConfig::getFullPath)
-                        .map(Object::toString)
-                        .toList())
-                .orElse(List.of());
+    private static void closeConfig(ModConfig config) {
+        if (config.loadedConfig != null) {
+            if (config.loadedConfig.path() != null) {
+                LOGGER.trace(CONFIG, "Closing config file type {} at {} for {}", config.getType(), config.getFileName(), config.getModId());
+                unload(config.loadedConfig.path());
+                // Forge Config Api Port: invoke Fabric style callback instead of Forge event
+                config.setConfig(null, (ModConfig modConfig) -> {
+                    NeoForgeModConfigEvents.unloading(modConfig.getModId()).invoker().onModConfigUnloading(modConfig);
+                });
+            } else {
+                LOGGER.warn(CONFIG, "Closing non-file config {} at path {}", config.loadedConfig, config.getFileName());
+            }
+        }
     }
 
-    public Map<ModConfig.Type, Set<ModConfig>> configSets() {
-        return this.configSets;
+    private static void unload(Path path) {
+        // Forge Config Api Port: switch out config access
+        if (ForgeConfigApiPortConfig.INSTANCE.<Boolean>getValue("disableConfigWatcher"))
+            return;
+        try {
+            FileWatcher.defaultInstance().removeWatch(path);
+        } catch (RuntimeException e) {
+            LOGGER.error("Failed to remove config {} from tracker!", path, e);
+        }
     }
 
-    public ConcurrentHashMap<String, ModConfig> fileMap() {
-        return this.fileMap;
+    private static void setupConfigFile(ModConfig modConfig, Path file) throws IOException {
+        Files.createDirectories(file.getParent());
+        Path p = defaultConfigPath.resolve(modConfig.getFileName());
+        if (Files.exists(p)) {
+            LOGGER.info(CONFIG, "Loading default config file from path {}", p);
+            Files.copy(p, file);
+        } else {
+            writeConfig(file, createDefaultConfig(modConfig.getSpec()));
+        }
+    }
+
+    private static ConcurrentCommentedConfig readConfig(Path path) throws IOException, ParsingException {
+        try (var reader = Files.newBufferedReader(path)) {
+            var config = new SynchronizedConfig(TomlFormat.instance(), LinkedHashMap::new);
+            config.bulkCommentedUpdate(view -> {
+                new TomlParser().parse(reader, view, ParsingMode.REPLACE);
+            });
+            return config;
+        }
+    }
+
+    static void writeConfig(Path file, UnmodifiableCommentedConfig config) {
+        new TomlWriter().write(config, file, WritingMode.REPLACE_ATOMIC);
+    }
+
+    private static void backUpConfig(Path commentedFileConfig) {
+        backUpConfig(commentedFileConfig, 5); //TODO: Think of a way for mods to set their own preference (include a sanity check as well, no disk stuffing)
+    }
+
+    private static void backUpConfig(Path commentedFileConfig, int maxBackups) {
+        Path bakFileLocation = commentedFileConfig.getParent();
+        String bakFileName = FilenameUtils.removeExtension(commentedFileConfig.getFileName().toString());
+        String bakFileExtension = FilenameUtils.getExtension(commentedFileConfig.getFileName().toString()) + ".bak";
+        Path bakFile = bakFileLocation.resolve(bakFileName + "-1" + "." + bakFileExtension);
+        try {
+            for (int i = maxBackups; i > 0; i--) {
+                Path oldBak = bakFileLocation.resolve(bakFileName + "-" + i + "." + bakFileExtension);
+                if (Files.exists(oldBak)) {
+                    if (i >= maxBackups)
+                        Files.delete(oldBak);
+                    else
+                        Files.move(oldBak, bakFileLocation.resolve(bakFileName + "-" + (i + 1) + "." + bakFileExtension));
+                }
+            }
+            Files.copy(commentedFileConfig, bakFile);
+        } catch (IOException exception) {
+            LOGGER.warn(CONFIG, "Failed to back up config file {}", commentedFileConfig, exception);
+        }
     }
 }

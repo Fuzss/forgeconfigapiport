@@ -10,6 +10,7 @@ import fuzs.forgeconfigapiport.impl.ForgeConfigAPIPort;
 import net.minecraft.client.Minecraft;
 import net.neoforged.fml.config.ConfigTracker;
 import net.neoforged.fml.config.ModConfig;
+import net.neoforged.fml.config.ModConfigs;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.io.IOException;
@@ -26,7 +27,7 @@ public class ConfigSync {
     private static boolean isVanillaConnection = true;
 
     public static List<ConfigFilePayload> syncConfigs() {
-        final Map<String, byte[]> neoForgeConfigData = ConfigTracker.INSTANCE.configSets().get(ModConfig.Type.SERVER).stream().collect(Collectors.toMap(ModConfig::getFileName, mc -> {
+        final Map<String, byte[]> neoForgeConfigData = ModConfigs.getConfigSet(ModConfig.Type.SERVER).stream().collect(Collectors.toMap(ModConfig::getFileName, mc -> {
             try {
                 return Files.readAllBytes(mc.getFullPath());
             } catch (IOException e) {
@@ -53,11 +54,9 @@ public class ConfigSync {
         onEstablishModdedConnection();
         if (!Minecraft.getInstance().isLocalServer()) {
             // we just check for the config on both Forge & NeoForge systems, we make sure during config registration that no duplicates across config systems are allowed
-            Optional.ofNullable(ConfigTracker.INSTANCE.fileMap().get(fileName)).ifPresent(mc -> mc.acceptSyncedConfig(contents));
+            Optional.ofNullable(ModConfigs.getFileMap().get(fileName)).ifPresent(mc -> ConfigTracker.acceptSyncedConfig(mc, contents));
             Optional.ofNullable(net.minecraftforge.fml.config.ConfigTracker.INSTANCE.fileMap().get(fileName)).ifPresent(mc -> mc.acceptSyncedConfig(contents));
         }
-        // Forge Config API Port: log received config
-        ForgeConfigAPIPort.LOGGER.debug("Received config sync for {} from server", fileName);
     }
 
     // Forge Config API Port: custom method to identify a modded server

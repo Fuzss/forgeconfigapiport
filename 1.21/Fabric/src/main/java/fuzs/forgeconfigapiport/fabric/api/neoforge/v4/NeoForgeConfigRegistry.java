@@ -20,7 +20,7 @@ public interface NeoForgeConfigRegistry {
      * @param spec  the built config spec
      * @return the {@link ModConfig} instance
      */
-    ModConfig register(String modId, ModConfig.Type type, IConfigSpec<?> spec);
+    ModConfig register(String modId, ModConfig.Type type, IConfigSpec spec);
 
     /**
      * Register a new mod config.
@@ -32,5 +32,5 @@ public interface NeoForgeConfigRegistry {
      * @param fileName file name to use instead of default
      * @return the {@link ModConfig} instance
      */
-    ModConfig register(String modId, ModConfig.Type type, IConfigSpec<?> spec, String fileName);
+    ModConfig register(String modId, ModConfig.Type type, IConfigSpec spec, String fileName);
 }
