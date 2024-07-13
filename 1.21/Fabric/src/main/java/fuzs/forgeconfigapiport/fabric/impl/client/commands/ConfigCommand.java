@@ -20,37 +20,66 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 public class ConfigCommand {
-    private static final Dynamic2CommandExceptionType ERROR_NO_CONFIG = new Dynamic2CommandExceptionType((modId, type) -> Component.translatable("commands.config.noconfig", modId, type));
+    private static final Dynamic2CommandExceptionType ERROR_NO_CONFIG = new Dynamic2CommandExceptionType((modId, type) -> Component.translatable(
+            "commands.config.noconfig",
+            modId,
+            type
+    ));
 
     @SuppressWarnings("unchecked")
     public static <T extends Enum<T> & StringRepresentable, P extends SharedSuggestionProvider> void register(ConfigCommandContext<T> context, CommandDispatcher<P> dispatcher, BiConsumer<P, Component> feedbackSender) {
         dispatcher.register(LiteralArgumentBuilder.<P>literal(context.name())
                 .then(LiteralArgumentBuilder.<P>literal("showfile")
-                        .then(RequiredArgumentBuilder.<P, String>argument("mod", ModIdArgument.modIdArgument(modId -> anyModConfigsExist(context, modId)))
-                                .then(((RequiredArgumentBuilder<P, ?>) (RequiredArgumentBuilder<?, ?>) RequiredArgumentBuilder.argument("type", enumConstant(context.getType())))
-                                        .executes(commandContext -> ConfigCommand.showFile(context, component -> feedbackSender.accept(commandContext.getSource(), component), commandContext.getArgument("mod", String.class), commandContext.getArgument("type", context.getType())))))));
+                        .then(RequiredArgumentBuilder.<P, String>argument("mod",
+                                        ModIdArgument.modIdArgument(modId -> anyModConfigsExist(context, modId))
+                                )
+                                .then(((RequiredArgumentBuilder<P, ?>) (RequiredArgumentBuilder<?, ?>) RequiredArgumentBuilder.argument(
+                                        "type",
+                                        enumConstant(context.getType())
+                                )).executes(commandContext -> ConfigCommand.showFile(context,
+                                        component -> feedbackSender.accept(commandContext.getSource(), component),
+                                        commandContext.getArgument("mod", String.class),
+                                        commandContext.getArgument("type", context.getType())
+                                ))))));
     }
 
     public static <T extends Enum<T> & StringRepresentable> StringRepresentableArgument<T> enumConstant(Class<? extends T> enumClazz) {
-        return new StringRepresentableArgument<>(StringRepresentable.fromEnum(enumClazz::getEnumConstants), enumClazz::getEnumConstants) {};
+        return new StringRepresentableArgument<>(StringRepresentable.fromEnum(enumClazz::getEnumConstants),
+                enumClazz::getEnumConstants
+        ) {
+            // NO-OP
+        };
     }
 
     private static <T extends Enum<T> & StringRepresentable> boolean anyModConfigsExist(ConfigCommandContext<T> context, String modId) {
-        return Stream.of(context.getType().getEnumConstants()).flatMap(type -> context.getConfigFileNames(modId, type).stream()).findAny().isPresent();
+        return Stream.of(context.getType().getEnumConstants())
+                .flatMap(type -> context.getConfigFileNames(modId, type).stream())
+                .findAny()
+                .isPresent();
     }
 
     private static <T extends Enum<T> & StringRepresentable> int showFile(ConfigCommandContext<T> context, Consumer<Component> feedbackSender, String modId, T type) throws CommandSyntaxException {
         List<String> configFileNames = context.getConfigFileNames(modId, type);
         if (configFileNames.isEmpty()) {
             throw ERROR_NO_CONFIG.create(modId, type.getSerializedName());
+        } else {
+            configFileNames.stream().map(File::new).map(ConfigCommand::fileComponent).forEach((Component component) -> {
+                feedbackSender.accept(Component.translatable("commands.config.getwithtype",
+                        modId,
+                        type.getSerializedName(),
+                        component
+                ));
+            });
+            return configFileNames.size();
         }
-        Component component = configFileNames.stream().map(File::new).map(ConfigCommand::fileComponent).reduce((o1, o2) -> Component.empty().append(o1).append(", ").append(o2)).orElseThrow();
-        feedbackSender.accept(Component.translatable("commands.config.getwithtype", modId, type.getSerializedName(), component));
-        return configFileNames.size();
     }
 
     private static Component fileComponent(File file) {
-        return Component.literal(file.getName()).withStyle(ChatFormatting.UNDERLINE).withStyle(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, file.getAbsolutePath())));
+        return Component.literal(file.getName())
+                .withStyle(ChatFormatting.UNDERLINE)
+                .withStyle(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE,
+                        file.getAbsolutePath()
+                )));
     }
 
     public interface ConfigCommandContext<T extends Enum<T> & StringRepresentable> {

@@ -5,8 +5,8 @@ import fuzs.forgeconfigapiport.fabric.api.neoforge.v4.NeoForgeConfigRegistry;
 import fuzs.forgeconfigapiport.fabric.impl.handler.ServerLifecycleHandler;
 import fuzs.forgeconfigapiport.fabric.impl.network.configuration.SyncConfig;
 import fuzs.forgeconfigapiport.fabric.impl.network.payload.ConfigFilePayload;
-import fuzs.forgeconfigapiport.impl.CommonAbstractions;
 import fuzs.forgeconfigapiport.impl.ForgeConfigAPIPort;
+import fuzs.forgeconfigapiport.impl.services.CommonAbstractions;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
@@ -25,7 +25,8 @@ public class ForgeConfigAPIPortFabric implements ModInitializer {
     public void onInitialize() {
         registerMessages();
         registerEventHandlers();
-        if (CommonAbstractions.isDevelopmentEnvironment() && CommonAbstractions.includeTestConfigs()) {
+        if (CommonAbstractions.INSTANCE.isDevelopmentEnvironment() &&
+                CommonAbstractions.INSTANCE.includeTestConfigs()) {
             NeoForgeConfigRegistry.INSTANCE.register(ForgeConfigAPIPort.MOD_ID,
                     ModConfig.Type.SERVER,
                     new ModConfigSpec.Builder().comment("hello world").define("dummy_entry", true).next().build(),

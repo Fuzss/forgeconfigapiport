@@ -1,4 +1,4 @@
 @ApiStatus.Internal
-package fuzs.forgeconfigapiport.impl.neoforge;
+package fuzs.forgeconfigapiport.fabric.impl.services;
 
 import org.jetbrains.annotations.ApiStatus;

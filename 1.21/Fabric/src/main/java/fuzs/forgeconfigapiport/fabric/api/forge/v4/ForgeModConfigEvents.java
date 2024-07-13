@@ -12,7 +12,7 @@ import java.util.Objects;
 public final class ForgeModConfigEvents {
 
     private ForgeModConfigEvents() {
-
+        // NO-OP
     }
 
     /**

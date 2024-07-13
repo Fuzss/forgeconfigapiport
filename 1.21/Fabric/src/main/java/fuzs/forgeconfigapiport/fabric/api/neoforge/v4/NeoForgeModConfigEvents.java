@@ -12,7 +12,7 @@ import java.util.Objects;
 public final class NeoForgeModConfigEvents {
 
     private NeoForgeModConfigEvents() {
-
+        // NO-OP
     }
 
     /**

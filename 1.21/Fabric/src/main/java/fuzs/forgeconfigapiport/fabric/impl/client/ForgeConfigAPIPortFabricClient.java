@@ -9,9 +9,12 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallba
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworking;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientConfigurationPacketListenerImpl;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraftforge.fml.config.ConfigTracker;
 import net.minecraftforge.fml.config.ModConfig;
+import net.neoforged.fml.config.ModConfigs;
 
 import java.util.List;
 
@@ -24,10 +27,10 @@ public class ForgeConfigAPIPortFabricClient implements ClientModInitializer {
     }
 
     private static void registerMessages() {
-        ClientConfigurationNetworking.registerGlobalReceiver(ConfigFilePayload.TYPE, (payload, context) -> {
+        ClientConfigurationNetworking.registerGlobalReceiver(ConfigFilePayload.TYPE, (ConfigFilePayload payload, ClientConfigurationNetworking.Context context) -> {
             ConfigSync.receiveSyncedConfig(payload.contents(), payload.fileName());
         });
-        ClientConfigurationConnectionEvents.READY.register((handler, client) -> {
+        ClientConfigurationConnectionEvents.COMPLETE.register((ClientConfigurationPacketListenerImpl handler, Minecraft client) -> {
             ConfigSync.handleClientLoginSuccess();
         });
     }
@@ -65,7 +68,7 @@ public class ForgeConfigAPIPortFabricClient implements ClientModInitializer {
 
                 @Override
                 public List<String> getConfigFileNames(String modId, net.neoforged.fml.config.ModConfig.Type type) {
-                    return net.neoforged.fml.config.ConfigTracker.INSTANCE.getConfigFileNames(modId, type);
+                    return ModConfigs.getConfigFileNames(modId, type);
                 }
             }, dispatcher, FabricClientCommandSource::sendFeedback);
         });
