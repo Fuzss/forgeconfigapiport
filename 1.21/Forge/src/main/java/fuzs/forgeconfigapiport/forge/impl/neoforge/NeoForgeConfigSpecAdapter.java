@@ -1,13 +1,11 @@
 package fuzs.forgeconfigapiport.forge.impl.neoforge;
 
 import com.electronwill.nightconfig.core.CommentedConfig;
-import com.electronwill.nightconfig.core.UnmodifiableCommentedConfig;
 import com.electronwill.nightconfig.core.UnmodifiableConfig;
 import com.electronwill.nightconfig.core.file.FileConfig;
 import com.electronwill.nightconfig.core.io.WritingMode;
 import com.electronwill.nightconfig.core.utils.UnmodifiableConfigWrapper;
 import com.electronwill.nightconfig.toml.TomlWriter;
-import fuzs.forgeconfigapiport.forge.api.neoforge.v4.NeoForgeConfigRegistry;
 import net.neoforged.fml.config.IConfigSpec;
 import net.neoforged.neoforge.common.ModConfigSpec;
 import org.jetbrains.annotations.Nullable;
@@ -18,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * A bridge for NeoForge's and Forge's config specs. Used in the implementation of {@link NeoForgeConfigRegistry}.
+ * A bridge for NeoForge's and Forge's config specs.
  */
 public final class NeoForgeConfigSpecAdapter extends UnmodifiableConfigWrapper<UnmodifiableConfig> implements net.minecraftforge.fml.config.IConfigSpec<NeoForgeConfigSpecAdapter> {
     private static final Map<String, ReentrantLock> LOCKS_BY_MOD = new ConcurrentHashMap<>();
@@ -45,12 +43,9 @@ public final class NeoForgeConfigSpecAdapter extends UnmodifiableConfigWrapper<U
             @Override
             public void save() {
                 if (data instanceof FileConfig fileConfig) {
-                    writeConfig(fileConfig.getNioPath(), data);
+                    // copied from NeoForge ConfigTracker
+                    new TomlWriter().write(data, fileConfig.getNioPath(), WritingMode.REPLACE_ATOMIC);
                 }
-            }
-
-            static void writeConfig(Path file, UnmodifiableCommentedConfig config) {
-                new TomlWriter().write(config, file, WritingMode.REPLACE_ATOMIC);
             }
         } : null);
         this.lock.unlock();

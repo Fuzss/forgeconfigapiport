@@ -5,8 +5,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.storage.LevelResource;
-import net.minecraftforge.fml.config.ConfigTracker;
-import net.minecraftforge.fml.config.ModConfig;
+import net.neoforged.fml.config.ConfigTracker;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -19,22 +18,17 @@ public class ServerLifecycleHandler {
     private static final LevelResource SERVER_CONFIG_LEVEL_RESOURCE = new LevelResource("serverconfig");
 
     public static void onServerStarting(MinecraftServer server) {
-        ConfigTracker.INSTANCE.loadConfigs(ModConfig.Type.SERVER,
-                FabricLoader.getInstance().getConfigDir(),
-                getServerConfigPath(server)
-        );
-        net.neoforged.fml.config.ConfigTracker.INSTANCE.loadConfigs(net.neoforged.fml.config.ModConfig.Type.SERVER,
+        ConfigTracker.INSTANCE.loadConfigs(net.neoforged.fml.config.ModConfig.Type.SERVER,
                 FabricLoader.getInstance().getConfigDir(),
                 getServerConfigPath(server)
         );
     }
 
     public static void onServerStopped(MinecraftServer server) {
-        ConfigTracker.INSTANCE.unloadConfigs(ModConfig.Type.SERVER);
-        net.neoforged.fml.config.ConfigTracker.INSTANCE.unloadConfigs(net.neoforged.fml.config.ModConfig.Type.SERVER);
+        ConfigTracker.INSTANCE.unloadConfigs(net.neoforged.fml.config.ModConfig.Type.SERVER);
     }
 
-    // Copied from net.minecraftforge.server.ServerLifecycleHooks
+    // Copied net.neoforged.neoforge.server.ServerLifecycleHooks
     private static Path getServerConfigPath(final MinecraftServer server) {
         final Path serverConfig = server.getWorldPath(SERVER_CONFIG_LEVEL_RESOURCE);
         if (!Files.isDirectory(serverConfig)) {
