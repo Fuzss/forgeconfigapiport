@@ -26,9 +26,6 @@ dependencies {
 
     // Puzzles Lib
 //    modApi libs.puzzleslib.fabric
-
-    // Extensible Enums
-//    modApi(include(libs.extensibleenums.fabric.get()))
 }
 
 shadowJar {

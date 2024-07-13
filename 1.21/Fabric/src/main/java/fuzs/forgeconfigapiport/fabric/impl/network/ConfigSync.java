@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @ApiStatus.Internal
 public class ConfigSync {
@@ -27,16 +26,7 @@ public class ConfigSync {
     private static boolean isVanillaConnection = true;
 
     public static List<ConfigFilePayload> syncConfigs() {
-        final Map<String, byte[]> neoForgeConfigData = ModConfigs.getConfigSet(ModConfig.Type.SERVER).stream().collect(Collectors.toMap(ModConfig::getFileName, mc -> {
-            try {
-                return Files.readAllBytes(mc.getFullPath());
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }));
-        final Map<String, byte[]> forgeConfigData = net.minecraftforge.fml.config.ConfigTracker.INSTANCE.configSets().get(
-                net.minecraftforge.fml.config.ModConfig.Type.SERVER).stream().collect(Collectors.toMap(
-                net.minecraftforge.fml.config.ModConfig::getFileName, mc -> {
+        final Map<String, byte[]> configData = ModConfigs.getConfigSet(ModConfig.Type.SERVER).stream().collect(Collectors.toMap(ModConfig::getFileName, mc -> {
             try {
                 return Files.readAllBytes(mc.getFullPath());
             } catch (IOException e) {
@@ -44,7 +34,7 @@ public class ConfigSync {
             }
         }));
 
-        return Stream.concat(neoForgeConfigData.entrySet().stream(), forgeConfigData.entrySet().stream())
+        return configData.entrySet().stream()
                 .map(e -> new ConfigFilePayload(e.getKey(), e.getValue()))
                 .toList();
     }
@@ -53,9 +43,7 @@ public class ConfigSync {
         // Forge Config API Port: invoke this here as an easy way to tell that we are connected to as server that has sent the server configs
         onEstablishModdedConnection();
         if (!Minecraft.getInstance().isLocalServer()) {
-            // we just check for the config on both Forge & NeoForge systems, we make sure during config registration that no duplicates across config systems are allowed
             Optional.ofNullable(ModConfigs.getFileMap().get(fileName)).ifPresent(mc -> ConfigTracker.acceptSyncedConfig(mc, contents));
-            Optional.ofNullable(net.minecraftforge.fml.config.ConfigTracker.INSTANCE.fileMap().get(fileName)).ifPresent(mc -> mc.acceptSyncedConfig(contents));
         }
     }
 
@@ -69,8 +57,7 @@ public class ConfigSync {
     public static void handleClientLoginSuccess() {
         if (isVanillaConnection) {
             ForgeConfigAPIPort.LOGGER.debug("Connected to a vanilla server. Catching up missing behaviour.");
-            net.minecraftforge.fml.config.ConfigTracker.INSTANCE.loadDefaultServerConfigs();
-            net.neoforged.fml.config.ConfigTracker.INSTANCE.loadDefaultServerConfigs();
+            ConfigTracker.INSTANCE.loadDefaultServerConfigs();
         } else {
             // reset for next server
             isVanillaConnection = true;

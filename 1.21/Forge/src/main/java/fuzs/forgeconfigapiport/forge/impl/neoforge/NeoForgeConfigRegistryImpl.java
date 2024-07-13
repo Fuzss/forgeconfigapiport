@@ -8,6 +8,9 @@ import net.minecraftforge.fml.config.ModConfig;
 import net.neoforged.fml.config.IConfigSpec;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
+/**
+ * TODO remove ModConfig parameters, change IConfigSpec parameter to ModConfigSpec
+ */
 public final class NeoForgeConfigRegistryImpl implements NeoForgeConfigRegistry {
 
     @Override
@@ -22,7 +25,7 @@ public final class NeoForgeConfigRegistryImpl implements NeoForgeConfigRegistry 
 
     @Override
     public ModConfig register(ModContainer modContainer, ModConfig.Type type, IConfigSpec spec) {
-        // TODO use the internal class to be able to return the ModConfig instance, remove the return value in the future
+        // use the internal class to be able to return the ModConfig instance, remove the return value in the future
         ModConfig modConfig = new ModConfig(type, new NeoForgeConfigSpecAdapter(modContainer.getModId(),
                 (ModConfigSpec) spec
         ), modContainer);
@@ -42,7 +45,7 @@ public final class NeoForgeConfigRegistryImpl implements NeoForgeConfigRegistry 
 
     @Override
     public ModConfig register(ModContainer modContainer, ModConfig.Type type, IConfigSpec spec, String fileName) {
-        // TODO use the internal class to be able to return the ModConfig instance, remove the return value in the future
+        // use the internal class to be able to return the ModConfig instance, remove the return value in the future
         ModConfig modConfig = new ModConfig(type, new NeoForgeConfigSpecAdapter(modContainer.getModId(),
                 (ModConfigSpec) spec
         ), modContainer, fileName);

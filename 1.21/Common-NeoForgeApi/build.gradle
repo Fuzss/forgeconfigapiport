@@ -40,9 +40,6 @@ dependencies {
     // Fabric Loader
     modCompileOnly libs.fabricloader.fabric
 
-    // Mixin Extras
-    compileOnly(annotationProcessor(libs.mixinextras.common.get()))
-
     // Night Config
     api libs.nightconfigcore
     api libs.nightconfigtoml

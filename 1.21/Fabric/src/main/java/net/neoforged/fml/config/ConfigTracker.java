@@ -84,9 +84,8 @@ public class ConfigTracker {
         var modConfig = new ModConfig(type, spec, modId, fileName, lock);
         trackConfig(modConfig);
 
-        // Forge Config Api Port: load configs immediately
-        // unlike on forge there isn't really more than one loading stage for mods on fabric, therefore we load configs immediately
-        // server configs are not handled here, they are all loaded at once when a world is loaded
+        // Forge Config Api Port: load all configs other than server immediately
+        // Unlike on NeoForge there is no more than one loading stage for mods on Fabric, therefore we get no other change to load configs.
         if (modConfig.getType() != ModConfig.Type.SERVER) {
             openConfig(modConfig, FabricLoader.getInstance().getConfigDir(), null);
         }
@@ -101,12 +100,6 @@ public class ConfigTracker {
 
     void trackConfig(ModConfig config) {
         var previousValue = this.fileMap.putIfAbsent(config.getFileName(), config);
-        // Forge Config Api Port: also check for duplicates in Forge config system, will cause issues otherwise during server config syncing
-        if (previousValue == null && net.minecraftforge.fml.config.ConfigTracker.INSTANCE.fileMap().containsKey(config.getFileName())) {
-            String errorMessage = "Detected config file conflict on %s from %s (already registered by %s)".formatted(config.getFileName(), config.getModId(), net.minecraftforge.fml.config.ConfigTracker.INSTANCE.fileMap().get(config.getFileName()).getModId());
-            LOGGER.error(CONFIG, errorMessage);
-            throw new RuntimeException(errorMessage);
-        }
         if (previousValue != null) {
             String errorMessage = "Detected config file conflict on %s from %s (already registered by %s)".formatted(config.getFileName(), config.getModId(), previousValue.getModId());
             LOGGER.error(CONFIG, errorMessage);
