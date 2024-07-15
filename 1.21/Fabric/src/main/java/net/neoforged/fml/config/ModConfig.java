@@ -83,8 +83,8 @@ public final class ModConfig {
         try {
             this.loadedConfig = loadedConfig;
             spec.acceptConfig(loadedConfig);
-            // TODO remove when Forge ModConfig is removed
-            if (this.modConfig != null) this.modConfig.configData = loadedConfig != null ? loadedConfig.config() : null;
+            // Forge Config Api Port: TODO remove when Forge ModConfig is removed
+            if (this.modConfig != null) this.modConfig.loadedConfig = loadedConfig;
             // Forge Config Api Port: invoke Fabric style callback instead of Forge event
             eventConstructor.accept(this);
         } finally {
