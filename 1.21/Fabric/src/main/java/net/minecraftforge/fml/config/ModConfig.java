@@ -7,6 +7,7 @@ package net.minecraftforge.fml.config;
 
 import com.electronwill.nightconfig.core.CommentedConfig;
 import net.minecraft.util.StringRepresentable;
+import net.neoforged.fml.config.LoadedConfig;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
@@ -26,9 +27,12 @@ public class ModConfig {
     private final String modId;
     // Forge Config Api Port: whole class only kept for backwards compatibility, no longer supports operations
 //    private final ConfigFileTypeHandler configHandler;
-    // Forge Config Api Port: widened access modifier
+    // Forge Config Api Port: whole class only kept for backwards compatibility, no longer supports operations
+//    private CommentedConfig configData;
+    // Forge Config Api Port: add NeoForge loaded config instance for saving and config data access
     @ApiStatus.Internal
-    public CommentedConfig configData;
+    @Nullable
+    public net.neoforged.fml.config.IConfigSpec.ILoadedConfig loadedConfig;
 //    private Callable<Void> saveHandler;
     // Forge Config Api Port: add NeoForge mod config instance for accessing ModConfig::getFullPath
     @Nullable
@@ -92,7 +96,9 @@ public class ModConfig {
     }
 
     public CommentedConfig getConfigData() {
-        return this.configData;
+        // Forge Config Api Port: config data field is unused, retrieve from loaded config instance instead
+        return this.loadedConfig != null ? this.loadedConfig.config() : null;
+//        return this.configData;
     }
 
     void setConfigData(final CommentedConfig configData) {
@@ -108,8 +114,9 @@ public class ModConfig {
 //    }
 
     public void save() {
-        // Forge Config Api Port: whole class only kept for backwards compatibility, no longer supports operations
-        throw new UnsupportedOperationException();
+        // Forge Config Api Port: support saving via loaded config instance, same behavior as Forge without a null-check
+        Objects.requireNonNull(this.loadedConfig, "loaded config is null");
+        this.loadedConfig.save();
 //        ((CommentedFileConfig) this.configData).save();
     }
 
