@@ -6,12 +6,13 @@
 package net.minecraftforge.fml.config;
 
 import com.electronwill.nightconfig.core.CommentedConfig;
-import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import net.minecraft.util.StringRepresentable;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Path;
 import java.util.Locale;
+import java.util.Objects;
 
 /**
  * @deprecated Class is being removed in favor of using NeoForge's config system internally on Fabric.
@@ -29,9 +30,13 @@ public class ModConfig {
     @ApiStatus.Internal
     public CommentedConfig configData;
 //    private Callable<Void> saveHandler;
+    // Forge Config Api Port: add NeoForge mod config instance for accessing ModConfig::getFullPath
+    @Nullable
+    private final net.neoforged.fml.config.ModConfig modConfig;
 
-    // Forge Config Api Port: replace ModContainer with mod id, marked as internal for common project as no mod id constructor exists on Forge
-    public ModConfig(final Type type, final IConfigSpec<?> spec, String modId, final String fileName) {
+    // Forge Config Api Port: add NeoForge mod config instance
+    @ApiStatus.Internal
+    public ModConfig(final Type type, final IConfigSpec<?> spec, String modId, final String fileName, net.neoforged.fml.config.ModConfig modConfig) {
         this.type = type;
         this.spec = spec;
         this.fileName = fileName;
@@ -43,6 +48,14 @@ public class ModConfig {
         // Forge Config Api Port: whole class only kept for backwards compatibility, no longer supports operations
 //        this.configHandler = ConfigFileTypeHandler.TOML;
 //        ConfigTracker.INSTANCE.trackConfig(this);
+        // Forge Config Api Port: add NeoForge mod config instance
+        this.modConfig = modConfig;
+    }
+
+    // Forge Config Api Port: replace ModContainer with mod id, marked as internal for common project as no mod id constructor exists on Forge
+    public ModConfig(final Type type, final IConfigSpec<?> spec, String modId, final String fileName) {
+        // Forge Config Api Port: overload custom constructor that accepts the NeoForge mod config
+        this(type, spec, modId, fileName, null);
     }
 
     // Forge Config Api Port: replace ModContainer with mod id, marked as internal for common project as no mod id constructor exists on Forge
@@ -101,7 +114,10 @@ public class ModConfig {
     }
 
     public Path getFullPath() {
-        return ((CommentedFileConfig) this.configData).getNioPath();
+        // Forge Config Api Port: implementation no longer uses file config, updated with new path access
+        Objects.requireNonNull(this.modConfig, "mod config is null");
+        return this.modConfig.getFullPath();
+//        return ((CommentedFileConfig) this.configData).getNioPath();
     }
 
     public void acceptSyncedConfig(byte[] bytes) {
