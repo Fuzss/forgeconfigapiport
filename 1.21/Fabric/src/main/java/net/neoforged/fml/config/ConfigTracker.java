@@ -18,8 +18,8 @@ import com.electronwill.nightconfig.toml.TomlFormat;
 import com.electronwill.nightconfig.toml.TomlParser;
 import com.electronwill.nightconfig.toml.TomlWriter;
 import com.mojang.logging.LogUtils;
-import fuzs.forgeconfigapiport.fabric.api.neoforge.v4.NeoForgeModConfigEvents;
 import fuzs.forgeconfigapiport.fabric.impl.config.ForgeConfigApiPortConfig;
+import fuzs.forgeconfigapiport.fabric.impl.core.ModConfigEventsHelper;
 import net.fabricmc.loader.api.FabricLoader;
 import org.apache.commons.io.FilenameUtils;
 import org.jetbrains.annotations.ApiStatus;
@@ -133,9 +133,7 @@ public class ConfigTracker {
         var configPath = basePath.resolve(config.getFileName());
 
         // Forge Config Api Port: invoke Fabric style callback instead of Forge event
-        loadConfig(config, configPath, (ModConfig modConfig) -> {
-            NeoForgeModConfigEvents.loading(modConfig.getModId()).invoker().onModConfigLoading(modConfig);
-        });
+        loadConfig(config, configPath, ModConfigEventsHelper.loading());
         LOGGER.debug(CONFIG, "Loaded TOML config file {}", configPath);
 
         // Forge Config Api Port: switch out config access
@@ -207,9 +205,7 @@ public class ConfigTracker {
         });
         // TODO: do we want to do any validation? (what do we do if acceptConfig fails?)
         // Forge Config Api Port: invoke Fabric style callback instead of Forge event
-        modConfig.setConfig(new LoadedConfig(newConfig, null, modConfig), (ModConfig m) -> {
-            NeoForgeModConfigEvents.unloading(m.getModId()).invoker().onModConfigUnloading(m);
-        }); // TODO: should maybe be Loading on the first load?
+        modConfig.setConfig(new LoadedConfig(newConfig, null, modConfig), ModConfigEventsHelper.reloading()); // TODO: should maybe be Loading on the first load?
     }
 
     public void loadDefaultServerConfigs() {
@@ -219,9 +215,7 @@ public class ConfigTracker {
             }
 
             // Forge Config Api Port: invoke Fabric style callback instead of Forge event
-            modConfig.setConfig(new LoadedConfig(createDefaultConfig(modConfig.getSpec()), null, modConfig), (ModConfig m) -> {
-                NeoForgeModConfigEvents.loading(m.getModId()).invoker().onModConfigLoading(m);
-            });
+            modConfig.setConfig(new LoadedConfig(createDefaultConfig(modConfig.getSpec()), null, modConfig), ModConfigEventsHelper.loading());
         });
     }
 
@@ -237,9 +231,7 @@ public class ConfigTracker {
                 LOGGER.trace(CONFIG, "Closing config file type {} at {} for {}", config.getType(), config.getFileName(), config.getModId());
                 unload(config.loadedConfig.path());
                 // Forge Config Api Port: invoke Fabric style callback instead of Forge event
-                config.setConfig(null, (ModConfig modConfig) -> {
-                    NeoForgeModConfigEvents.unloading(modConfig.getModId()).invoker().onModConfigUnloading(modConfig);
-                });
+                config.setConfig(null, ModConfigEventsHelper.unloading());
             } else {
                 LOGGER.warn(CONFIG, "Closing non-file config {} at path {}", config.loadedConfig, config.getFileName());
             }
