@@ -7,7 +7,6 @@ package net.minecraftforge.fml.config;
 
 import com.electronwill.nightconfig.core.CommentedConfig;
 import net.minecraft.util.StringRepresentable;
-import net.neoforged.fml.config.LoadedConfig;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
