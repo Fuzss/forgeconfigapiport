@@ -34,7 +34,8 @@ public final class ForgeConfigRegistryImpl implements ForgeConfigRegistry {
     }
 
     @Override
-    public void register(String modId, net.neoforged.fml.config.ModConfig.Type type, IConfigSpec<?> spec, String fileName) {
+    public void register(String modId, net.neoforged.fml.config.ModConfig.Type type, IConfigSpec<?> spec,
+                         String fileName) {
         ConfigTracker.INSTANCE.registerConfig(type, new ForgeConfigSpecAdapter(spec), modId, fileName);
     }
 
@@ -50,7 +51,7 @@ public final class ForgeConfigRegistryImpl implements ForgeConfigRegistry {
     public static ModConfig adapt(net.neoforged.fml.config.ModConfig modConfig) {
         if (modConfig.getSpec() instanceof ForgeConfigSpecAdapter adapter) {
             return new ModConfig(wrap(modConfig.getType()), adapter.spec(), modConfig.getModId(),
-                    modConfig.getFileName()
+                    modConfig.getFileName(), modConfig
             );
         } else {
             return null;

@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v21.0.4-1.21] - 2024-07-15
+### Fixed
+- Fix `net.minecraftforge.fml.config.ModConfig::getFullPath` throwing a `ClassCastException`
+- The class remains deprecated though and is only kept for binary compatibility
+
 ## [v21.0.3-1.21] - 2024-07-15
 ### Changed
 - Add a few deprecation notices to highlight the internal migration to NeoForge's config system for Forge on Fabric, that will require registering Forge config classes via the NeoForge implementation in the future
