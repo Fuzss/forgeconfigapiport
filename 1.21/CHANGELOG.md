@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v21.0.3-1.21] - 2024-07-15
+### Changed
+- Add a few deprecation notices to highlight the internal migration to NeoForge's config system for Forge on Fabric, that will require registering Forge config classes via the NeoForge implementation in the future
+- Add back contents to Forge's `ModConfig` as it is still used in config events, it now serves as an adapter to NeoForge's `ModConfig` for registered Forge configs
+### Fixed
+- Fix Forge config events not being called on Fabric
+
 ## [v21.0.2-1.21] - 2024-07-13
 - Updated to Night Config v3.8.0
 - Update for NeoForge v21.0.82

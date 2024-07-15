@@ -1,4 +1,4 @@
-package fuzs.forgeconfigapiport.fabric.impl.forge;
+package fuzs.forgeconfigapiport.fabric.impl.core;
 
 import com.electronwill.nightconfig.core.CommentedConfig;
 import com.electronwill.nightconfig.core.UnmodifiableCommentedConfig;

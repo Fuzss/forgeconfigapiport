@@ -1,4 +1,4 @@
-package fuzs.forgeconfigapiport.fabric.impl.neoforge;
+package fuzs.forgeconfigapiport.fabric.impl.core;
 
 import fuzs.forgeconfigapiport.fabric.api.neoforge.v4.NeoForgeConfigRegistry;
 import net.neoforged.fml.config.ConfigTracker;
@@ -9,13 +9,11 @@ public final class NeoForgeConfigRegistryImpl implements NeoForgeConfigRegistry 
 
     @Override
     public ModConfig register(String modId, ModConfig.Type type, IConfigSpec spec) {
-        ConfigTracker.INSTANCE.registerConfig(type, spec, modId);
-        return null;
+        return ConfigTracker.INSTANCE.registerConfig(type, spec, modId);
     }
 
     @Override
     public ModConfig register(String modId, ModConfig.Type type, IConfigSpec spec, String fileName) {
-        ConfigTracker.INSTANCE.registerConfig(type, spec, modId, fileName);
-        return null;
+        return ConfigTracker.INSTANCE.registerConfig(type, spec, modId, fileName);
     }
 }

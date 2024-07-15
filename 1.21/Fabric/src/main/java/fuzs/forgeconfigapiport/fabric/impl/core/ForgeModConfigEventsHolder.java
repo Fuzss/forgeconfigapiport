@@ -1,4 +1,4 @@
-package fuzs.forgeconfigapiport.fabric.impl.forge;
+package fuzs.forgeconfigapiport.fabric.impl.core;
 
 import com.google.common.collect.Maps;
 import fuzs.forgeconfigapiport.fabric.api.forge.v4.ForgeModConfigEvents;

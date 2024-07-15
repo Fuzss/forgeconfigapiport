@@ -10,7 +10,6 @@ import net.neoforged.fml.config.IConfigSpec;
 import net.neoforged.neoforge.common.ModConfigSpec;
 import org.jetbrains.annotations.Nullable;
 
-import java.nio.file.Path;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
@@ -43,7 +42,7 @@ public final class NeoForgeConfigSpecAdapter extends UnmodifiableConfigWrapper<U
             @Override
             public void save() {
                 if (data instanceof FileConfig fileConfig) {
-                    // copied from NeoForge ConfigTracker
+                    // copied from NeoForge ConfigTracker::writeConfig
                     new TomlWriter().write(data, fileConfig.getNioPath(), WritingMode.REPLACE_ATOMIC);
                 }
             }

@@ -6,7 +6,7 @@
 package net.neoforged.fml.config;
 
 import com.mojang.logging.LogUtils;
-import fuzs.forgeconfigapiport.fabric.api.neoforge.v4.NeoForgeModConfigEvents;
+import fuzs.forgeconfigapiport.fabric.impl.core.ModConfigEventsHelper;
 import org.slf4j.Logger;
 
 import java.nio.file.Path;
@@ -34,9 +34,7 @@ class ConfigWatcher implements Runnable {
             try {
                 LOGGER.debug(ConfigTracker.CONFIG, "Config file {} changed, re-loading", modConfig.getFileName());
                 // Forge Config Api Port: invoke Fabric style callback instead of Forge event
-                ConfigTracker.loadConfig(this.modConfig, this.path, (ModConfig modConfig) -> {
-                    NeoForgeModConfigEvents.reloading(modConfig.getModId()).invoker().onModConfigReloading(modConfig);
-                });
+                ConfigTracker.loadConfig(this.modConfig, this.path, ModConfigEventsHelper.reloading());
             } finally {
                 modConfig.lock.unlock();
             }
