@@ -6,6 +6,6 @@ public interface CommonAbstractions {
     boolean isDevelopmentEnvironment();
 
     default boolean includeTestConfigs() {
-        return false;
+        return true && this.isDevelopmentEnvironment();
     }
 }

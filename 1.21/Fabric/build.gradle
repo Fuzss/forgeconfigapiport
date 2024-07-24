@@ -26,6 +26,10 @@ dependencies {
 
     // Puzzles Lib
 //    modApi libs.puzzleslib.fabric
+
+    // Mod Menu
+    modCompileOnly(libs.modmenu.fabric) { transitive = false }
+    modLocalRuntime(libs.modmenu.fabric) { transitive = false }
 }
 
 shadowJar {

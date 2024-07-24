@@ -2,3 +2,5 @@
 defaultConfigsPath = "defaultconfigs"
 #Disables File Watcher. Used to automatically update config if its file has been modified.
 disableConfigWatcher = false
+#A config option mainly for developers. Logs out configuration values that do not have translations when running a client in a development environment.
+logUntranslatedConfigurationWarnings = true

@@ -27,6 +27,9 @@
     ],
     "client": [
       "${modGroup}.fabric.impl.client.ForgeConfigAPIPortFabricClient"
+    ],
+    "modmenu": [
+      "${modGroup}.fabric.impl.integration.modmenu.ModMenuApiImpl"
     ]
   },
 
@@ -40,6 +43,10 @@
     "fabric-api": ">=${minFabricApiVersion}",
     "minecraft": "${minecraftVersion}",
     "java": ">=17"
+  },
+
+  "recommends": {
+    "modmenu": "*"
   },
 
   "custom": {
