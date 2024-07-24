@@ -1,6 +1,5 @@
 package fuzs.forgeconfigapiport.fabric.impl;
 
-import fuzs.forgeconfigapiport.fabric.api.forge.v4.ForgeConfigRegistry;
 import fuzs.forgeconfigapiport.fabric.api.neoforge.v4.NeoForgeConfigRegistry;
 import fuzs.forgeconfigapiport.fabric.impl.handler.ServerLifecycleHandler;
 import fuzs.forgeconfigapiport.fabric.impl.network.configuration.SyncConfig;
@@ -15,7 +14,6 @@ import net.fabricmc.fabric.api.networking.v1.ServerConfigurationConnectionEvents
 import net.fabricmc.fabric.api.networking.v1.ServerConfigurationNetworking;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerConfigurationPacketListenerImpl;
-import net.minecraftforge.common.ForgeConfigSpec;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
@@ -25,27 +23,16 @@ public class ForgeConfigAPIPortFabric implements ModInitializer {
     public void onInitialize() {
         registerMessages();
         registerEventHandlers();
-        if (CommonAbstractions.INSTANCE.isDevelopmentEnvironment() &&
-                CommonAbstractions.INSTANCE.includeTestConfigs()) {
-            NeoForgeConfigRegistry.INSTANCE.register(ForgeConfigAPIPort.MOD_ID,
-                    ModConfig.Type.SERVER,
-                    new ModConfigSpec.Builder().comment("hello world").define("dummy_entry", true).next().build(),
-                    "forgeconfigapiport-server-neoforge.toml"
-            );
-            ForgeConfigRegistry.INSTANCE.register(ForgeConfigAPIPort.MOD_ID,
-                    net.minecraftforge.fml.config.ModConfig.Type.SERVER,
-                    new ForgeConfigSpec.Builder().comment("hello world").define("dummy_entry", true).next().build(),
-                    "forgeconfigapiport-server-forge.toml"
-            );
-        }
+        setupDevelopmentEnvironment();
     }
 
     private static void registerMessages() {
-        ServerConfigurationConnectionEvents.CONFIGURE.register((ServerConfigurationPacketListenerImpl handler, MinecraftServer server) -> {
-            if (ServerConfigurationNetworking.canSend(handler, ConfigFilePayload.TYPE)) {
-                handler.addTask(new SyncConfig(handler));
-            }
-        });
+        ServerConfigurationConnectionEvents.CONFIGURE.register(
+                (ServerConfigurationPacketListenerImpl handler, MinecraftServer server) -> {
+                    if (ServerConfigurationNetworking.canSend(handler, ConfigFilePayload.TYPE)) {
+                        handler.addTask(new SyncConfig(handler));
+                    }
+                });
         PayloadTypeRegistry.configurationS2C().register(ConfigFilePayload.TYPE, ConfigFilePayload.STREAM_CODEC);
     }
 
@@ -60,5 +47,24 @@ public class ForgeConfigAPIPortFabric implements ModInitializer {
         ServerLifecycleEvents.SERVER_STOPPED.register(ServerLifecycleHandler.AFTER_PHASE,
                 ServerLifecycleHandler::onServerStopped
         );
+    }
+
+    private static void setupDevelopmentEnvironment() {
+        if (CommonAbstractions.INSTANCE.includeTestConfigs()) {
+            NeoForgeConfigRegistry.INSTANCE.register(ForgeConfigAPIPort.MOD_ID, ModConfig.Type.SERVER,
+                    new ModConfigSpec.Builder()
+                            .comment("hello world")
+                            .define("dummy_entry", true)
+                            .next()
+                            .build(), "forgeconfigapiport-server-neoforge.toml"
+            );
+//            ForgeConfigRegistry.INSTANCE.register(ForgeConfigAPIPort.MOD_ID, ModConfig.Type.SERVER,
+//                    new ForgeConfigSpec.Builder()
+//                            .comment("hello world")
+//                            .define("dummy_entry", true)
+//                            .next()
+//                            .build(), "forgeconfigapiport-server-forge.toml"
+//            );
+        }
     }
 }

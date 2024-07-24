@@ -23,6 +23,7 @@ public class ForgeConfigApiPortConfig {
     private static final Map<String, Object> CONFIG_VALUES = ImmutableMap.<String, Object>builder()
             .put("defaultConfigsPath", "defaultconfigs")
             .put("disableConfigWatcher", false)
+            .put("logUntranslatedConfigurationWarnings", true)
             .build();
     private static final ConfigSpec CONFIG_SPEC;
 
@@ -87,10 +88,11 @@ public class ForgeConfigApiPortConfig {
 
     @SuppressWarnings("unchecked")
     public <T> T getValue(String key) {
-        if (!CONFIG_VALUES.containsKey(key)) {
+        if (CONFIG_VALUES.containsKey(key)) {
+            return this.configData.<T>getOptional(key).orElse((T) CONFIG_VALUES.get(key));
+        } else {
             throw new IllegalArgumentException("%s is not a know config value key".formatted(key));
         }
-        return this.configData.<T>getOptional(key).orElse((T) CONFIG_VALUES.get(key));
     }
 
     public static Path getDefaultConfigsDirectory() {
