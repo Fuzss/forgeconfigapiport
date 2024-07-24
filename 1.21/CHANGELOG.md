@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [v21.0.6-1.21] - 2024-07-24
 ### Added
 - Add new configuration screen for NeoForge configs, must be enabled via `ConfigScreenFactoryRegistry::register`
+- Not compatible with Forge configs, and will crash in-game
 
 ## [v21.0.5-1.21] - 2024-07-15
 ### Changed
