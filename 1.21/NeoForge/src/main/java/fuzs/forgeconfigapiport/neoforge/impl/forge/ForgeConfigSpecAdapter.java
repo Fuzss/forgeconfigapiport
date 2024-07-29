@@ -3,6 +3,7 @@ package fuzs.forgeconfigapiport.neoforge.impl.forge;
 import com.electronwill.nightconfig.core.CommentedConfig;
 import com.electronwill.nightconfig.core.UnmodifiableCommentedConfig;
 import net.minecraftforge.fml.config.IConfigSpec;
+import net.neoforged.fml.config.ModConfig;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -13,6 +14,11 @@ public record ForgeConfigSpecAdapter(IConfigSpec<?> spec) implements net.neoforg
     @Override
     public boolean isEmpty() {
         return this.spec.isEmpty();
+    }
+
+    @Override
+    public void validateSpec(ModConfig config) {
+        // NO-OP
     }
 
     @Override

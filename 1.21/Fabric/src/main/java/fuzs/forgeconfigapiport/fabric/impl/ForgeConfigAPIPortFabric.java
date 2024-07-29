@@ -15,6 +15,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerConfigurationNetworking;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerConfigurationPacketListenerImpl;
 import net.neoforged.fml.config.ModConfig;
+import net.neoforged.fml.config.ModConfigs;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
 public class ForgeConfigAPIPortFabric implements ModInitializer {
@@ -47,6 +48,14 @@ public class ForgeConfigAPIPortFabric implements ModInitializer {
         ServerLifecycleEvents.SERVER_STOPPED.register(ServerLifecycleHandler.AFTER_PHASE,
                 ServerLifecycleHandler::onServerStopped
         );
+        ServerLifecycleEvents.SERVER_STOPPING.register((MinecraftServer server) -> {
+            // Reset WORLD type config caches
+            ModConfigs.getFileMap().values().forEach(config -> {
+                if (config.getSpec() instanceof ModConfigSpec spec) {
+                    spec.resetCaches(ModConfigSpec.RestartType.WORLD);
+                }
+            });
+        });
     }
 
     private static void setupDevelopmentEnvironment() {
