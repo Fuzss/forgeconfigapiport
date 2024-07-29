@@ -1,8 +1,8 @@
-name: Crash Report
+name: Submit A Crash Report
 description: >-
-  Please use this template when this mod has caused your game to crash. Supported versions are for Minecraft 1.18+.
-title: '[Crash]: '
-labels: ["bug"]
+  Only Minecraft versions listed on the main branch are supported. Support may additionally vary based on the severity of an issue.
+title: "[Crash]: "
+labels: ["bug", "high priority"]
 assignees:
   - Fuzss
 body:
@@ -14,35 +14,49 @@ body:
     id: loader
     attributes:
       label: Mod Loader (Required)
-      description: What mod loader are you using the mod on?
+      description: What mod loader are you using to play the mod?
       multiple: false
       options:
-        - Forge
-        - Fabric
-        - Quilt
+        - "⸺"
+        - "Fabric"
+        - "NeoForge"
+        - "Forge"
+        - "Quilt"
     validations:
       required: true
   - type: input
     id: minecraft
     attributes:
-      label: Minecraft Version (Required)
-      description: What is the Minecraft version you are playing with?
-      placeholder: ex. 1.19
+      label: Minecraft Version(s) (Required)
+      description: What Minecraft version(s) are you using the play the mod?
+      placeholder: ex. 1.20.1
     validations:
       required: true
   - type: input
     id: version
     attributes:
-      label: Mod Version (Required)
-      description: What version of the mod are you playing with?
-      placeholder: ex. v4.0.0
+      label: Mod Version(s) (Required)
+      description: What mod version(s) are you using to play?
+      placeholder: ex. v8.0.0
+    validations:
+      required: true
+  - type: dropdown
+    id: mods
+    attributes:
+      label: Minimal Setup
+      description: Can your issue be reproduced with a minimal set of mods (only this mod + dependencies)?
+      multiple: false
+      options:
+        - "⸺"
+        - "Yes"
+        - "No"
     validations:
       required: true
   - type: textarea
     id: notes
     attributes:
       label: Notes (Required)
-      description: Please explain which steps we need to do to reproduce the crash. Please include anything else you'd like to say about the crash.
+      description: Please explain which steps we need to do to reproduce the issue. Please include anything else you'd like to say about it.
       placeholder: >-
         ex.  
         
@@ -58,7 +72,7 @@ body:
     attributes:
       label: Crash Report (Required)
       description: >-
-        Please paste the url to your shared crash report. [To share your crash report here, please follow these steps.](https://gist.github.com/Fuzss/9692f6ed5e8cca485a58004c28c9045b)
+        Please paste the url to your shared crash report. Note that issue reports without this file are difficult to solve and unlikely to be processed. [To share your crash report here, please follow these steps.](https://gist.github.com/Fuzss/9692f6ed5e8cca485a58004c28c9045b)
       placeholder: ex. https://gist.github.com/<your_user_name>/<gist_id>
     validations:
       required: true

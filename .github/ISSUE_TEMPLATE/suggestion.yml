@@ -1,11 +1,41 @@
-name: Suggestion
+name: Leave A Suggestion
 description: >-
-  Please use this template when you want to suggest a feature. Do not ask for mod updates or ports, they will come when they are ready.
-title: '[Suggestion]: '
+  Please do not ask for mod updates or ports, they will come when they are ready.
+title: "[Suggestion]: "
 labels: ["enhancement"]
 assignees:
   - Fuzss
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this issue report!
+  - type: dropdown
+    id: loader
+    attributes:
+      label: Mod Loader (Optional)
+      description: What mod loader are you using to play the mod?
+      multiple: false
+      options:
+        - "⸺"
+        - "Fabric"
+        - "NeoForge"
+        - "Forge"
+        - "Quilt"
+    validations:
+      required: true
+  - type: input
+    id: minecraft
+    attributes:
+      label: Minecraft Version(s) (Optional)
+      description: What Minecraft version(s) are you using the play the mod?
+      placeholder: ex. 1.20.1
+  - type: input
+    id: version
+    attributes:
+      label: Mod Version(s) (Optional)
+      description: What mod version(s) are you using to play?
+      placeholder: ex. v8.0.0
   - type: textarea
     id: suggestion
     attributes:

@@ -1,7 +1,7 @@
-name: Bug Report
+name: Report A Bug
 description: >-
-  Please use this template when you have encountered a bug in this mod. Supported versions are for Minecraft 1.18+.
-title: '[Bug]: '
+  Only Minecraft versions listed on the main branch are supported. Support may additionally vary based on the severity of an issue.
+title: "[Bug]: "
 labels: ["bug"]
 assignees:
   - Fuzss
@@ -14,35 +14,49 @@ body:
     id: loader
     attributes:
       label: Mod Loader (Required)
-      description: What mod loader are you using the mod on?
+      description: What mod loader are you using to play the mod?
       multiple: false
       options:
-        - Forge
-        - Fabric
-        - Quilt
+        - "⸺"
+        - "Fabric"
+        - "NeoForge"
+        - "Forge"
+        - "Quilt"
     validations:
       required: true
   - type: input
     id: minecraft
     attributes:
-      label: Minecraft Version (Required)
-      description: What is the Minecraft version you are playing with?
-      placeholder: ex. 1.19
+      label: Minecraft Version(s) (Required)
+      description: What Minecraft version(s) are you using the play the mod?
+      placeholder: ex. 1.20.1
     validations:
       required: true
   - type: input
     id: version
     attributes:
-      label: Mod Version (Required)
-      description: What version of the mod are you playing with?
-      placeholder: ex. v4.0.0
+      label: Mod Version(s) (Required)
+      description: What mod version(s) are you using to play?
+      placeholder: ex. v8.0.0
+    validations:
+      required: true
+  - type: dropdown
+    id: mods
+    attributes:
+      label: Minimal Setup (Required)
+      description: Can your issue be reproduced with a minimal set of mods (only this mod + dependencies)?
+      multiple: false
+      options:
+        - "⸺"
+        - "Yes"
+        - "No"
     validations:
       required: true
   - type: textarea
     id: notes
     attributes:
       label: Notes (Required)
-      description: Please explain what happens because of the bug (including all the steps required to cause the bug), and what behavior you would expect if the bug were fixed.
+      description: Please explain what happens because of the issue (including all the steps required to cause it), and what behavior you would expect if the issue were fixed.
       placeholder: >-
         ex.  
         
@@ -60,6 +74,8 @@ body:
   - type: input
     id: latest-log
     attributes:
-      label: latest.log (Optional)
-      description: Please paste the url to your shared `latest.log` file. [To share your `latest.log` here, please follow these steps.](https://gist.github.com/Fuzss/866b384d353912986e37b17eeef7a285)
+      label: latest.log (Required)
+      description: Please paste the url to your shared `latest.log` file. Note that issue reports without this file are difficult to solve and unlikely to be processed. [To share your `latest.log` here, please follow these steps.](https://gist.github.com/Fuzss/866b384d353912986e37b17eeef7a285)
       placeholder: ex. https://gist.github.com/<your_user_name>/<gist_id>
+    validations:
+      required: true
