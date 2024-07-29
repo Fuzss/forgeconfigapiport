@@ -6,6 +6,7 @@
 package net.neoforged.fml.config;
 
 import com.electronwill.nightconfig.core.CommentedConfig;
+import com.electronwill.nightconfig.core.Config;
 import com.electronwill.nightconfig.core.InMemoryCommentedFormat;
 import com.electronwill.nightconfig.core.UnmodifiableCommentedConfig;
 import com.electronwill.nightconfig.core.concurrent.ConcurrentCommentedConfig;
@@ -21,6 +22,7 @@ import com.mojang.logging.LogUtils;
 import fuzs.forgeconfigapiport.fabric.impl.config.ForgeConfigApiPortConfig;
 import fuzs.forgeconfigapiport.fabric.impl.core.ModConfigEventsHelper;
 import net.fabricmc.loader.api.FabricLoader;
+import net.neoforged.neoforge.common.ModConfigSpec;
 import org.apache.commons.io.FilenameUtils;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
@@ -82,6 +84,9 @@ public class ConfigTracker {
     public ModConfig registerConfig(ModConfig.Type type, IConfigSpec spec, String modId, String fileName) {
         var lock = locksByMod.computeIfAbsent(modId, m -> new ReentrantLock());
         var modConfig = new ModConfig(type, spec, modId, fileName, lock);
+        // Forge Config Api Port: method moved here from ModConfigSpec
+        validateSpec(spec, modConfig);
+
         trackConfig(modConfig);
 
         // Forge Config Api Port: load all configs other than server immediately
@@ -93,6 +98,29 @@ public class ConfigTracker {
         return modConfig;
     }
 
+    // Forge Config Api Port: method copied from ModConfigSpec
+    private void validateSpec(IConfigSpec spec, ModConfig config) {
+        if (spec instanceof ModConfigSpec) {
+            forEachValue(((ModConfigSpec) spec).getValues().valueMap().values(), configValue -> {
+                if (configValue.getSpec().restartType() == ModConfigSpec.RestartType.GAME && config.getType() == ModConfig.Type.SERVER) {
+                    throw new IllegalArgumentException("Configuration value " + String.join(".", configValue.getPath())
+                            + " defined in config " + config.getFileName() + " has restart of type " + configValue.getSpec().restartType() + " which cannot be used for configs of type " + config.getType());
+                }
+            });
+        }
+    }
+
+    // Forge Config Api Port: private helper method copied from ModConfigSpec
+    private void forEachValue(Iterable<Object> configValues, Consumer<ModConfigSpec.ConfigValue<?>> consumer) {
+        configValues.forEach(value -> {
+            if (value instanceof ModConfigSpec.ConfigValue<?> configValue) {
+                consumer.accept(configValue);
+            } else if (value instanceof Config innerConfig) {
+                forEachValue(innerConfig.valueMap().values(), consumer);
+            }
+        });
+    }
+
     private static String defaultConfigName(ModConfig.Type type, String modId) {
         // for mod-id "forge", config file name would be "forge-client.toml" and "forge-server.toml"
         return String.format(Locale.ROOT, "%s-%s.toml", modId, type.extension());
@@ -101,8 +129,8 @@ public class ConfigTracker {
     void trackConfig(ModConfig config) {
         var previousValue = this.fileMap.putIfAbsent(config.getFileName(), config);
         if (previousValue != null) {
-            String errorMessage = "Detected config file conflict on %s from %s (already registered by %s)".formatted(config.getFileName(), config.getModId(), previousValue.getModId());
-            LOGGER.error(CONFIG, errorMessage);
+            String errorMessage = String.format(Locale.ROOT, "Detected config file conflict on %s from %s (already registered by %s)", config.getFileName(), config.getModId(), previousValue.getModId());
+            LOGGER.error(CONFIG, "{}", errorMessage);
             throw new RuntimeException(errorMessage);
         }
         this.configSets.get(config.getType()).add(config);
