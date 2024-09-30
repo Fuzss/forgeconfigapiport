@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableList;
 import com.mojang.realmsclient.RealmsMainScreen;
 import com.mojang.serialization.Codec;
 import fuzs.forgeconfigapiport.fabric.impl.config.ForgeConfigApiPortConfig;
+import fuzs.forgeconfigapiport.fabric.impl.config.ModConfigValues;
 import fuzs.forgeconfigapiport.impl.services.CommonAbstractions;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import java.util.ArrayList;
@@ -88,14 +89,14 @@ import org.jetbrains.annotations.Nullable;
  * <li>As an entry point for your custom configuration screen that handles fetching your configs, matching {@link Type} to the current game, enforcing level and game restarts, etc.
  * <li>As a ready-made system but extensible that works out of the box with all configs that use the {@link ModConfigSpec} system and don't do anything overly weird with it.</ul>
  *
- * For the former one, use the 3-argument constructor {@link #ConfigurationScreen(ModContainer, Screen, TriFunction)} and return your own screen from the TriFunction. For the latter,
- * use either the 2-argument constructor {@link #ConfigurationScreen(ModContainer, Screen)} if you don't need to extend the system, or the 3-argument one and return a subclass of
+ * For the former one, use the 3-argument constructor {@link #ConfigurationScreen(String, Screen, QuadFunction)} and return your own screen from the TriFunction. For the latter,
+ * use either the 2-argument constructor {@link #ConfigurationScreen(String, Screen)} if you don't need to extend the system, or the 3-argument one and return a subclass of
  * {@link ConfigurationSectionScreen} from the TriFunction.<p>
  *
  * In any case, register your configuration screen in your client mod class like this:
  *
  * {@snippet :
- * &#64;Mod(value = "examplemod", dist = Dist.CLIENT)
+ * @Mod(value = "examplemod", dist = Dist.CLIENT)
  * public class ExampleMod {
  *     public ExampleMod(ModContainer container) {
  *         container.registerExtensionPoint(IConfigScreenFactory.class, (mc, parent) -> new ConfigurationScreen(container, parent));
@@ -163,7 +164,7 @@ public final class ConfigurationScreen extends OptionsSubScreen {
 
         public void finish() {
             // Forge Config Api Port: replace mod loader specific method
-            if (ForgeConfigApiPortConfig.INSTANCE.<Boolean>getValue("logUntranslatedConfigurationWarnings") && CommonAbstractions.INSTANCE.isDevelopmentEnvironment() && (!untranslatables.isEmpty() || !untranslatablesWithFallback.isEmpty())) {
+            if (ForgeConfigApiPortConfig.getBoolConfigValue(ModConfigValues.LOG_UNTRANSLATED_CONFIGURATION_WARNINGS) && CommonAbstractions.INSTANCE.isDevelopmentEnvironment() && (!untranslatables.isEmpty() || !untranslatablesWithFallback.isEmpty())) {
                 StringBuilder stringBuilder = new StringBuilder();
                 stringBuilder.append("""
                         \n	Dev warning - Untranslated configuration keys encountered. Please translate your configuration keys so users can properly configure your mod.
@@ -396,7 +397,7 @@ public final class ConfigurationScreen extends OptionsSubScreen {
      * <li>To use another UI element, override the matching <code>create*Value()</code> method and return your new UI element wrapped in a {@link Element}.
      * <li>To change the way lists work, override {@link #createList(String, ListValueSpec, ConfigValue)} and return a subclassed {@link ConfigurationListScreen}.
      * <li>To add additional (synthetic) config values, override {@link #createSyntheticValues()}.
-     * <li>To be notified on each changed value instead of getting one {@link ModConfigEvent} at the end, override {@link #onChanged(String)}. Note that {@link #onChanged(String)}
+     * <li>To be notified on each changed value instead of getting one {@link fuzs.forgeconfigapiport.fabric.api.neoforge.v4.NeoForgeModConfigEvents} at the end, override {@link #onChanged(String)}. Note that {@link #onChanged(String)}
      * will be called on every change (e.g. each typed character for Strings) if the new value is valid and different.
      * <li>To re-arrange your config values, declare them in the appropriate order.
      * <li>To change which values a config value can accept, supply the {@link ModConfigSpec.Builder} with a validator and/or a range.
@@ -1029,7 +1030,7 @@ public final class ConfigurationScreen extends OptionsSubScreen {
      * <li>To change how the label and buttons for the individual elements look, override {@link #createListLabel(int)}.
      * <li>To use another UI element, override the matching <code>create*Value()</code> method and return your new UI element wrapped in a {@link Element}.
      * <li>To add additional (synthetic) config values, override {@link #rebuild()} and add them to <code>list</code>. ({@link #createSyntheticValues()} is not used for lists).
-     * <li>To be notified on each changed value instead of getting one {@link ModConfigEvent} at the end, override {@link #onChanged(String)} on the {@link ConfigurationScreen},
+     * <li>To be notified on each changed value instead of getting one {@link fuzs.forgeconfigapiport.fabric.api.neoforge.v4.NeoForgeModConfigEvents} at the end, override {@link #onChanged(String)} on the {@link ConfigurationScreen},
      * not here. The list will only be updated in the {@link ModConfigSpec.ConfigValue} when this screen is closed.
      * <li>To limit the number of elements in a list, pass a {@link ModConfigSpec.Range} to {@link ModConfigSpec.Builder#defineList(List, Supplier, Supplier, Predicate, Range)}.
      * </ul>

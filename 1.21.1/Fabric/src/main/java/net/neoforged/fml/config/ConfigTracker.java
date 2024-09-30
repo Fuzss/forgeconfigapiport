@@ -20,6 +20,7 @@ import com.electronwill.nightconfig.toml.TomlParser;
 import com.electronwill.nightconfig.toml.TomlWriter;
 import com.mojang.logging.LogUtils;
 import fuzs.forgeconfigapiport.fabric.impl.config.ForgeConfigApiPortConfig;
+import fuzs.forgeconfigapiport.fabric.impl.config.ModConfigValues;
 import fuzs.forgeconfigapiport.fabric.impl.core.ModConfigEventsHelper;
 import net.fabricmc.loader.api.FabricLoader;
 import net.neoforged.neoforge.common.ModConfigSpec;
@@ -165,7 +166,7 @@ public class ConfigTracker {
         LOGGER.debug(CONFIG, "Loaded TOML config file {}", configPath);
 
         // Forge Config Api Port: switch out config access
-        if (!ForgeConfigApiPortConfig.INSTANCE.<Boolean>getValue("disableConfigWatcher")) {
+        if (!ForgeConfigApiPortConfig.getBoolConfigValue(ModConfigValues.DISABLE_CONFIG_WATCHER)) {
             FileWatcher.defaultInstance().addWatch(configPath, new ConfigWatcher(config, configPath, Thread.currentThread().getContextClassLoader()));
             LOGGER.debug(CONFIG, "Watching TOML config file {} for changes", configPath);
         }
@@ -268,7 +269,7 @@ public class ConfigTracker {
 
     private static void unload(Path path) {
         // Forge Config Api Port: switch out config access
-        if (ForgeConfigApiPortConfig.INSTANCE.<Boolean>getValue("disableConfigWatcher"))
+        if (ForgeConfigApiPortConfig.getBoolConfigValue(ModConfigValues.DISABLE_CONFIG_WATCHER))
             return;
         try {
             FileWatcher.defaultInstance().removeWatch(path);
