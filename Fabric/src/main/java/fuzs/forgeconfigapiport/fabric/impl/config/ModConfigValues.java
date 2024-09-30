@@ -13,9 +13,15 @@ import java.util.List;
 import java.util.function.Function;
 
 public enum ModConfigValues {
-    DEFAULT_CONFIGS_PATH("defaultConfigsPath", "defaultconfigs", "Path to load default configs from, intended for setting global server configs for newly created worlds, but also works when recreating client and common configs."),
-    DISABLE_CONFIG_WATCHER("disableConfigWatcher", Boolean.FALSE, "Disables File Watcher. Used to automatically update config if its file has been modified."),
-    LOG_UNTRANSLATED_CONFIGURATION_WARNINGS("logUntranslatedConfigurationWarnings", Boolean.TRUE, "A config option mainly for developers. Logs out configuration values that do not have translations when running a client in a development environment.");
+    DEFAULT_CONFIGS_PATH("defaultConfigsPath", "defaultconfigs",
+            "Path to load default configs from, intended for setting global server configs for newly created worlds, but also works when recreating client and common configs."
+    ),
+    DISABLE_CONFIG_WATCHER("disableConfigWatcher", Boolean.FALSE,
+            "Disables File Watcher. Used to automatically update config if its file has been modified."
+    ),
+    LOG_UNTRANSLATED_CONFIGURATION_WARNINGS("logUntranslatedConfigurationWarnings", Boolean.TRUE,
+            "A config option mainly for developers. Logs out configuration values that do not have translations when running a client in a development environment."
+    );
 
     final String entry;
     final Object defaultValue;
