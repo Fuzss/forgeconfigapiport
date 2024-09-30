@@ -28,11 +28,6 @@ public class ServerLifecycleHandler {
 
     public static void onServerStopped(MinecraftServer server) {
         ConfigTracker.INSTANCE.unloadConfigs(net.neoforged.fml.config.ModConfig.Type.SERVER);
-        // this thread leads to dedicated servers hanging, this seems to work for that for now
-        // clients are fine, they don't hang because of it
-        if (FabricLoader.getInstance().getEnvironmentType() == EnvType.SERVER) {
-            FileWatcher.defaultInstance().stop();
-        }
     }
 
     // Copied net.neoforged.neoforge.server.ServerLifecycleHooks
