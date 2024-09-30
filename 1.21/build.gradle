@@ -1,9 +1,0 @@
-plugins {
-    alias libs.plugins.architecturyloom apply false
-    alias libs.plugins.architecturyplugin apply false
-    alias libs.plugins.shadow apply false
-    alias libs.plugins.cursegradle apply false
-    alias libs.plugins.minotaur apply false
-}
-
-apply from: "https://raw.githubusercontent.com/Fuzss/modresources/main/gradle/${libs.versions.minecraft.get()}/main.gradle"

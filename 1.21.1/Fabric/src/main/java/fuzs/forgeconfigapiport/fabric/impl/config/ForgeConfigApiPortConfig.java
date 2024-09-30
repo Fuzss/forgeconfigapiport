@@ -41,21 +41,26 @@ public class ForgeConfigApiPortConfig {
     }
 
     private void loadFrom(final Path configFile) {
-        configData = CommentedFileConfig.builder(configFile).sync()
-                .onFileNotFound(FileNotFoundAction.copyData(Objects.requireNonNull(getClass().getResourceAsStream("/" + ForgeConfigAPIPort.MOD_ID + ".toml"))))
+        this.configData = CommentedFileConfig.builder(configFile)
+                .sync()
+                .onFileNotFound(FileNotFoundAction.copyData(Objects.requireNonNull(
+                        getClass().getResourceAsStream("/" + ForgeConfigAPIPort.MOD_ID + ".toml"))))
                 .writingMode(WritingMode.REPLACE)
                 .build();
         try {
-            configData.load();
+            this.configData.load();
         } catch (ParsingException e) {
             throw new RuntimeException("Failed to load FML config from " + configFile, e);
         }
-        if (!configSpec.isCorrect(configData)) {
+        if (!configSpec.isCorrect(this.configData)) {
             ForgeConfigAPIPort.LOGGER.warn("Configuration file {} is not correct. Correcting", configFile);
-            configSpec.correct(configData, (action, path, incorrectValue, correctedValue) -> ForgeConfigAPIPort.LOGGER.info("Incorrect key {} was corrected from {} to {}", path, incorrectValue, correctedValue));
+            configSpec.correct(this.configData,
+                    (action, path, incorrectValue, correctedValue) -> ForgeConfigAPIPort.LOGGER.info(
+                            "Incorrect key {} was corrected from {} to {}", path, incorrectValue, correctedValue)
+            );
         }
-        configData.putAllComments(configComments);
-        configData.save();
+        this.configData.putAllComments(configComments);
+        this.configData.save();
     }
 
     public static void load() {
