@@ -6,6 +6,9 @@ import net.minecraftforge.fml.config.IConfigSpec;
 import net.neoforged.fml.config.ModConfig;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.reflect.Field;
+import java.nio.file.Path;
+
 /**
  * A bridge for NeoForge's and Forge's config specs.
  */
@@ -32,7 +35,36 @@ public record ForgeConfigSpecAdapter(IConfigSpec<?> spec) implements net.neoforg
     }
 
     @Override
-    public void acceptConfig(@Nullable net.neoforged.fml.config.IConfigSpec.ILoadedConfig config) {
-        this.spec.acceptConfig(config != null ? config.config() : null);
+    public void acceptConfig(@Nullable net.neoforged.fml.config.IConfigSpec.ILoadedConfig loadedConfig) {
+        CommentedConfig config;
+        if (loadedConfig != null) {
+            Path path = getConfigPath(loadedConfig);
+            // if there is a path present in LoadedConfig::path this must be a file config, so it can be saved
+            if (path != null) {
+                config = new FileConfigWrapper(loadedConfig.config(), path, loadedConfig::save);
+            } else {
+                config = loadedConfig.config();
+            }
+        } else {
+            config = null;
+        }
+        this.spec.acceptConfig(config);
+    }
+
+    @Nullable
+    static Path getConfigPath(ILoadedConfig loadedConfig) {
+        // looking for LoadedConfig::path
+        for (Field field : loadedConfig.getClass().getDeclaredFields()) {
+            if (field.getType() == Path.class) {
+                field.setAccessible(true);
+                try {
+                    return (Path) field.get(loadedConfig);
+                } catch (IllegalAccessException ignored) {
+                    // NO-OP
+                }
+            }
+        }
+
+        return null;
     }
 }
