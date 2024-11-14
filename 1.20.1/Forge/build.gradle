@@ -15,7 +15,7 @@ dependencies {
     }
 }
 
-task signJar(type: net.minecraftforge.gradle.common.tasks.SignJar, dependsOn: tasks.reobfJarJar) {
+task signJar(type: net.minecraftforge.gradle.common.tasks.SignJar) {
     onlyIf { project.hasProperty('keyStore') }
     keyStore = project.findProperty('keyStore')
     alias = project.findProperty('keyStoreAlias')
@@ -24,5 +24,6 @@ task signJar(type: net.minecraftforge.gradle.common.tasks.SignJar, dependsOn: ta
     inputFile = outputFile = tasks.jarJar.archivePath
 }
 
+signJar.dependsOn 'reobfJarJar'
 jar.finalizedBy 'signJar'
 signJar.mustRunAfter 'reobfJar'
