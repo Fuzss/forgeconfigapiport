@@ -36,7 +36,9 @@ public class ForgeConfigApiPortConfig {
 
     // copied from FML config
     private void loadFrom(final Path configFile) {
-        this.configData = CommentedFileConfig.builder(configFile, TomlFormat.instance()).sync().onFileNotFound(FileNotFoundAction.copyData(Objects.requireNonNull(this.getClass().getResourceAsStream("/" + CONFIG_FILE_NAME)))).autosave().autoreload().writingMode(WritingMode.REPLACE).build();
+        // autosave and autoreload are disabled to work around issues with the file watcher thread not terminating
+        // and therefore causing dedicated servers to hang in Night Config v3.7.0+ (which we do not ship, but other mods will)
+        this.configData = CommentedFileConfig.builder(configFile, TomlFormat.instance()).sync().onFileNotFound(FileNotFoundAction.copyData(Objects.requireNonNull(this.getClass().getResourceAsStream("/" + CONFIG_FILE_NAME)))).writingMode(WritingMode.REPLACE).build();
         try {
             this.configData.load();
         } catch (ParsingException e) {
