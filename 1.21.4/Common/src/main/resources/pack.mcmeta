@@ -1,0 +1,6 @@
+{
+    "pack": {
+        "description": "${modDescription}",
+        "pack_format": ${resourcePackFormat}
+    }
+}
