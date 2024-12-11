@@ -8,6 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.storage.LevelResource;
 import net.neoforged.fml.config.ConfigTracker;
+import net.neoforged.fml.config.ModConfig;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -19,15 +20,19 @@ public class ServerLifecycleHandler {
     public static final ResourceLocation AFTER_PHASE = ForgeConfigAPIPort.id("after");
     private static final LevelResource SERVER_CONFIG_LEVEL_RESOURCE = new LevelResource("serverconfig");
 
-    public static void onServerStarting(MinecraftServer server) {
-        ConfigTracker.INSTANCE.loadConfigs(net.neoforged.fml.config.ModConfig.Type.SERVER,
+    public static void onServerStarting(MinecraftServer minecraftServer) {
+        ConfigTracker.INSTANCE.loadConfigs(ModConfig.Type.SERVER,
                 FabricLoader.getInstance().getConfigDir(),
-                getServerConfigPath(server)
-        );
+                getServerConfigPath(minecraftServer));
     }
 
-    public static void onServerStopped(MinecraftServer server) {
-        ConfigTracker.INSTANCE.unloadConfigs(net.neoforged.fml.config.ModConfig.Type.SERVER);
+    public static void onServerStopped(MinecraftServer minecraftServer) {
+        ConfigTracker.INSTANCE.unloadConfigs(ModConfig.Type.SERVER);
+        // this thread leads to dedicated servers hanging, this seems to work for that for now
+        // clients are fine, they don't hang because of it
+        if (FabricLoader.getInstance().getEnvironmentType() == EnvType.SERVER) {
+            FileWatcher.defaultInstance().stop();
+        }
     }
 
     // Copied net.neoforged.neoforge.server.ServerLifecycleHooks

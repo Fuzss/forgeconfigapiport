@@ -9,29 +9,13 @@ import com.electronwill.nightconfig.core.ConfigSpec;
 import com.electronwill.nightconfig.core.UnmodifiableConfig;
 import com.electronwill.nightconfig.core.UnmodifiableConfig.Entry;
 import com.google.common.collect.ImmutableList;
+import com.mojang.datafixers.util.Function4;
 import com.mojang.realmsclient.RealmsMainScreen;
 import com.mojang.serialization.Codec;
 import fuzs.forgeconfigapiport.fabric.impl.config.ForgeConfigApiPortConfig;
 import fuzs.forgeconfigapiport.fabric.impl.config.ModConfigValues;
 import fuzs.forgeconfigapiport.impl.services.CommonAbstractions;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
-
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.fabricmc.loader.api.metadata.ModMetadata;
@@ -40,13 +24,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.AbstractContainerWidget;
-import net.minecraft.client.gui.components.AbstractWidget;
-import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.CycleButton;
-import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.gui.components.StringWidget;
-import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.gui.components.*;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
@@ -58,8 +36,6 @@ import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
 import net.minecraft.client.gui.screens.options.OptionsSubScreen;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.resources.language.I18n;
-import net.minecraft.data.models.blockstates.PropertyDispatch.QuadFunction;
-import net.minecraft.data.models.blockstates.PropertyDispatch.TriFunction;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -69,17 +45,19 @@ import net.neoforged.fml.config.ModConfig.Type;
 import net.neoforged.fml.config.ModConfigs;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen.ConfigurationSectionScreen.Filter;
 import net.neoforged.neoforge.common.ModConfigSpec;
-import net.neoforged.neoforge.common.ModConfigSpec.ConfigValue;
-import net.neoforged.neoforge.common.ModConfigSpec.ListValueSpec;
-import net.neoforged.neoforge.common.ModConfigSpec.Range;
-import net.neoforged.neoforge.common.ModConfigSpec.RestartType;
-import net.neoforged.neoforge.common.ModConfigSpec.ValueSpec;
+import net.neoforged.neoforge.common.ModConfigSpec.*;
 import net.neoforged.neoforge.common.TranslatableEnum;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.util.Strings;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 /**
  * A generic configuration UI.<p>
@@ -89,9 +67,9 @@ import org.jetbrains.annotations.Nullable;
  * <li>As an entry point for your custom configuration screen that handles fetching your configs, matching {@link Type} to the current game, enforcing level and game restarts, etc.
  * <li>As a ready-made system but extensible that works out of the box with all configs that use the {@link ModConfigSpec} system and don't do anything overly weird with it.</ul>
  *
- * For the former one, use the 3-argument constructor {@link #ConfigurationScreen(String, Screen, QuadFunction)} and return your own screen from the TriFunction. For the latter,
- * use either the 2-argument constructor {@link #ConfigurationScreen(String, Screen)} if you don't need to extend the system, or the 3-argument one and return a subclass of
- * {@link ConfigurationSectionScreen} from the TriFunction.<p>
+ * For the former one, use the 3-argument constructor {@link #ConfigurationScreen(ModContainer, Screen, Function4)} and return your own screen from the Function4. For the latter,
+ * use either the 2-argument constructor {@link #ConfigurationScreen(ModContainer, Screen)} if you don't need to extend the system, or the 3-argument one and return a subclass of
+ * {@link ConfigurationSectionScreen} from the Function4.<p>
  *
  * In any case, register your configuration screen in your client mod class like this:
  *
@@ -162,6 +140,17 @@ public final class ConfigurationScreen extends OptionsSubScreen {
             return true;
         }
 
+        /**
+         * If the given translation key exists, returns it formatted with the given style(s) and as prefixed with the given component.
+         * Otherwise returns an empty Component.
+         */
+        public Component optional(final Component prefix, final String translationKey, final ChatFormatting... style) {
+            if (I18n.exists(translationKey)) {
+                return Component.empty().append(prefix).append(Component.translatable(translationKey).withStyle(style));
+            }
+            return Component.empty();
+        }
+
         public void finish() {
             // Forge Config Api Port: replace mod loader specific method
             if (ForgeConfigApiPortConfig.getBoolConfigValue(ModConfigValues.LOG_UNTRANSLATED_CONFIGURATION_WARNINGS) && CommonAbstractions.INSTANCE.isDevelopmentEnvironment() && (!untranslatables.isEmpty() || !untranslatablesWithFallback.isEmpty())) {
@@ -203,7 +192,8 @@ public final class ConfigurationScreen extends OptionsSubScreen {
     /**
      * The breadcrumb separator. Default: "%s > %s"
      */
-    private static final String CRUMB = LANG_PREFIX + "breadcrumb";
+    public static final Component CRUMB_SEPARATOR = Component.translatable(LANG_PREFIX + "breadcrumb.separator").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD);
+    private static final String CRUMB = LANG_PREFIX + "breadcrumb.order";
     /**
      * The label of list elements. Will be supplied the index into the list. Default: "%s:"
      */
@@ -212,20 +202,26 @@ public final class ConfigurationScreen extends OptionsSubScreen {
      * How the range will be added to the tooltip when using translated tooltips. Mimics what the comment does in ModConfigSpec.
      */
     private static final String RANGE_TOOLTIP = LANG_PREFIX + "rangetooltip";
+    private static final ChatFormatting RANGE_TOOLTIP_STYLE = ChatFormatting.GRAY;
     /**
      * How the filename will be added to the tooltip.
      */
     private static final String FILENAME_TOOLTIP = LANG_PREFIX + "filenametooltip";
+    private static final ChatFormatting FILENAME_TOOLTIP_STYLE = ChatFormatting.GRAY;
+    /**
+     * A literal to create an empty line in a tooltip.
+     */
+    private static final MutableComponent EMPTY_LINE = Component.literal("\n\n");
 
-    public static final Component TOOLTIP_CANNOT_EDIT_THIS_WHILE_ONLINE = Component.translatable(LANG_PREFIX + "notonline");
-    public static final Component TOOLTIP_CANNOT_EDIT_THIS_WHILE_OPEN_TO_LAN = Component.translatable(LANG_PREFIX + "notlan");
-    public static final Component TOOLTIP_CANNOT_EDIT_NOT_LOADED = Component.translatable(LANG_PREFIX + "notloaded");
+    public static final Component TOOLTIP_CANNOT_EDIT_THIS_WHILE_ONLINE = Component.translatable(LANG_PREFIX + "notonline").withStyle(ChatFormatting.RED);
+    public static final Component TOOLTIP_CANNOT_EDIT_THIS_WHILE_OPEN_TO_LAN = Component.translatable(LANG_PREFIX + "notlan").withStyle(ChatFormatting.RED);
+    public static final Component TOOLTIP_CANNOT_EDIT_NOT_LOADED = Component.translatable(LANG_PREFIX + "notloaded").withStyle(ChatFormatting.RED);
     public static final Component NEW_LIST_ELEMENT = Component.translatable(LANG_PREFIX + "newlistelement");
     public static final Component MOVE_LIST_ELEMENT_UP = Component.translatable(LANG_PREFIX + "listelementup");
     public static final Component MOVE_LIST_ELEMENT_DOWN = Component.translatable(LANG_PREFIX + "listelementdown");
     public static final Component REMOVE_LIST_ELEMENT = Component.translatable(LANG_PREFIX + "listelementremove");
-    public static final Component UNSUPPORTED_ELEMENT = Component.translatable(LANG_PREFIX + "unsupportedelement");
-    public static final Component LONG_STRING = Component.translatable(LANG_PREFIX + "longstring");
+    public static final Component UNSUPPORTED_ELEMENT = Component.translatable(LANG_PREFIX + "unsupportedelement").withStyle(ChatFormatting.RED);
+    public static final Component LONG_STRING = Component.translatable(LANG_PREFIX + "longstring").withStyle(ChatFormatting.RED);
     public static final Component GAME_RESTART_TITLE = Component.translatable(LANG_PREFIX + "restart.game.title");
     public static final Component GAME_RESTART_MESSAGE = Component.translatable(LANG_PREFIX + "restart.game.text");
     public static final Component GAME_RESTART_YES = Component.translatable("menu.quit"); // TitleScreen.init() et.al.
@@ -234,7 +230,7 @@ public final class ConfigurationScreen extends OptionsSubScreen {
     public static final Component RETURN_TO_MENU = Component.translatable("menu.returnToMenu"); // PauseScreen.RETURN_TO_MENU
     public static final Component SAVING_LEVEL = Component.translatable("menu.savingLevel"); // PauseScreen.SAVING_LEVEL
     public static final Component RESTART_NO = Component.translatable(LANG_PREFIX + "restart.return");
-    public static final Component RESTART_NO_TOOLTIP = Component.translatable(LANG_PREFIX + "restart.return.tooltip");
+    public static final Component RESTART_NO_TOOLTIP = Component.translatable(LANG_PREFIX + "restart.return.tooltip").withStyle(ChatFormatting.RED, ChatFormatting.BOLD);
     public static final Component UNDO = Component.translatable(LANG_PREFIX + "undo");
     public static final Component UNDO_TOOLTIP = Component.translatable(LANG_PREFIX + "undo.tooltip");
     public static final Component RESET = Component.translatable(LANG_PREFIX + "reset");
@@ -245,8 +241,8 @@ public final class ConfigurationScreen extends OptionsSubScreen {
     protected static final TranslationChecker translationChecker = new TranslationChecker();
 
     // Forge Config Api Port: replace ModContainer with mod id
-    protected final String modId;
-    private final QuadFunction<ConfigurationScreen, ModConfig.Type, ModConfig, Component, Screen> sectionScreen;
+    protected final String mod;
+    private final Function4<ConfigurationScreen, ModConfig.Type, ModConfig, Component, Screen> sectionScreen;
 
     public RestartType needsRestart = RestartType.NONE;
     // If there is only one config type (and it can be edited, we show that instantly on the way "down" and want to close on the way "up".
@@ -254,23 +250,21 @@ public final class ConfigurationScreen extends OptionsSubScreen {
     private boolean autoClose = false;
 
     // Forge Config Api Port: replace ModContainer with mod id
-    public ConfigurationScreen(final String modId, final Screen parent) {
-        this(modId, parent, ConfigurationSectionScreen::new);
+    public ConfigurationScreen(final String mod, final Screen parent) {
+        this(mod, parent, ConfigurationSectionScreen::new);
     }
 
     // Forge Config Api Port: replace ModContainer with mod id
-    public ConfigurationScreen(final String modId, final Screen parent, ConfigurationSectionScreen.Filter filter) {
-        this(modId, parent, (a, b, c, d) -> new ConfigurationSectionScreen(a, b, c, d, filter));
+    public ConfigurationScreen(final String mod, final Screen parent, ConfigurationSectionScreen.Filter filter) {
+        this(mod, parent, (a, b, c, d) -> new ConfigurationSectionScreen(a, b, c, d, filter));
     }
 
     // Forge Config Api Port: replace ModContainer with mod id
-    @SuppressWarnings("resource")
-    public ConfigurationScreen(final String modId, final Screen parent, QuadFunction<ConfigurationScreen, ModConfig.Type, ModConfig, Component, Screen> sectionScreen) {
-        super(parent, Minecraft.getInstance().options, Component.translatable(translationChecker.check(modId + ".configuration.title", LANG_PREFIX + "title"),
-                FabricLoader.getInstance().getModContainer(modId).map(ModContainer::getMetadata).map(
-                        ModMetadata::getName).orElse(modId)
-        ));
-        this.modId = modId;
+    public ConfigurationScreen(final String mod, final Screen parent, Function4<ConfigurationScreen, ModConfig.Type, ModConfig, Component, Screen> sectionScreen) {
+        super(parent, Minecraft.getInstance().options, Component.translatable(translationChecker.check(mod + ".configuration.title", LANG_PREFIX + "title"), FabricLoader.getInstance().getModContainer(mod).map(
+                ModContainer::getMetadata).map(
+                ModMetadata::getName).orElse(mod)));
+        this.mod = mod;
         this.sectionScreen = sectionScreen;
     }
 
@@ -281,8 +275,7 @@ public final class ConfigurationScreen extends OptionsSubScreen {
         for (final Type type : ModConfig.Type.values()) {
             boolean headerAdded = false;
             for (final ModConfig modConfig : ModConfigs.getConfigSet(type)) {
-                // Forge Config Api Port: replace ModContainer with mod id
-                if (modConfig.getModId().equals(modId)) {
+                if (modConfig.getModId().equals(mod)) {
                     if (!headerAdded) {
                         list.addSmall(new StringWidget(BIG_BUTTON_WIDTH, Button.DEFAULT_HEIGHT,
                                 Component.translatable(LANG_PREFIX + type.name().toLowerCase(Locale.ENGLISH)).withStyle(ChatFormatting.UNDERLINE), font).alignLeft(), null);
@@ -292,19 +285,19 @@ public final class ConfigurationScreen extends OptionsSubScreen {
                             button -> minecraft.setScreen(sectionScreen.apply(this, type, modConfig, translatableConfig(modConfig, ".title", LANG_PREFIX + "title." + type.name().toLowerCase(Locale.ROOT))))).width(BIG_BUTTON_WIDTH).build();
                     MutableComponent tooltip = Component.empty();
                     if (!((ModConfigSpec) modConfig.getSpec()).isLoaded()) {
-                        tooltip.append(TOOLTIP_CANNOT_EDIT_NOT_LOADED).append(Component.literal("\n\n"));
+                        tooltip.append(TOOLTIP_CANNOT_EDIT_NOT_LOADED).append(EMPTY_LINE);
                         btn.active = false;
                         count = 99; // prevent autoClose
                     } else if (type == Type.SERVER && minecraft.getCurrentServer() != null && !minecraft.isSingleplayer()) {
-                        tooltip.append(TOOLTIP_CANNOT_EDIT_THIS_WHILE_ONLINE).append(Component.literal("\n\n"));
+                        tooltip.append(TOOLTIP_CANNOT_EDIT_THIS_WHILE_ONLINE).append(EMPTY_LINE);
                         btn.active = false;
                         count = 99; // prevent autoClose
                     } else if (type == Type.SERVER && minecraft.hasSingleplayerServer() && minecraft.getSingleplayerServer().isPublished()) {
-                        tooltip.append(TOOLTIP_CANNOT_EDIT_THIS_WHILE_OPEN_TO_LAN).append(Component.literal("\n\n"));
+                        tooltip.append(TOOLTIP_CANNOT_EDIT_THIS_WHILE_OPEN_TO_LAN).append(EMPTY_LINE);
                         btn.active = false;
                         count = 99; // prevent autoClose
                     }
-                    tooltip.append(Component.translatable(FILENAME_TOOLTIP, modConfig.getFileName()));
+                    tooltip.append(Component.translatable(FILENAME_TOOLTIP, modConfig.getFileName()).withStyle(FILENAME_TOOLTIP_STYLE));
                     btn.setTooltip(Tooltip.create(tooltip));
                     list.addSmall(btn, null);
                     count++;
@@ -318,9 +311,9 @@ public final class ConfigurationScreen extends OptionsSubScreen {
     }
 
     public Component translatableConfig(ModConfig modConfig, String suffix, String fallback) {
-        return Component.translatable(translationChecker.check(modId + ".configuration.section." + modConfig.getFileName().replaceAll("[^a-zA-Z0-9]+", ".").replaceFirst("^\\.", "").replaceFirst("\\.$", "").toLowerCase(Locale.ENGLISH) + suffix, fallback),
-                FabricLoader.getInstance().getModContainer(modId).map(ModContainer::getMetadata).map(
-                ModMetadata::getName).orElse(modId));
+        return Component.translatable(translationChecker.check(mod + ".configuration.section." + modConfig.getFileName().replaceAll("[^a-zA-Z0-9]+", ".").replaceFirst("^\\.", "").replaceFirst("\\.$", "").toLowerCase(Locale.ENGLISH) + suffix, fallback), FabricLoader.getInstance().getModContainer(mod).map(
+                ModContainer::getMetadata).map(
+                ModMetadata::getName).orElse(mod));
     }
 
     @Override
@@ -397,7 +390,7 @@ public final class ConfigurationScreen extends OptionsSubScreen {
      * <li>To use another UI element, override the matching <code>create*Value()</code> method and return your new UI element wrapped in a {@link Element}.
      * <li>To change the way lists work, override {@link #createList(String, ListValueSpec, ConfigValue)} and return a subclassed {@link ConfigurationListScreen}.
      * <li>To add additional (synthetic) config values, override {@link #createSyntheticValues()}.
-     * <li>To be notified on each changed value instead of getting one {@link fuzs.forgeconfigapiport.fabric.api.neoforge.v4.NeoForgeModConfigEvents} at the end, override {@link #onChanged(String)}. Note that {@link #onChanged(String)}
+     * <li>To be notified on each changed value instead of getting one {@link ModConfigEvent} at the end, override {@link #onChanged(String)}. Note that {@link #onChanged(String)}
      * will be called on every change (e.g. each typed character for Strings) if the new value is valid and different.
      * <li>To re-arrange your config values, declare them in the appropriate order.
      * <li>To change which values a config value can accept, supply the {@link ModConfigSpec.Builder} with a validator and/or a range.
@@ -527,7 +520,7 @@ public final class ConfigurationScreen extends OptionsSubScreen {
          */
         public ConfigurationSectionScreen(final Context parentContext, final Screen parent, final Map<String, Object> valueSpecs, final String key,
                                           final Set<? extends Entry> entrySet, Component title) {
-            this(Context.section(parentContext, parent, entrySet, valueSpecs, key), Component.translatable(CRUMB, parent.getTitle(), title));
+            this(Context.section(parentContext, parent, entrySet, valueSpecs, key), Component.translatable(CRUMB, parent.getTitle(), CRUMB_SEPARATOR, title));
         }
 
         @SuppressWarnings("resource")
@@ -571,10 +564,13 @@ public final class ConfigurationScreen extends OptionsSubScreen {
             final boolean hasTranslatedTooltip = translationChecker.existsWithFallback(tooltipKey);
             MutableComponent component = Component.empty().append(getTranslationComponent(key).withStyle(ChatFormatting.BOLD));
             if (hasTranslatedTooltip || !Strings.isBlank(comment)) {
-                component = component.append(Component.literal("\n\n")).append(Component.translatableWithFallback(tooltipKey, comment));
+                component = component.append(EMPTY_LINE).append(Component.translatableWithFallback(tooltipKey, comment));
             }
+            // The "tooltip.warning" key is to be considered an internal API. It will be removed once Neo has a
+            // generic styling mechanism for translation texts. Use at your own risk.
+            component = component.append(translationChecker.optional(EMPTY_LINE, tooltipKey + ".warning", ChatFormatting.RED, ChatFormatting.BOLD));
             if (hasTranslatedTooltip && range != null) {
-                component = component.append(Component.translatable(RANGE_TOOLTIP, range.toString()));
+                component = component.append(EMPTY_LINE).append(Component.translatable(RANGE_TOOLTIP, range.toString()).withStyle(RANGE_TOOLTIP_STYLE));
             }
             return component;
         }
@@ -916,7 +912,7 @@ public final class ConfigurationScreen extends OptionsSubScreen {
         protected Element createSection(final String key, final UnmodifiableConfig subconfig, final UnmodifiableConfig subsection) {
             if (subconfig.isEmpty()) return null;
             return new Element(Component.translatable(SECTION, getTranslationComponent(key)), getTooltipComponent(key, null),
-                    Button.builder(Component.translatable(SECTION, Component.translatable(translationChecker.check(key + ".button", SECTION_TEXT))),
+                    Button.builder(Component.translatable(SECTION, Component.translatable(translationChecker.check(getTranslationKey(key) + ".button", SECTION_TEXT))),
                                     button -> minecraft.setScreen(sectionCache.computeIfAbsent(key,
                                             k -> new ConfigurationSectionScreen(context, this, subconfig.valueMap(), key, subsection.entrySet(), Component.translatable(getTranslationKey(key))).rebuild())))
                             .tooltip(Tooltip.create(getTooltipComponent(key, null)))
@@ -928,9 +924,9 @@ public final class ConfigurationScreen extends OptionsSubScreen {
         @Nullable
         protected <T> Element createList(final String key, final ListValueSpec spec, final ModConfigSpec.ConfigValue<List<T>> list) {
             return new Element(Component.translatable(SECTION, getTranslationComponent(key)), getTooltipComponent(key, null),
-                    Button.builder(Component.translatable(SECTION, Component.translatable(translationChecker.check(key + ".button", SECTION_TEXT))),
+                    Button.builder(Component.translatable(SECTION, Component.translatable(translationChecker.check(getTranslationKey(key) + ".button", SECTION_TEXT))),
                                     button -> minecraft.setScreen(sectionCache.computeIfAbsent(key,
-                                            k -> new ConfigurationListScreen<>(Context.list(context, this), key, Component.translatable(CRUMB, this.getTitle(), getTranslationComponent(key)), spec, list)).rebuild()))
+                                            k -> new ConfigurationListScreen<>(Context.list(context, this), key, Component.translatable(CRUMB, this.getTitle(), CRUMB_SEPARATOR, getTranslationComponent(key)), spec, list)).rebuild()))
                             .tooltip(Tooltip.create(getTooltipComponent(key, null))).build(),
                     false);
         }
@@ -1030,7 +1026,7 @@ public final class ConfigurationScreen extends OptionsSubScreen {
      * <li>To change how the label and buttons for the individual elements look, override {@link #createListLabel(int)}.
      * <li>To use another UI element, override the matching <code>create*Value()</code> method and return your new UI element wrapped in a {@link Element}.
      * <li>To add additional (synthetic) config values, override {@link #rebuild()} and add them to <code>list</code>. ({@link #createSyntheticValues()} is not used for lists).
-     * <li>To be notified on each changed value instead of getting one {@link fuzs.forgeconfigapiport.fabric.api.neoforge.v4.NeoForgeModConfigEvents} at the end, override {@link #onChanged(String)} on the {@link ConfigurationScreen},
+     * <li>To be notified on each changed value instead of getting one {@link ModConfigEvent} at the end, override {@link #onChanged(String)} on the {@link ConfigurationScreen},
      * not here. The list will only be updated in the {@link ModConfigSpec.ConfigValue} when this screen is closed.
      * <li>To limit the number of elements in a list, pass a {@link ModConfigSpec.Range} to {@link ModConfigSpec.Builder#defineList(List, Supplier, Supplier, Predicate, Range)}.
      * </ul>
@@ -1380,6 +1376,16 @@ public final class ConfigurationScreen extends OptionsSubScreen {
             @Override
             protected void updateWidgetNarration(final NarrationElementOutput pNarrationElementOutput) {
                 // TODO I have no idea. Help?
+            }
+
+            @Override
+            protected int contentHeight() {
+                return 0; // TODO 1.21.4 no idea
+            }
+
+            @Override
+            protected double scrollRate() {
+                return 4.0; // TODO 1.21.4 no idea
             }
         }
     }
