@@ -6,7 +6,8 @@ plugins {
     id 'com.github.johnrengelman.shadow' version '8.+' apply false
 }
 
-apply from: './gradle/tasks.gradle'
+//apply from: './gradle/tasks.gradle'
+apply from: "https://raw.githubusercontent.com/Fuzss/modresources/main/gradle/v2/tasks.gradle"
 
 subprojects {
     apply plugin: 'java'

@@ -1,19 +1,23 @@
 package fuzs.forgeconfigapiport.impl;
 
+import com.electronwill.nightconfig.core.file.FileWatcher;
 import fuzs.forgeconfigapiport.api.config.v2.ForgeConfigPaths;
 import fuzs.forgeconfigapiport.impl.network.config.ConfigSync;
+import net.fabricmc.api.EnvType;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerLoginConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerLoginNetworking;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.fml.config.ConfigTracker;
 import net.minecraftforge.fml.config.ModConfig;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.io.IOException;
 import java.util.List;
 
 public class ForgeConfigAPIPortFabric implements ModInitializer {
@@ -46,6 +50,15 @@ public class ForgeConfigAPIPortFabric implements ModInitializer {
         ServerLifecycleEvents.SERVER_STOPPED.addPhaseOrdering(Event.DEFAULT_PHASE, AFTER_PHASE);
         ServerLifecycleEvents.SERVER_STOPPED.register(AFTER_PHASE, server -> {
             ConfigTracker.INSTANCE.unloadConfigs(ModConfig.Type.SERVER, ForgeConfigPaths.INSTANCE.getServerConfigDirectory(server));
+            // this thread leads to dedicated servers hanging, this seems to work for that for now
+            // clients are fine, they don't hang because of it
+            if (FabricLoader.getInstance().getEnvironmentType() == EnvType.SERVER) {
+                try {
+                    FileWatcher.defaultInstance().stop();
+                } catch (IOException exception) {
+                    // NO-OP
+                }
+            }
         });
     }
 }

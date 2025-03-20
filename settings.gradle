@@ -21,4 +21,5 @@ pluginManagement {
 }
 
 rootProject.name = "${modName.replaceAll("[^a-zA-Z]", "")}"
-include("Common", "Fabric", "Forge", "Quilt")
+include "Common"
+include "Fabric"
