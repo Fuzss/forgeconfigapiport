@@ -1,59 +1,61 @@
 package fuzs.forgeconfigapiport.forge.impl.neoforge;
 
-import fuzs.forgeconfigapiport.forge.api.neoforge.v4.NeoForgeConfigRegistry;
+import fuzs.forgeconfigapiport.forge.api.v5.NeoForgeConfigRegistry;
+import fuzs.forgeconfigapiport.impl.ForgeConfigAPIPort;
 import net.minecraftforge.fml.ModContainer;
 import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.config.ModConfig;
 import net.neoforged.fml.config.IConfigSpec;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
-/**
- * TODO remove ModConfig parameters, change IConfigSpec parameter to ModConfigSpec
- */
 public final class NeoForgeConfigRegistryImpl implements NeoForgeConfigRegistry {
 
     @Override
-    public ModConfig register(ModConfig.Type type, IConfigSpec spec) {
-        return this.register(ModLoadingContext.get().getActiveNamespace(), type, spec);
+    public void register(String modId, ModConfig.Type type, IConfigSpec spec) {
+        ModContainer modContainer = this.getModContainer(modId);
+        this.register(modContainer, type, spec);
     }
 
     @Override
-    public ModConfig register(String modId, ModConfig.Type type, IConfigSpec spec) {
-        return this.register(getModContainer(modId), type, spec);
+    public void register(ModContainer modContainer, ModConfig.Type type, IConfigSpec spec) {
+        if (spec.isEmpty()) {
+            // This handles the case where a mod tries to register a config, without any options configured inside it.
+            ForgeConfigAPIPort.LOGGER.debug("Attempted to register an empty config for type {} on mod {}",
+                    type,
+                    modContainer.getModId());
+        } else {
+            ModConfig modConfig = new ModConfig(type,
+                    new NeoForgeConfigSpecAdapter(modContainer.getModId(), (ModConfigSpec) spec),
+                    modContainer);
+            modContainer.addConfig(modConfig);
+        }
     }
 
     @Override
-    public ModConfig register(ModContainer modContainer, ModConfig.Type type, IConfigSpec spec) {
-        // use the internal class to be able to return the ModConfig instance, remove the return value in the future
-        ModConfig modConfig = new ModConfig(type, new NeoForgeConfigSpecAdapter(modContainer.getModId(),
-                (ModConfigSpec) spec
-        ), modContainer);
-        modContainer.addConfig(modConfig);
-        return modConfig;
+    public void register(String modId, ModConfig.Type type, IConfigSpec spec, String fileName) {
+        ModContainer modContainer = this.getModContainer(modId);
+        this.register(modContainer, type, spec, fileName);
     }
 
     @Override
-    public ModConfig register(ModConfig.Type type, IConfigSpec spec, String fileName) {
-        return this.register(ModLoadingContext.get().getActiveNamespace(), type, spec, fileName);
+    public void register(ModContainer modContainer, ModConfig.Type type, IConfigSpec spec, String fileName) {
+        if (spec.isEmpty()) {
+            // This handles the case where a mod tries to register a config, without any options configured inside it.
+            ForgeConfigAPIPort.LOGGER.debug(
+                    "Attempted to register an empty config for type {} on mod {} using file name {}",
+                    type,
+                    modContainer.getModId(),
+                    fileName);
+        } else {
+            ModConfig modConfig = new ModConfig(type,
+                    new NeoForgeConfigSpecAdapter(modContainer.getModId(), (ModConfigSpec) spec),
+                    modContainer,
+                    fileName);
+            modContainer.addConfig(modConfig);
+        }
     }
 
-    @Override
-    public ModConfig register(String modId, ModConfig.Type type, IConfigSpec spec, String fileName) {
-        return this.register(getModContainer(modId), type, spec, fileName);
-    }
-
-    @Override
-    public ModConfig register(ModContainer modContainer, ModConfig.Type type, IConfigSpec spec, String fileName) {
-        // use the internal class to be able to return the ModConfig instance, remove the return value in the future
-        ModConfig modConfig = new ModConfig(type, new NeoForgeConfigSpecAdapter(modContainer.getModId(),
-                (ModConfigSpec) spec
-        ), modContainer, fileName);
-        modContainer.addConfig(modConfig);
-        return modConfig;
-    }
-
-    static ModContainer getModContainer(String modId) {
+    private ModContainer getModContainer(String modId) {
         return ModList.get()
                 .getModContainerById(modId)
                 .orElseThrow(() -> new IllegalStateException("Invalid mod id '%s'".formatted(modId)));

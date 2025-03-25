@@ -6,10 +6,8 @@
 package net.neoforged.fml.config;
 
 import com.electronwill.nightconfig.core.CommentedConfig;
-import fuzs.forgeconfigapiport.fabric.impl.core.ForgeConfigRegistryImpl;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.util.StringRepresentable;
-import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Path;
@@ -31,10 +29,6 @@ public final class ModConfig {
      * This lock is used to prevent multiple concurrent config reloads or event dispatches.
      */
     final Lock lock;
-    // Forge Config Api Port: a dummy Forge mod config instance for backwards compatibility
-    @ApiStatus.Internal
-    @Nullable
-    public final net.minecraftforge.fml.config.ModConfig modConfig;
 
     // Forge Config Api Port: replace ModContainer with mod id
     ModConfig(Type type, IConfigSpec spec, String modId, String fileName, ReentrantLock lock) {
@@ -47,8 +41,6 @@ public final class ModConfig {
         }
         this.modId = modId;
         this.lock = lock;
-        // Forge Config Api Port: a dummy Forge mod config instance for backwards compatibility
-        this.modConfig = ForgeConfigRegistryImpl.adapt(this);
     }
 
     public Type getType() {
@@ -93,8 +85,6 @@ public final class ModConfig {
         try {
             this.loadedConfig = loadedConfig;
             spec.acceptConfig(loadedConfig);
-            // Forge Config Api Port: TODO remove when Forge ModConfig is removed
-            if (this.modConfig != null) this.modConfig.loadedConfig = loadedConfig;
             // Forge Config Api Port: invoke Fabric style callback instead of Forge event
             eventConstructor.accept(this);
         } finally {

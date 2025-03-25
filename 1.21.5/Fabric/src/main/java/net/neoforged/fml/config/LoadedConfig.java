@@ -20,7 +20,7 @@ record LoadedConfig(CommentedConfig config, @Nullable Path path, ModConfig modCo
         modConfig.lock.lock();
         try {
             // Forge Config Api Port: invoke Fabric style callback instead of Forge event
-            ModConfigEventsHelper.reloading().accept(modConfig);
+            ModConfigEventsHelper.onReloading(modConfig);
         } finally {
             modConfig.lock.unlock();
         }

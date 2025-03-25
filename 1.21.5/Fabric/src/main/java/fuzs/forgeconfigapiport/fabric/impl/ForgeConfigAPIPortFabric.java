@@ -1,7 +1,6 @@
 package fuzs.forgeconfigapiport.fabric.impl;
 
-import fuzs.forgeconfigapiport.fabric.api.forge.v4.ForgeConfigRegistry;
-import fuzs.forgeconfigapiport.fabric.api.neoforge.v4.NeoForgeConfigRegistry;
+import fuzs.forgeconfigapiport.fabric.api.v5.ConfigRegistry;
 import fuzs.forgeconfigapiport.fabric.impl.handler.ServerLifecycleHandler;
 import fuzs.forgeconfigapiport.fabric.impl.network.configuration.SyncConfig;
 import fuzs.forgeconfigapiport.fabric.impl.network.payload.ConfigFilePayload;
@@ -30,26 +29,22 @@ public class ForgeConfigAPIPortFabric implements ModInitializer {
     }
 
     private static void registerMessages() {
-        ServerConfigurationConnectionEvents.CONFIGURE.register(
-                (ServerConfigurationPacketListenerImpl handler, MinecraftServer server) -> {
-                    if (ServerConfigurationNetworking.canSend(handler, ConfigFilePayload.TYPE)) {
-                        handler.addTask(new SyncConfig(handler));
-                    }
-                });
+        ServerConfigurationConnectionEvents.CONFIGURE.register((ServerConfigurationPacketListenerImpl handler, MinecraftServer server) -> {
+            if (ServerConfigurationNetworking.canSend(handler, ConfigFilePayload.TYPE)) {
+                handler.addTask(new SyncConfig(handler));
+            }
+        });
         PayloadTypeRegistry.configurationS2C().register(ConfigFilePayload.TYPE, ConfigFilePayload.STREAM_CODEC);
     }
 
     private static void registerEventHandlers() {
         ServerLifecycleEvents.SERVER_STARTING.addPhaseOrdering(ServerLifecycleHandler.BEFORE_PHASE,
-                Event.DEFAULT_PHASE
-        );
+                Event.DEFAULT_PHASE);
         ServerLifecycleEvents.SERVER_STARTING.register(ServerLifecycleHandler.BEFORE_PHASE,
-                ServerLifecycleHandler::onServerStarting
-        );
+                ServerLifecycleHandler::onServerStarting);
         ServerLifecycleEvents.SERVER_STOPPED.addPhaseOrdering(Event.DEFAULT_PHASE, ServerLifecycleHandler.AFTER_PHASE);
         ServerLifecycleEvents.SERVER_STOPPED.register(ServerLifecycleHandler.AFTER_PHASE,
-                ServerLifecycleHandler::onServerStopped
-        );
+                ServerLifecycleHandler::onServerStopped);
         ServerLifecycleEvents.SERVER_STOPPING.register((MinecraftServer server) -> {
             // Reset WORLD type config caches
             ModConfigs.getFileMap().values().forEach(config -> {
@@ -61,15 +56,15 @@ public class ForgeConfigAPIPortFabric implements ModInitializer {
     }
 
     private static void setupDevelopmentEnvironment() {
-        if (CommonAbstractions.INSTANCE.includeTestConfigs()) {
-            NeoForgeConfigRegistry.INSTANCE.register(ForgeConfigAPIPort.MOD_ID, ModConfig.Type.SERVER,
+        if (CommonAbstractions.INSTANCE.isDevelopmentEnvironment(ForgeConfigAPIPort.MOD_ID)) {
+            ConfigRegistry.INSTANCE.register(ForgeConfigAPIPort.MOD_ID,
+                    ModConfig.Type.SERVER,
                     new ModConfigSpec.Builder().comment("hello world").define("dummy_entry", true).next().build(),
-                    "forgeconfigapiport-server-neoforge.toml"
-            );
-            ForgeConfigRegistry.INSTANCE.register(ForgeConfigAPIPort.MOD_ID, ModConfig.Type.SERVER,
+                    "forgeconfigapiport-server-neoforge.toml");
+            ConfigRegistry.INSTANCE.register(ForgeConfigAPIPort.MOD_ID,
+                    ModConfig.Type.SERVER,
                     new ForgeConfigSpec.Builder().comment("hello world").define("dummy_entry", true).next().build(),
-                    "forgeconfigapiport-server-forge.toml"
-            );
+                    "forgeconfigapiport-server-forge.toml");
         }
     }
 }

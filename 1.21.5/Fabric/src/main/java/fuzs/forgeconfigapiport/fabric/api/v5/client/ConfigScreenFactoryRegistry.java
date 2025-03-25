@@ -1,4 +1,4 @@
-package fuzs.forgeconfigapiport.fabric.api.neoforge.v4.client;
+package fuzs.forgeconfigapiport.fabric.api.v5.client;
 
 import fuzs.forgeconfigapiport.fabric.impl.client.core.ConfigScreenFactoryRegistryImpl;
 import net.minecraft.client.gui.screens.Screen;

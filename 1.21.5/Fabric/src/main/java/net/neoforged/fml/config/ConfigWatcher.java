@@ -34,7 +34,7 @@ class ConfigWatcher implements Runnable {
             try {
                 LOGGER.debug(ConfigTracker.CONFIG, "Config file {} changed, re-loading", modConfig.getFileName());
                 // Forge Config Api Port: invoke Fabric style callback instead of Forge event
-                ConfigTracker.loadConfig(this.modConfig, this.path, ModConfigEventsHelper.reloading());
+                ConfigTracker.loadConfig(this.modConfig, this.path, ModConfigEventsHelper::onReloading);
             } finally {
                 modConfig.lock.unlock();
             }
