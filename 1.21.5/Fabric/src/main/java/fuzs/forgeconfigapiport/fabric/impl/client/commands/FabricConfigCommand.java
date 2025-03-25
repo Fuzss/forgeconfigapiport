@@ -15,6 +15,7 @@ import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.StringRepresentableArgument;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
 import net.minecraft.util.StringRepresentable;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.config.ModConfigs;
@@ -30,8 +31,7 @@ public class FabricConfigCommand {
     private static final Dynamic2CommandExceptionType ERROR_NO_CONFIG = new Dynamic2CommandExceptionType((modId, type) -> Component.translatable(
             "commands.config.noconfig",
             modId,
-            type
-    ));
+            type));
 
     @SuppressWarnings("unchecked")
     public static <T extends Enum<T> & StringRepresentable, P extends SharedSuggestionProvider> void register(CommandDispatcher<P> dispatcher, BiConsumer<P, Component> feedbackSender) {
@@ -49,20 +49,15 @@ public class FabricConfigCommand {
                         })
                         .then(((RequiredArgumentBuilder<P, ?>) (RequiredArgumentBuilder<?, ?>) RequiredArgumentBuilder.argument(
                                 "type",
-                                enumConstant(ModConfig.Type.class)
-                        )).executes(commandContext -> FabricConfigCommand.showFile(component -> feedbackSender.accept(
-                                        commandContext.getSource(),
-                                        component
-                                ),
+                                enumConstant(ModConfig.Type.class))).executes(commandContext -> FabricConfigCommand.showFile(
+                                component -> feedbackSender.accept(commandContext.getSource(), component),
                                 commandContext.getArgument("mod", String.class),
-                                commandContext.getArgument("type", ModConfig.Type.class)
-                        )))));
+                                commandContext.getArgument("type", ModConfig.Type.class))))));
     }
 
     public static <T extends Enum<T> & StringRepresentable> StringRepresentableArgument<T> enumConstant(Class<? extends T> enumClazz) {
         return new StringRepresentableArgument<>(StringRepresentable.fromEnum(enumClazz::getEnumConstants),
-                enumClazz::getEnumConstants
-        ) {
+                enumClazz::getEnumConstants) {
             // NO-OP
         };
     }
@@ -79,13 +74,15 @@ public class FabricConfigCommand {
         if (configFileNames.isEmpty()) {
             throw ERROR_NO_CONFIG.create(modId, type.getSerializedName());
         } else {
-            configFileNames.stream().map(File::new).map(FabricConfigCommand::fileComponent).forEach((Component component) -> {
-                feedbackSender.accept(Component.translatable("commands.config.getwithtype",
-                        modId,
-                        type.getSerializedName(),
-                        component
-                ));
-            });
+            configFileNames.stream()
+                    .map(File::new)
+                    .map(FabricConfigCommand::fileComponent)
+                    .forEach((Component component) -> {
+                        feedbackSender.accept(Component.translatable("commands.config.getwithtype",
+                                modId,
+                                type.getSerializedName(),
+                                component));
+                    });
             return configFileNames.size();
         }
     }
@@ -93,17 +90,6 @@ public class FabricConfigCommand {
     private static Component fileComponent(File file) {
         return Component.literal(file.getName())
                 .withStyle(ChatFormatting.UNDERLINE)
-                .withStyle(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE,
-                        file.getAbsolutePath()
-                )));
-    }
-
-    public interface ConfigCommandContext<T extends Enum<T> & StringRepresentable> {
-
-        String name();
-
-        Class<T> getType();
-
-        List<String> getConfigFileNames(String modId, T type);
+                .withStyle((Style style) -> style.withClickEvent(new ClickEvent.OpenFile(file)));
     }
 }
