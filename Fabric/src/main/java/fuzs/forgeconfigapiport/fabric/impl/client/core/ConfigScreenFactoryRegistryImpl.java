@@ -1,6 +1,6 @@
 package fuzs.forgeconfigapiport.fabric.impl.client.core;
 
-import fuzs.forgeconfigapiport.fabric.api.neoforge.v4.client.ConfigScreenFactoryRegistry;
+import fuzs.forgeconfigapiport.fabric.api.v5.client.ConfigScreenFactoryRegistry;
 import net.minecraft.client.gui.screens.Screen;
 
 import java.util.HashMap;

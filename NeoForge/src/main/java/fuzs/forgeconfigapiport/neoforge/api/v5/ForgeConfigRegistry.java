@@ -1,4 +1,4 @@
-package fuzs.forgeconfigapiport.neoforge.api.forge.v4;
+package fuzs.forgeconfigapiport.neoforge.api.v5;
 
 import fuzs.forgeconfigapiport.neoforge.impl.forge.ForgeConfigRegistryImpl;
 import net.minecraftforge.fml.config.IConfigSpec;
@@ -18,21 +18,11 @@ public interface ForgeConfigRegistry {
     /**
      * Register a new mod config.
      *
-     * @param type type of this mod config
-     * @param spec the built config spec
-     * @return the {@link ModConfig} instance
-     */
-    ModConfig register(ModConfig.Type type, IConfigSpec<?> spec);
-
-    /**
-     * Register a new mod config.
-     *
      * @param modId mod id to register config for
      * @param type  type of this mod config
      * @param spec  the built config spec
-     * @return the {@link ModConfig} instance
      */
-    ModConfig register(String modId, ModConfig.Type type, IConfigSpec<?> spec);
+    void register(String modId, ModConfig.Type type, IConfigSpec<?> spec);
 
     /**
      * Register a new mod config.
@@ -40,19 +30,8 @@ public interface ForgeConfigRegistry {
      * @param modContainer mod container to register config for
      * @param type         type of this mod config
      * @param spec         the built config spec
-     * @return the {@link ModConfig} instance
      */
-    ModConfig register(ModContainer modContainer, ModConfig.Type type, IConfigSpec<?> spec);
-
-    /**
-     * Register a new mod config.
-     *
-     * @param type     type of this mod config
-     * @param spec     the built config spec
-     * @param fileName file name to use instead of default
-     * @return the {@link ModConfig} instance
-     */
-    ModConfig register(ModConfig.Type type, IConfigSpec<?> spec, String fileName);
+    void register(ModContainer modContainer, ModConfig.Type type, IConfigSpec<?> spec);
 
     /**
      * Register a new mod config.
@@ -61,9 +40,8 @@ public interface ForgeConfigRegistry {
      * @param type     type of this mod config
      * @param spec     the built config spec
      * @param fileName file name to use instead of default
-     * @return the {@link ModConfig} instance
      */
-    ModConfig register(String modId, ModConfig.Type type, IConfigSpec<?> spec, String fileName);
+    void register(String modId, ModConfig.Type type, IConfigSpec<?> spec, String fileName);
 
     /**
      * Register a new mod config.
@@ -72,7 +50,6 @@ public interface ForgeConfigRegistry {
      * @param type         type of this mod config
      * @param spec         the built config spec
      * @param fileName     file name to use instead of default
-     * @return the {@link ModConfig} instance
      */
-    ModConfig register(ModContainer modContainer, ModConfig.Type type, IConfigSpec<?> spec, String fileName);
+    void register(ModContainer modContainer, ModConfig.Type type, IConfigSpec<?> spec, String fileName);
 }

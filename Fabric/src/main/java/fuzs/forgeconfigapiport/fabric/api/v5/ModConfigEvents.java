@@ -1,6 +1,6 @@
-package fuzs.forgeconfigapiport.fabric.api.neoforge.v4;
+package fuzs.forgeconfigapiport.fabric.api.v5;
 
-import fuzs.forgeconfigapiport.fabric.impl.core.NeoForgeModConfigEventsHolder;
+import fuzs.forgeconfigapiport.fabric.impl.core.ModConfigEventsHelper;
 import net.fabricmc.fabric.api.event.Event;
 import net.neoforged.fml.config.ModConfig;
 
@@ -8,12 +8,10 @@ import java.util.Objects;
 
 /**
  * Mod config events adapted for Fabric's callback event style.
- * <p>
- * TODO rename to ModConfigEvents, as the Forge class will be removed due to NeoForge's config system being the only one used
  */
-public final class NeoForgeModConfigEvents {
+public final class ModConfigEvents {
 
-    private NeoForgeModConfigEvents() {
+    private ModConfigEvents() {
         // NO-OP
     }
 
@@ -25,7 +23,7 @@ public final class NeoForgeModConfigEvents {
      */
     public static Event<Loading> loading(String modId) {
         Objects.requireNonNull(modId, "mod id is null");
-        return NeoForgeModConfigEventsHolder.forModId(modId).loading();
+        return ModConfigEventsHelper.get(modId).loading();
     }
 
     /**
@@ -36,7 +34,7 @@ public final class NeoForgeModConfigEvents {
      */
     public static Event<Reloading> reloading(String modId) {
         Objects.requireNonNull(modId, "mod id is null");
-        return NeoForgeModConfigEventsHolder.forModId(modId).reloading();
+        return ModConfigEventsHelper.get(modId).reloading();
     }
 
     /**
@@ -47,7 +45,7 @@ public final class NeoForgeModConfigEvents {
      */
     public static Event<Unloading> unloading(String modId) {
         Objects.requireNonNull(modId, "mod id is null");
-        return NeoForgeModConfigEventsHolder.forModId(modId).unloading();
+        return ModConfigEventsHelper.get(modId).unloading();
     }
 
     @FunctionalInterface

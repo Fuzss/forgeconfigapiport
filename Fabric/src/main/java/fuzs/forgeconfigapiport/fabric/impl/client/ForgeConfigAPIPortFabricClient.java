@@ -1,7 +1,7 @@
 package fuzs.forgeconfigapiport.fabric.impl.client;
 
 import com.mojang.brigadier.CommandDispatcher;
-import fuzs.forgeconfigapiport.fabric.api.neoforge.v4.client.ConfigScreenFactoryRegistry;
+import fuzs.forgeconfigapiport.fabric.api.v5.client.ConfigScreenFactoryRegistry;
 import fuzs.forgeconfigapiport.fabric.impl.client.commands.FabricConfigCommand;
 import fuzs.forgeconfigapiport.fabric.impl.network.ConfigSync;
 import fuzs.forgeconfigapiport.fabric.impl.network.payload.ConfigFilePayload;
@@ -54,7 +54,7 @@ public class ForgeConfigAPIPortFabricClient implements ClientModInitializer {
     }
 
     private static void setupDevelopmentEnvironment() {
-        if (CommonAbstractions.INSTANCE.includeTestConfigs()) {
+        if (CommonAbstractions.INSTANCE.isDevelopmentEnvironment(ForgeConfigAPIPort.MOD_ID)) {
             ConfigScreenFactoryRegistry.INSTANCE.register(ForgeConfigAPIPort.MOD_ID, ConfigurationScreen::new);
         }
     }

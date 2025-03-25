@@ -12,7 +12,7 @@ import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 public class ForgeConfigAPIPortNeoForgeClient {
 
     public ForgeConfigAPIPortNeoForgeClient(ModContainer modContainer) {
-        if (CommonAbstractions.INSTANCE.includeTestConfigs()) {
+        if (CommonAbstractions.INSTANCE.isDevelopmentEnvironment(ForgeConfigAPIPort.MOD_ID)) {
             modContainer.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
         }
     }

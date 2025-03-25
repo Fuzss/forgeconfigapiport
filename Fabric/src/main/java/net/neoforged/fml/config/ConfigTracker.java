@@ -162,7 +162,7 @@ public class ConfigTracker {
         var configPath = basePath.resolve(config.getFileName());
 
         // Forge Config Api Port: invoke Fabric style callback instead of Forge event
-        loadConfig(config, configPath, ModConfigEventsHelper.loading());
+        loadConfig(config, configPath, ModConfigEventsHelper::onLoading);
         LOGGER.debug(CONFIG, "Loaded TOML config file {}", configPath);
 
         // Forge Config Api Port: switch out config access
@@ -234,7 +234,7 @@ public class ConfigTracker {
         });
         // TODO: do we want to do any validation? (what do we do if acceptConfig fails?)
         // Forge Config Api Port: invoke Fabric style callback instead of Forge event
-        modConfig.setConfig(new LoadedConfig(newConfig, null, modConfig), ModConfigEventsHelper.reloading()); // TODO: should maybe be Loading on the first load?
+        modConfig.setConfig(new LoadedConfig(newConfig, null, modConfig), ModConfigEventsHelper::onReloading); // TODO: should maybe be Loading on the first load?
     }
 
     public void loadDefaultServerConfigs() {
@@ -244,7 +244,7 @@ public class ConfigTracker {
             }
 
             // Forge Config Api Port: invoke Fabric style callback instead of Forge event
-            modConfig.setConfig(new LoadedConfig(createDefaultConfig(modConfig.getSpec()), null, modConfig), ModConfigEventsHelper.loading());
+            modConfig.setConfig(new LoadedConfig(createDefaultConfig(modConfig.getSpec()), null, modConfig), ModConfigEventsHelper::onLoading);
         });
     }
 
@@ -260,7 +260,7 @@ public class ConfigTracker {
                 LOGGER.trace(CONFIG, "Closing config file type {} at {} for {}", config.getType(), config.getFileName(), config.getModId());
                 unload(config.loadedConfig.path());
                 // Forge Config Api Port: invoke Fabric style callback instead of Forge event
-                config.setConfig(null, ModConfigEventsHelper.unloading());
+                config.setConfig(null, ModConfigEventsHelper::onUnloading);
             } else {
                 LOGGER.warn(CONFIG, "Closing non-file config {} at path {}", config.loadedConfig, config.getFileName());
             }

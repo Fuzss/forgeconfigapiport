@@ -1,51 +1,36 @@
 package fuzs.forgeconfigapiport.neoforge.impl.forge;
 
-import fuzs.forgeconfigapiport.neoforge.api.forge.v4.ForgeConfigRegistry;
+import fuzs.forgeconfigapiport.neoforge.api.v5.ForgeConfigRegistry;
 import net.minecraftforge.fml.config.IConfigSpec;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.ModList;
-import net.neoforged.fml.ModLoadingContext;
-import net.neoforged.fml.config.ConfigTracker;
 import net.neoforged.fml.config.ModConfig;
 
-/**
- * TODO remove ModConfig parameters, change IConfigSpec parameter to ForgeConfigSpec
- */
 public final class ForgeConfigRegistryImpl implements ForgeConfigRegistry {
 
     @Override
-    public ModConfig register(ModConfig.Type type, IConfigSpec<?> spec) {
-        return this.register(ModLoadingContext.get().getActiveNamespace(), type, spec);
+    public void register(String modId, ModConfig.Type type, IConfigSpec<?> spec) {
+        ModContainer modContainer = this.getModContainer(modId);
+        this.register(modContainer, type, spec);
     }
 
     @Override
-    public ModConfig register(String modId, ModConfig.Type type, IConfigSpec<?> spec) {
-        return this.register(getModContainer(modId), type, spec);
+    public void register(ModContainer modContainer, ModConfig.Type type, IConfigSpec<?> spec) {
+        modContainer.registerConfig(type, new ForgeConfigSpecAdapter(spec));
     }
 
     @Override
-    public ModConfig register(ModContainer modContainer, ModConfig.Type type, IConfigSpec<?> spec) {
-        // TODO use the internal class to be able to return the ModConfig instance, remove the return value in the future
-        return ConfigTracker.INSTANCE.registerConfig(type, new ForgeConfigSpecAdapter(spec), modContainer);
+    public void register(String modId, ModConfig.Type type, IConfigSpec<?> spec, String fileName) {
+        ModContainer modContainer = this.getModContainer(modId);
+        this.register(modContainer, type, spec, fileName);
     }
 
     @Override
-    public ModConfig register(ModConfig.Type type, IConfigSpec<?> spec, String fileName) {
-        return this.register(ModLoadingContext.get().getActiveNamespace(), type, spec, fileName);
+    public void register(ModContainer modContainer, ModConfig.Type type, IConfigSpec<?> spec, String fileName) {
+        modContainer.registerConfig(type, new ForgeConfigSpecAdapter(spec), fileName);
     }
 
-    @Override
-    public ModConfig register(String modId, ModConfig.Type type, IConfigSpec<?> spec, String fileName) {
-        return this.register(getModContainer(modId), type, spec, fileName);
-    }
-
-    @Override
-    public ModConfig register(ModContainer modContainer, ModConfig.Type type, IConfigSpec<?> spec, String fileName) {
-        // TODO use the internal class to be able to return the ModConfig instance, remove the return value in the future
-        return ConfigTracker.INSTANCE.registerConfig(type, new ForgeConfigSpecAdapter(spec), modContainer, fileName);
-    }
-
-    static ModContainer getModContainer(String modId) {
+    private ModContainer getModContainer(String modId) {
         return ModList.get()
                 .getModContainerById(modId)
                 .orElseThrow(() -> new IllegalStateException("Invalid mod id '%s'".formatted(modId)));
