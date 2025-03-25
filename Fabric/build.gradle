@@ -18,7 +18,9 @@ dependencies {
     shadowCommonForgeApi(project(path: ":Common-ForgeApi", configuration: "transformProductionFabric")) { transitive false }
 
     // Fabric Api
-    modApi libs.fabricapi.fabric
+//    modApi libs.fabricapi.fabric
+    // compile against outdated version, as newer versions require Loom 1.10, but ArchLoom has not been updated
+    modApi "net.fabricmc.fabric-api:fabric-api:0.116.1+1.21.5"
 
     // Night Config
     api(include(libs.nightconfigcore.get()))
