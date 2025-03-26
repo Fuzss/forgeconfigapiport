@@ -275,7 +275,8 @@ public final class ConfigurationScreen extends OptionsSubScreen {
         for (final Type type : ModConfig.Type.values()) {
             boolean headerAdded = false;
             for (final ModConfig modConfig : ModConfigs.getConfigSet(type)) {
-                if (modConfig.getModId().equals(mod)) {
+                // Forge Config Api Port: check for correct config spec type
+                if (modConfig.getModId().equals(mod) && modConfig.getSpec() instanceof ModConfigSpec) {
                     if (!headerAdded) {
                         list.addSmall(new StringWidget(BIG_BUTTON_WIDTH, Button.DEFAULT_HEIGHT,
                                 Component.translatable(LANG_PREFIX + type.name().toLowerCase(Locale.ENGLISH)).withStyle(ChatFormatting.UNDERLINE), font).alignLeft(), null);

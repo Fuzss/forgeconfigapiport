@@ -92,6 +92,7 @@ public final class ModConfig {
         }
     }
 
+    // Forge Config Api Port: implement StringRepresentable to allow using vanilla argument type
     public enum Type implements StringRepresentable {
         /**
          * Common mod config for configuration that needs to be loaded on both environments.
@@ -133,11 +134,9 @@ public final class ModConfig {
             return this.name().toLowerCase(Locale.ROOT);
         }
 
-        // Forge Config Api Port: implements StringRepresentable to allow using vanilla argument type for /config
-        // It's ok to use this in a Fabric/Quilt project, just don't use it in Common, that's what the annotation is for
         @Override
         public String getSerializedName() {
-            return this.extension();
+            return this.name();
         }
     }
 }
