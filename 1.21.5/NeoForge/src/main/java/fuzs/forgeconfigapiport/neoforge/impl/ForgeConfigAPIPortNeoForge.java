@@ -14,14 +14,17 @@ public class ForgeConfigAPIPortNeoForge {
 
     public ForgeConfigAPIPortNeoForge(ModContainer modContainer) {
         if (CommonAbstractions.INSTANCE.isDevelopmentEnvironment(ForgeConfigAPIPort.MOD_ID)) {
-            modContainer.registerConfig(ModConfig.Type.SERVER, new ModConfigSpec.Builder().comment("hello world")
-                    .define("dummy_entry", true)
-                    .next()
-                    .build(), "forgeconfigapiport-server-neoforge.toml");
-            ForgeConfigRegistry.INSTANCE.register(modContainer.getModId(), ModConfig.Type.SERVER,
-                    new ForgeConfigSpec.Builder().translation("dummy_entry").comment("hello world").define(
-                            "dummy_entry", true).next().build(), "forgeconfigapiport-server-forge.toml"
-            );
+            modContainer.registerConfig(ModConfig.Type.SERVER,
+                    new ModConfigSpec.Builder().comment("hello world").define("dummy_entry", true).next().build(),
+                    "forgeconfigapiport-server-neoforge.toml");
+            ForgeConfigRegistry.INSTANCE.register(modContainer.getModId(),
+                    ModConfig.Type.SERVER,
+                    new ForgeConfigSpec.Builder().translation("dummy_entry")
+                            .comment("hello world")
+                            .define("dummy_entry", true)
+                            .next()
+                            .build(),
+                    "forgeconfigapiport-server-forge.toml");
         }
     }
 }
