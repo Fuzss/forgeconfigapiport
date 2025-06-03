@@ -29,7 +29,6 @@ public class ClientConfigCommand {
     public static void register(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         dispatcher.register(LiteralArgumentBuilder.<FabricClientCommandSource>literal("config")
                 .then(LiteralArgumentBuilder.<FabricClientCommandSource>literal("showfile")
-                        .requires(cs -> cs.hasPermission(0))
                         .then(RequiredArgumentBuilder.<FabricClientCommandSource, String>argument("mod",
                                         ModIdArgument.modIdArgument(ClientConfigCommand::hasAnyModConfig))
                                 .then(RequiredArgumentBuilder.<FabricClientCommandSource, ModConfig.Type>argument("type",
