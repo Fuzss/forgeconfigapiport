@@ -29,11 +29,11 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.ConfirmScreen;
-import net.minecraft.client.gui.screens.GenericMessageScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
 import net.minecraft.client.gui.screens.options.OptionsSubScreen;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.CommonComponents;
@@ -67,8 +67,8 @@ import java.util.function.Supplier;
  * <li>As an entry point for your custom configuration screen that handles fetching your configs, matching {@link Type} to the current game, enforcing level and game restarts, etc.
  * <li>As a ready-made system but extensible that works out of the box with all configs that use the {@link ModConfigSpec} system and don't do anything overly weird with it.</ul>
  *
- * For the former one, use the 3-argument constructor {@link #ConfigurationScreen(ModContainer, Screen, Function4)} and return your own screen from the Function4. For the latter,
- * use either the 2-argument constructor {@link #ConfigurationScreen(ModContainer, Screen)} if you don't need to extend the system, or the 3-argument one and return a subclass of
+ * For the former one, use the 3-argument constructor {@code #ConfigurationScreen(ModContainer, Screen, Function4)} and return your own screen from the Function4. For the latter,
+ * use either the 2-argument constructor {@code #ConfigurationScreen(ModContainer, Screen)} if you don't need to extend the system, or the 3-argument one and return a subclass of
  * {@link ConfigurationSectionScreen} from the Function4.<p>
  *
  * In any case, register your configuration screen in your client mod class like this:
@@ -89,26 +89,14 @@ import java.util.function.Supplier;
  */
 public final class ConfigurationScreen extends OptionsSubScreen {
     private static final class TooltipConfirmScreen extends ConfirmScreen {
-        boolean seenYes = false;
-
         private TooltipConfirmScreen(BooleanConsumer callback, Component title, Component message, Component yesButton, Component noButton) {
             super(callback, title, message, yesButton, noButton);
         }
 
         @Override
-        protected void init() {
-            seenYes = false;
-            super.init();
-        }
-
-        @Override
-        protected void addExitButton(Button button) {
-            if (seenYes) {
-                button.setTooltip(Tooltip.create(RESTART_NO_TOOLTIP));
-            } else {
-                seenYes = true;
-            }
-            super.addExitButton(button);
+        protected void addButtons(LinearLayout layout) {
+            super.addButtons(layout);
+            this.noButton.setTooltip(Tooltip.create(RESTART_NO_TOOLTIP));
         }
     }
 
@@ -363,11 +351,11 @@ public final class ConfigurationScreen extends OptionsSubScreen {
     private void onDisconnect() {
         boolean flag = this.minecraft.isLocalServer();
         ServerData serverdata = this.minecraft.getCurrentServer();
-        this.minecraft.level.disconnect();
+        this.minecraft.level.disconnect(ClientLevel.DEFAULT_QUIT_MESSAGE);
         if (flag) {
-            this.minecraft.disconnect(new GenericMessageScreen(SAVING_LEVEL));
+            this.minecraft.disconnectWithSavingScreen();
         } else {
-            this.minecraft.disconnect();
+            this.minecraft.disconnectWithProgressScreen();
         }
 
         TitleScreen titlescreen = new TitleScreen();
@@ -391,7 +379,7 @@ public final class ConfigurationScreen extends OptionsSubScreen {
      * <li>To use another UI element, override the matching <code>create*Value()</code> method and return your new UI element wrapped in a {@link Element}.
      * <li>To change the way lists work, override {@link #createList(String, ListValueSpec, ConfigValue)} and return a subclassed {@link ConfigurationListScreen}.
      * <li>To add additional (synthetic) config values, override {@link #createSyntheticValues()}.
-     * <li>To be notified on each changed value instead of getting one {@link ModConfigEvent} at the end, override {@link #onChanged(String)}. Note that {@link #onChanged(String)}
+     * <li>To be notified on each changed value instead of getting one {@code ModConfigEvent} at the end, override {@link #onChanged(String)}. Note that {@link #onChanged(String)}
      * will be called on every change (e.g. each typed character for Strings) if the new value is valid and different.
      * <li>To re-arrange your config values, declare them in the appropriate order.
      * <li>To change which values a config value can accept, supply the {@link ModConfigSpec.Builder} with a validator and/or a range.
@@ -1027,7 +1015,7 @@ public final class ConfigurationScreen extends OptionsSubScreen {
      * <li>To change how the label and buttons for the individual elements look, override {@link #createListLabel(int)}.
      * <li>To use another UI element, override the matching <code>create*Value()</code> method and return your new UI element wrapped in a {@link Element}.
      * <li>To add additional (synthetic) config values, override {@link #rebuild()} and add them to <code>list</code>. ({@link #createSyntheticValues()} is not used for lists).
-     * <li>To be notified on each changed value instead of getting one {@link ModConfigEvent} at the end, override {@link #onChanged(String)} on the {@link ConfigurationScreen},
+     * <li>To be notified on each changed value instead of getting one {@code ModConfigEvent} at the end, override {@link #onChanged(String)} on the {@link ConfigurationScreen},
      * not here. The list will only be updated in the {@link ModConfigSpec.ConfigValue} when this screen is closed.
      * <li>To limit the number of elements in a list, pass a {@link ModConfigSpec.Range} to {@link ModConfigSpec.Builder#defineList(List, Supplier, Supplier, Predicate, Range)}.
      * </ul>
