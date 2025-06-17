@@ -79,7 +79,7 @@ public final class ConfigSync {
     }
 
     /**
-     * Registers a listener for {@link ModConfigEvent.Reloading} for all mod busses, that will sync changes to server
+     * Registers a listener for {@code ModConfigEvent.Reloading} for all mod busses, that will sync changes to server
      * configs to connected clients.
      */
     public static void registerEventListeners() {
