@@ -1365,7 +1365,7 @@ public class ModConfigSpec implements IConfigSpec {
         /**
          * Require a game restart.
          * <p>
-         * Cannot be used for {@linkplain ModConfig.Type#SERVER server configs}.
+         * Cannot be used for {@code ModConfig.Type#SERVER server configs}.
          */
         // Forge Config Api Port: remove code accessing unavailable ModConfig class
 //        GAME(ModConfig.Type.SERVER);
