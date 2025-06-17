@@ -4,3 +4,4 @@ accessible  method  net/minecraft/server/network/ServerConfigurationPacketListen
 accessible  class   net/minecraft/client/OptionInstance$ValueSet
 accessible  field   net/minecraft/client/OptionInstance toString    Ljava/util/function/Function;
 accessible  field   net/minecraft/client/OptionInstance caption Lnet/minecraft/network/chat/Component;
+accessible  field   net/minecraft/server/network/ServerCommonPacketListenerImpl connection  Lnet/minecraft/network/Connection;

@@ -10,6 +10,7 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworking;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientConfigurationPacketListenerImpl;
 import net.minecraft.client.multiplayer.ClientPacketListener;
@@ -28,6 +29,10 @@ public class ForgeConfigAPIPortFabricClient implements ClientModInitializer {
     private static void registerMessages() {
         ClientConfigurationNetworking.registerGlobalReceiver(ConfigFilePayload.TYPE,
                 (ConfigFilePayload payload, ClientConfigurationNetworking.Context context) -> {
+                    ConfigSync.receiveSyncedConfig(payload.contents(), payload.fileName());
+                });
+        ClientPlayNetworking.registerGlobalReceiver(ConfigFilePayload.TYPE,
+                (ConfigFilePayload payload, ClientPlayNetworking.Context context) -> {
                     ConfigSync.receiveSyncedConfig(payload.contents(), payload.fileName());
                 });
     }
