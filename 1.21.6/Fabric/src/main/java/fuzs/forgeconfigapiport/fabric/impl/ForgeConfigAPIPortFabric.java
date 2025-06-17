@@ -2,6 +2,7 @@ package fuzs.forgeconfigapiport.fabric.impl;
 
 import fuzs.forgeconfigapiport.fabric.api.v5.ConfigRegistry;
 import fuzs.forgeconfigapiport.fabric.impl.handler.ServerLifecycleHandler;
+import fuzs.forgeconfigapiport.fabric.impl.network.ConfigSync;
 import fuzs.forgeconfigapiport.fabric.impl.network.configuration.SyncConfig;
 import fuzs.forgeconfigapiport.fabric.impl.network.payload.ConfigFilePayload;
 import fuzs.forgeconfigapiport.impl.ForgeConfigAPIPort;
@@ -9,6 +10,7 @@ import fuzs.forgeconfigapiport.impl.services.CommonAbstractions;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerConfigurationConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerConfigurationNetworking;
@@ -35,6 +37,7 @@ public class ForgeConfigAPIPortFabric implements ModInitializer {
             }
         });
         PayloadTypeRegistry.configurationS2C().register(ConfigFilePayload.TYPE, ConfigFilePayload.STREAM_CODEC);
+        PayloadTypeRegistry.playS2C().register(ConfigFilePayload.TYPE, ConfigFilePayload.STREAM_CODEC);
     }
 
     private static void registerEventHandlers() {
@@ -53,6 +56,8 @@ public class ForgeConfigAPIPortFabric implements ModInitializer {
                 }
             });
         });
+        ServerTickEvents.END_SERVER_TICK.register(ConfigSync::syncPendingConfigs);
+        ConfigSync.registerEventListeners();
     }
 
     private static void setupDevelopmentEnvironment() {

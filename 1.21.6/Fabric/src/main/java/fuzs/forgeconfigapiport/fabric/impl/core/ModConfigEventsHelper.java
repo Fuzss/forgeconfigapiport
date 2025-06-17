@@ -1,15 +1,14 @@
 package fuzs.forgeconfigapiport.fabric.impl.core;
 
 import fuzs.forgeconfigapiport.fabric.api.v5.ModConfigEvents;
-import fuzs.forgeconfigapiport.fabric.impl.util.FabricEventFactory;
 import net.fabricmc.fabric.api.event.Event;
+import net.fabricmc.fabric.api.event.EventFactory;
 import net.neoforged.fml.config.ModConfig;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class ModConfigEventsHelper {
-    private static final Map<String, Holder> HOLDERS_BY_MOD_ID = new ConcurrentHashMap<>();
 
     private ModConfigEventsHelper() {
         // NO-OP
@@ -27,18 +26,54 @@ public final class ModConfigEventsHelper {
         ModConfigEvents.unloading(modConfig.getModId()).invoker().onModConfigUnloading(modConfig);
     }
 
-    public static Holder get(String modId) {
-        return HOLDERS_BY_MOD_ID.computeIfAbsent(modId, (String modIdX) -> {
-            Event<ModConfigEvents.Loading> loading = FabricEventFactory.create(ModConfigEvents.Loading.class);
-            Event<ModConfigEvents.Reloading> reloading = FabricEventFactory.create(ModConfigEvents.Reloading.class);
-            Event<ModConfigEvents.Unloading> unloading = FabricEventFactory.create(ModConfigEvents.Unloading.class);
-            return new Holder(modId, loading, reloading, unloading);
-        });
+    public static Event<ModConfigEvents.Loading> getLoadingEvent(String modId) {
+        return ConfigEvents.get(modId).loading();
     }
 
-    public record Holder(String modId,
-                         Event<ModConfigEvents.Loading> loading,
-                         Event<ModConfigEvents.Reloading> reloading,
-                         Event<ModConfigEvents.Unloading> unloading) {
+    public static Event<ModConfigEvents.Reloading> getReloadingEvent(String modId) {
+        return ConfigEvents.get(modId).reloading();
+    }
+
+    public static Event<ModConfigEvents.Unloading> getUnloadingEvent(String modId) {
+        return ConfigEvents.get(modId).unloading();
+    }
+
+    private record ConfigEvents(String modId,
+                                Event<ModConfigEvents.Loading> loading,
+                                Event<ModConfigEvents.Reloading> reloading,
+                                Event<ModConfigEvents.Unloading> unloading) {
+        private static final Map<String, ConfigEvents> HOLDERS_BY_MOD_ID = new ConcurrentHashMap<>();
+
+        private ConfigEvents(String modId) {
+            this(modId, createLoadingEvent(), createReloadingEvent(), createUnloadingEvent());
+        }
+
+        static ConfigEvents get(String modId) {
+            return HOLDERS_BY_MOD_ID.computeIfAbsent(modId, ConfigEvents::new);
+        }
+
+        static Event<ModConfigEvents.Loading> createLoadingEvent() {
+            return EventFactory.createArrayBacked(ModConfigEvents.Loading.class, callbacks -> (config) -> {
+                for (ModConfigEvents.Loading callback : callbacks) {
+                    callback.onModConfigLoading(config);
+                }
+            });
+        }
+
+        static Event<ModConfigEvents.Reloading> createReloadingEvent() {
+            return EventFactory.createArrayBacked(ModConfigEvents.Reloading.class, callbacks -> (config) -> {
+                for (ModConfigEvents.Reloading callback : callbacks) {
+                    callback.onModConfigReloading(config);
+                }
+            });
+        }
+
+        static Event<ModConfigEvents.Unloading> createUnloadingEvent() {
+            return EventFactory.createArrayBacked(ModConfigEvents.Unloading.class, callbacks -> (config) -> {
+                for (ModConfigEvents.Unloading callback : callbacks) {
+                    callback.onModConfigUnloading(config);
+                }
+            });
+        }
     }
 }
