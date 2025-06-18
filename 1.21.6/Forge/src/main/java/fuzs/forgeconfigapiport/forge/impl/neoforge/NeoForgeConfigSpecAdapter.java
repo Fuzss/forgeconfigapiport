@@ -7,7 +7,6 @@ import com.electronwill.nightconfig.core.io.WritingMode;
 import com.electronwill.nightconfig.core.utils.UnmodifiableConfigWrapper;
 import com.electronwill.nightconfig.toml.TomlWriter;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.fml.config.ConfigTracker;
 import net.minecraftforge.fml.loading.FMLEnvironment;
@@ -27,7 +26,7 @@ public final class NeoForgeConfigSpecAdapter extends UnmodifiableConfigWrapper<U
 
     private final ModConfigSpec spec;
     private final ReentrantLock lock;
-    
+
     public NeoForgeConfigSpecAdapter(String modId, ModConfigSpec spec) {
         super(spec.getSpec());
         this.spec = spec;
@@ -36,7 +35,7 @@ public final class NeoForgeConfigSpecAdapter extends UnmodifiableConfigWrapper<U
     }
 
     void registerEventHandlers() {
-        MinecraftForge.EVENT_BUS.addListener((final ServerStoppingEvent evt) -> {
+        ServerStoppingEvent.BUS.addListener((final ServerStoppingEvent evt) -> {
             // Reset WORLD type config caches
             ConfigTracker.INSTANCE.fileMap().values().forEach(config -> {
                 if (config.getSpec() == this) {
@@ -46,7 +45,7 @@ public final class NeoForgeConfigSpecAdapter extends UnmodifiableConfigWrapper<U
         });
         if (FMLEnvironment.dist.isClient()) {
             // Reset WORLD type config caches
-            MinecraftForge.EVENT_BUS.addListener((final ClientPlayerNetworkEvent.LoggingOut event) -> {
+            ClientPlayerNetworkEvent.LoggingOut.BUS.addListener((final ClientPlayerNetworkEvent.LoggingOut event) -> {
                 ConfigTracker.INSTANCE.fileMap().values().forEach(config -> {
                     if (config.getSpec() == this) {
                         this.spec.resetCaches(ModConfigSpec.RestartType.WORLD);
