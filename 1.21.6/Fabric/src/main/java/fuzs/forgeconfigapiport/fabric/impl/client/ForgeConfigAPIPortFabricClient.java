@@ -29,11 +29,15 @@ public class ForgeConfigAPIPortFabricClient implements ClientModInitializer {
     private static void registerMessages() {
         ClientConfigurationNetworking.registerGlobalReceiver(ConfigFilePayload.TYPE,
                 (ConfigFilePayload payload, ClientConfigurationNetworking.Context context) -> {
-                    ConfigSync.receiveSyncedConfig(payload.contents(), payload.fileName());
+                    if (!context.client().getConnection().getConnection().isMemoryConnection()) {
+                        ConfigSync.receiveSyncedConfig(payload.contents(), payload.fileName());
+                    }
                 });
         ClientPlayNetworking.registerGlobalReceiver(ConfigFilePayload.TYPE,
                 (ConfigFilePayload payload, ClientPlayNetworking.Context context) -> {
-                    ConfigSync.receiveSyncedConfig(payload.contents(), payload.fileName());
+                    if (!context.client().getConnection().getConnection().isMemoryConnection()) {
+                        ConfigSync.receiveSyncedConfig(payload.contents(), payload.fileName());
+                    }
                 });
     }
 

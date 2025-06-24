@@ -4,8 +4,7 @@
   "compatibilityLevel": "JAVA_17",
   "package": "${modGroup}.fabric.mixin",
   "mixins": [
-    "AsyncFileConfigMixin",
-    "ConfigWriterMixin"
+    "IoUtilsMixin"
   ],
   "client": [
   ],
