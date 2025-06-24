@@ -35,6 +35,12 @@ public class ForgeConfigAPIPortFabric implements ModInitializer {
             }
         });
         PayloadTypeRegistry.configurationS2C().register(ConfigFilePayload.TYPE, ConfigFilePayload.STREAM_CODEC);
+        // marker for catching up missing server configs if necessary
+        PayloadTypeRegistry.configurationC2S().register(ConfigFilePayload.TYPE, ConfigFilePayload.STREAM_CODEC);
+        ServerConfigurationNetworking.registerGlobalReceiver(ConfigFilePayload.TYPE,
+                (ConfigFilePayload payload, ServerConfigurationNetworking.Context context) -> {
+                    // NO-OP
+                });
     }
 
     private static void registerEventHandlers() {
