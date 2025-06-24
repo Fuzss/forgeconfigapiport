@@ -8,7 +8,6 @@ import fuzs.forgeconfigapiport.fabric.impl.network.payload.ConfigFilePayload;
 import fuzs.forgeconfigapiport.impl.ForgeConfigAPIPort;
 import fuzs.forgeconfigapiport.impl.services.CommonAbstractions;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
@@ -25,29 +24,18 @@ public class ForgeConfigAPIPortFabric implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        registerMessages();
         registerEventHandlers();
+        registerMessages();
         setupDevelopmentEnvironment();
     }
 
-    private static void registerMessages() {
+    private static void registerEventHandlers() {
         ServerConfigurationConnectionEvents.CONFIGURE.register((ServerConfigurationPacketListenerImpl handler, MinecraftServer server) -> {
             if (ServerConfigurationNetworking.canSend(handler, ConfigFilePayload.TYPE)) {
                 handler.addTask(new SyncConfig(handler));
             }
         });
-        PayloadTypeRegistry.configurationS2C().register(ConfigFilePayload.TYPE, ConfigFilePayload.STREAM_CODEC);
-        PayloadTypeRegistry.playS2C().register(ConfigFilePayload.TYPE, ConfigFilePayload.STREAM_CODEC);
-    }
-
-    private static void registerEventHandlers() {
-        ServerLifecycleEvents.SERVER_STARTING.addPhaseOrdering(ServerLifecycleHandler.BEFORE_PHASE,
-                Event.DEFAULT_PHASE);
-        ServerLifecycleEvents.SERVER_STARTING.register(ServerLifecycleHandler.BEFORE_PHASE,
-                ServerLifecycleHandler::onServerStarting);
-        ServerLifecycleEvents.SERVER_STOPPED.addPhaseOrdering(Event.DEFAULT_PHASE, ServerLifecycleHandler.AFTER_PHASE);
-        ServerLifecycleEvents.SERVER_STOPPED.register(ServerLifecycleHandler.AFTER_PHASE,
-                ServerLifecycleHandler::onServerStopped);
+        ServerLifecycleHandler.registerEventHandlers();
         ServerLifecycleEvents.SERVER_STOPPING.register((MinecraftServer server) -> {
             // Reset WORLD type config caches
             ModConfigs.getFileMap().values().forEach(config -> {
@@ -58,6 +46,17 @@ public class ForgeConfigAPIPortFabric implements ModInitializer {
         });
         ServerTickEvents.END_SERVER_TICK.register(ConfigSync::syncPendingConfigs);
         ConfigSync.registerEventListeners();
+    }
+
+    private static void registerMessages() {
+        PayloadTypeRegistry.configurationS2C().register(ConfigFilePayload.TYPE, ConfigFilePayload.STREAM_CODEC);
+        PayloadTypeRegistry.playS2C().register(ConfigFilePayload.TYPE, ConfigFilePayload.STREAM_CODEC);
+        // marker for catching up missing server configs if necessary
+        PayloadTypeRegistry.configurationC2S().register(ConfigFilePayload.TYPE, ConfigFilePayload.STREAM_CODEC);
+        ServerConfigurationNetworking.registerGlobalReceiver(ConfigFilePayload.TYPE,
+                (ConfigFilePayload payload, ServerConfigurationNetworking.Context context) -> {
+                    // NO-OP
+                });
     }
 
     private static void setupDevelopmentEnvironment() {

@@ -3,6 +3,8 @@ package fuzs.forgeconfigapiport.fabric.impl.handler;
 import com.electronwill.nightconfig.core.file.FileWatcher;
 import fuzs.forgeconfigapiport.impl.ForgeConfigAPIPort;
 import net.fabricmc.api.EnvType;
+import net.fabricmc.fabric.api.event.Event;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -19,6 +21,16 @@ public class ServerLifecycleHandler {
     public static final ResourceLocation BEFORE_PHASE = ForgeConfigAPIPort.id("before");
     public static final ResourceLocation AFTER_PHASE = ForgeConfigAPIPort.id("after");
     private static final LevelResource SERVER_CONFIG_LEVEL_RESOURCE = new LevelResource("serverconfig");
+
+    public static void registerEventHandlers() {
+        ServerLifecycleEvents.SERVER_STARTING.addPhaseOrdering(ServerLifecycleHandler.BEFORE_PHASE,
+                Event.DEFAULT_PHASE);
+        ServerLifecycleEvents.SERVER_STARTING.register(ServerLifecycleHandler.BEFORE_PHASE,
+                ServerLifecycleHandler::onServerStarting);
+        ServerLifecycleEvents.SERVER_STOPPED.addPhaseOrdering(Event.DEFAULT_PHASE, ServerLifecycleHandler.AFTER_PHASE);
+        ServerLifecycleEvents.SERVER_STOPPED.register(ServerLifecycleHandler.AFTER_PHASE,
+                ServerLifecycleHandler::onServerStopped);
+    }
 
     public static void onServerStarting(MinecraftServer minecraftServer) {
         ConfigTracker.INSTANCE.loadConfigs(ModConfig.Type.SERVER,
