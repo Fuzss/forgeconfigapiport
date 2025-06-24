@@ -8,6 +8,8 @@ package fuzs.forgeconfigapiport.fabric.impl.network;
 import fuzs.forgeconfigapiport.fabric.api.v5.ModConfigEvents;
 import fuzs.forgeconfigapiport.fabric.impl.network.payload.ConfigFilePayload;
 import fuzs.forgeconfigapiport.impl.ForgeConfigAPIPort;
+import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworking;
+import net.fabricmc.fabric.api.networking.v1.ServerConfigurationNetworking;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
@@ -43,8 +45,6 @@ public final class ConfigSync {
      * <p>Connections get removed when GC'ed thanks to the WeakHashMap.
      */
     private static final Map<Connection, Map<String, byte[]>> configsToSync = new WeakHashMap<>();
-    // Forge Config API Port: marker field for catching up missing server configs if necessary
-    private static boolean isVanillaConnection = true;
 
     private ConfigSync() {
     }
@@ -72,7 +72,7 @@ public final class ConfigSync {
 
         for (var entry : configData.entrySet()) {
             // Forge Config API Port: update for Fabric
-            ((ServerCommonPacketListenerImpl) listener).send(ServerPlayNetworking.createS2CPacket(new ConfigFilePayload(
+            ((ServerCommonPacketListenerImpl) listener).send(ServerConfigurationNetworking.createS2CPacket(new ConfigFilePayload(
                     entry.getKey(),
                     entry.getValue())));
         }
@@ -145,27 +145,22 @@ public final class ConfigSync {
     }
 
     public static void receiveSyncedConfig(final byte[] contents, final String fileName) {
-        // Forge Config API Port: invoke this here as an easy way to tell that we are connected to as server that has sent the server configs
-        onEstablishModdedConnection();
         Optional.ofNullable(ModConfigs.getFileMap().get(fileName))
                 .ifPresent(mc -> ConfigTracker.acceptSyncedConfig(mc, contents));
     }
 
-    // Forge Config API Port: custom method to identify a modded server
-    private static void onEstablishModdedConnection() {
-        isVanillaConnection = false;
-        ForgeConfigAPIPort.LOGGER.debug("Received modded connection marker from server");
-    }
-
     // Forge Config API Port: custom method similar to NeoForge's NetworkRegistry::initializeNonModdedConnection
     public static void handleClientLoginSuccess() {
-        if (isVanillaConnection) {
+        if (isVanillaConnection()) {
             ForgeConfigAPIPort.LOGGER.debug("Connected to a vanilla server. Catching up missing behaviour.");
             ConfigTracker.INSTANCE.loadDefaultServerConfigs();
         } else {
-            // reset for next server
-            isVanillaConnection = true;
             ForgeConfigAPIPort.LOGGER.debug("Connected to a modded server.");
         }
+    }
+
+    // Forge Config API Port: marker for catching up missing server configs if necessary
+    private static boolean isVanillaConnection() {
+        return ClientConfigurationNetworking.getSendable().isEmpty();
     }
 }
