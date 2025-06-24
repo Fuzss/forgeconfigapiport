@@ -22,23 +22,8 @@ public class ForgeConfigAPIPortFabricClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        registerMessages();
         registerEventHandlers();
-    }
-
-    private static void registerMessages() {
-        ClientConfigurationNetworking.registerGlobalReceiver(ConfigFilePayload.TYPE,
-                (ConfigFilePayload payload, ClientConfigurationNetworking.Context context) -> {
-                    if (!context.client().getConnection().getConnection().isMemoryConnection()) {
-                        ConfigSync.receiveSyncedConfig(payload.contents(), payload.fileName());
-                    }
-                });
-        ClientPlayNetworking.registerGlobalReceiver(ConfigFilePayload.TYPE,
-                (ConfigFilePayload payload, ClientPlayNetworking.Context context) -> {
-                    if (!context.client().getConnection().getConnection().isMemoryConnection()) {
-                        ConfigSync.receiveSyncedConfig(payload.contents(), payload.fileName());
-                    }
-                });
+        registerMessages();
     }
 
     private static void registerEventHandlers() {
@@ -56,5 +41,20 @@ public class ForgeConfigAPIPortFabricClient implements ClientModInitializer {
                 }
             });
         });
+    }
+
+    private static void registerMessages() {
+        ClientConfigurationNetworking.registerGlobalReceiver(ConfigFilePayload.TYPE,
+                (ConfigFilePayload payload, ClientConfigurationNetworking.Context context) -> {
+                    if (!context.networkHandler().connection.isMemoryConnection()) {
+                        ConfigSync.receiveSyncedConfig(payload.contents(), payload.fileName());
+                    }
+                });
+        ClientPlayNetworking.registerGlobalReceiver(ConfigFilePayload.TYPE,
+                (ConfigFilePayload payload, ClientPlayNetworking.Context context) -> {
+                    if (!context.client().getConnection().getConnection().isMemoryConnection()) {
+                        ConfigSync.receiveSyncedConfig(payload.contents(), payload.fileName());
+                    }
+                });
     }
 }

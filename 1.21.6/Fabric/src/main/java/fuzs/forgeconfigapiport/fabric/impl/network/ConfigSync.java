@@ -151,16 +151,11 @@ public final class ConfigSync {
 
     // Forge Config API Port: custom method similar to NeoForge's NetworkRegistry::initializeNonModdedConnection
     public static void handleClientLoginSuccess() {
-        if (isVanillaConnection()) {
+        if (ClientConfigurationNetworking.canSend(ConfigFilePayload.TYPE)) {
+            ForgeConfigAPIPort.LOGGER.debug("Connected to a modded server.");
+        } else {
             ForgeConfigAPIPort.LOGGER.debug("Connected to a vanilla server. Catching up missing behaviour.");
             ConfigTracker.INSTANCE.loadDefaultServerConfigs();
-        } else {
-            ForgeConfigAPIPort.LOGGER.debug("Connected to a modded server.");
         }
-    }
-
-    // Forge Config API Port: marker for catching up missing server configs if necessary
-    private static boolean isVanillaConnection() {
-        return ClientConfigurationNetworking.getSendable().isEmpty();
     }
 }
