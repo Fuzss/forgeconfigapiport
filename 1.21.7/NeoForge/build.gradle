@@ -26,3 +26,9 @@ sourcesJar {
     dependsOn commonForgeApiSources
     from commonForgeApiSources.archiveFile.map { zipTree(it) }
 }
+
+tasks.withType(net.fabricmc.loom.task.AbstractRunTask).configureEach {
+    doFirst {
+        patchLaunchCfg()
+    }
+}
