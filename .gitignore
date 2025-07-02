@@ -33,8 +33,6 @@ classes
 *.iws
 *.iml
 **/.idea/*
-!**/.idea/scopes
-!.idea/gradle.xml
 
 ### NetBeans ###
 nbproject/private/
