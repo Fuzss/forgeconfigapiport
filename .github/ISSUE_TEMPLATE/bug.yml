@@ -40,18 +40,6 @@ body:
       placeholder: ex. v8.0.0
     validations:
       required: true
-  - type: dropdown
-    id: mods
-    attributes:
-      label: Minimal Setup (Required)
-      description: Can your issue be reproduced with a minimal set of mods (only this mod + dependencies)?
-      multiple: false
-      options:
-        - "⸺"
-        - "Yes"
-        - "No"
-    validations:
-      required: true
   - type: textarea
     id: notes
     attributes:
