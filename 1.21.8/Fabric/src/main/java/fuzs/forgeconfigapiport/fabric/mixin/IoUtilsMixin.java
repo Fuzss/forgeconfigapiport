@@ -14,6 +14,7 @@ abstract class IoUtilsMixin {
 
     @Inject(method = "tempConfigFileName", at = @At("HEAD"), cancellable = true, require = 0)
     private static void tempConfigFileName(Path originalFile, CallbackInfoReturnable<String> callback) {
+        // https://github.com/TheElectronWill/night-config/issues/195
         callback.setReturnValue(originalFile.getFileName() + ".new.tmp");
     }
 }
