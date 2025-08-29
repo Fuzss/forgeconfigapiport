@@ -15,6 +15,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientConfigurationPacketListenerImpl;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.commands.CommandBuildContext;
+import net.neoforged.fml.config.ConfigTracker;
+import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.config.ModConfigs;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
@@ -33,13 +35,18 @@ public class ForgeConfigAPIPortFabricClient implements ClientModInitializer {
         ClientConfigurationConnectionEvents.COMPLETE.register((ClientConfigurationPacketListenerImpl handler, Minecraft client) -> {
             ConfigSync.handleClientLoginSuccess();
         });
-        // Reset WORLD type config caches
         ClientPlayConnectionEvents.DISCONNECT.register((ClientPacketListener handler, Minecraft client) -> {
+            // Reset WORLD type config caches
             ModConfigs.getFileMap().values().forEach(config -> {
                 if (config.getSpec() instanceof ModConfigSpec spec) {
                     spec.resetCaches(ModConfigSpec.RestartType.WORLD);
                 }
             });
+
+            // Unload SERVER configs only when disconnecting from a remote server
+            if (handler.getConnection() != null && !handler.getConnection().isMemoryConnection()) {
+                ConfigTracker.INSTANCE.unloadConfigs(ModConfig.Type.SERVER);
+            }
         });
     }
 

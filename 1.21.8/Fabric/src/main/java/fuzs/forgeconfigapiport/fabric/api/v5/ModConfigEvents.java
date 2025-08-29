@@ -83,8 +83,8 @@ public final class ModConfigEvents {
         /**
          * Called when a config is unloaded.
          * <p>
-         * This only happens for server configs when the corresponding world is unloaded by either returning to the main
-         * menu or disconnecting from a server.
+         * This only happens for server configs when a server (integrated or dedicated) shuts down or when a player
+         * disconnects from a remote server.
          *
          * @param modConfig the mod config that is unloading
          */

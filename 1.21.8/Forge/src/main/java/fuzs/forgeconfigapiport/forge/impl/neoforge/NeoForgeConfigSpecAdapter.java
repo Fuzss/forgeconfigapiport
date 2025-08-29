@@ -9,7 +9,9 @@ import com.electronwill.nightconfig.toml.TomlWriter;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.fml.config.ConfigTracker;
+import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.loading.FMLEnvironment;
+import net.minecraftforge.fml.loading.FMLPaths;
 import net.neoforged.fml.config.IConfigSpec;
 import net.neoforged.neoforge.common.ModConfigSpec;
 import org.jetbrains.annotations.Nullable;
@@ -44,13 +46,18 @@ public final class NeoForgeConfigSpecAdapter extends UnmodifiableConfigWrapper<U
             });
         });
         if (FMLEnvironment.dist.isClient()) {
-            // Reset WORLD type config caches
             ClientPlayerNetworkEvent.LoggingOut.BUS.addListener((final ClientPlayerNetworkEvent.LoggingOut event) -> {
+                // Reset WORLD type config caches
                 ConfigTracker.INSTANCE.fileMap().values().forEach(config -> {
                     if (config.getSpec() == this) {
                         this.spec.resetCaches(ModConfigSpec.RestartType.WORLD);
                     }
                 });
+
+                // Unload SERVER configs only when disconnecting from a remote server
+                if (event.getConnection() != null && !event.getConnection().isMemoryConnection()) {
+                    ConfigTracker.INSTANCE.unloadConfigs(ModConfig.Type.SERVER, FMLPaths.CONFIGDIR.get());
+                }
             });
         }
     }
