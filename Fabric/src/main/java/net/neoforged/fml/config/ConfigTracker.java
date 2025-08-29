@@ -150,7 +150,7 @@ public class ConfigTracker {
 
     public void unloadConfigs(ModConfig.Type type) {
         LOGGER.debug(CONFIG, "Unloading configs type {}", type);
-        this.configSets.get(type).forEach(ConfigTracker::closeConfig);
+        this.configSets.get(type).forEach(ConfigTracker::unloadConfig);
     }
 
     static void openConfig(ModConfig config, Path configBasePath, @Nullable Path configOverrideBasePath) {
@@ -254,16 +254,16 @@ public class ConfigTracker {
         return commentedConfig;
     }
 
-    private static void closeConfig(ModConfig config) {
+    private static void unloadConfig(ModConfig config) {
         if (config.loadedConfig != null) {
             if (config.loadedConfig.path() != null) {
-                LOGGER.trace(CONFIG, "Closing config file type {} at {} for {}", config.getType(), config.getFileName(), config.getModId());
+                LOGGER.trace(CONFIG, "Closing and unloading config file type {} at {} for {}", config.getType(), config.getFileName(), config.getModId());
                 unload(config.loadedConfig.path());
-                // Forge Config Api Port: invoke Fabric style callback instead of Forge event
-                config.setConfig(null, ModConfigEventsHelper::onUnloading);
             } else {
-                LOGGER.warn(CONFIG, "Closing non-file config {} at path {}", config.loadedConfig, config.getFileName());
+                LOGGER.trace(CONFIG, "Unloading non-file config {} at path {}", config.loadedConfig, config.getFileName());
             }
+            // Forge Config Api Port: invoke Fabric style callback instead of Forge event
+            config.setConfig(null, ModConfigEventsHelper::onUnloading);
         }
     }
 
