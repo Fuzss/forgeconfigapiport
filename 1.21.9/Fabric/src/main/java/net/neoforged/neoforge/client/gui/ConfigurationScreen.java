@@ -16,6 +16,23 @@ import fuzs.forgeconfigapiport.fabric.impl.config.ForgeConfigApiPortConfig;
 import fuzs.forgeconfigapiport.fabric.impl.config.ModConfigValues;
 import fuzs.forgeconfigapiport.impl.services.CommonAbstractions;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
+
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.fabricmc.loader.api.metadata.ModMetadata;
@@ -24,7 +41,13 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.*;
+import net.minecraft.client.gui.components.AbstractContainerWidget;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.CycleButton;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.StringWidget;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
@@ -33,6 +56,8 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
 import net.minecraft.client.gui.screens.options.OptionsSubScreen;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.resources.language.I18n;
@@ -45,19 +70,18 @@ import net.neoforged.fml.config.ModConfig.Type;
 import net.neoforged.fml.config.ModConfigs;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen.ConfigurationSectionScreen.Filter;
 import net.neoforged.neoforge.common.ModConfigSpec;
-import net.neoforged.neoforge.common.ModConfigSpec.*;
+import net.neoforged.neoforge.common.ModConfigSpec.ConfigValue;
+import net.neoforged.neoforge.common.ModConfigSpec.ListValueSpec;
+import net.neoforged.neoforge.common.ModConfigSpec.Range;
+import net.neoforged.neoforge.common.ModConfigSpec.RestartType;
+import net.neoforged.neoforge.common.ModConfigSpec.ValueSpec;
 import net.neoforged.neoforge.common.TranslatableEnum;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.util.Strings;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.*;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
+import org.lwjgl.glfw.GLFW;
 
 /**
  * A generic configuration UI.<p>
@@ -267,7 +291,7 @@ public final class ConfigurationScreen extends OptionsSubScreen {
                 if (modConfig.getModId().equals(mod) && modConfig.getSpec() instanceof ModConfigSpec) {
                     if (!headerAdded) {
                         list.addSmall(new StringWidget(BIG_BUTTON_WIDTH, Button.DEFAULT_HEIGHT,
-                                Component.translatable(LANG_PREFIX + type.name().toLowerCase(Locale.ENGLISH)).withStyle(ChatFormatting.UNDERLINE), font).alignLeft(), null);
+                                Component.translatable(LANG_PREFIX + type.name().toLowerCase(Locale.ENGLISH)).withStyle(ChatFormatting.UNDERLINE), font), null);
                         headerAdded = true;
                     }
                     btn = Button.builder(Component.translatable(SECTION, translatableConfig(modConfig, "", LANG_PREFIX + "type." + modConfig.getType().name().toLowerCase(Locale.ROOT))),
@@ -295,11 +319,12 @@ public final class ConfigurationScreen extends OptionsSubScreen {
         }
         if (count == 1) {
             autoClose = true;
-            btn.onPress();
+            btn.onPress(new MouseButtonEvent(btn.getX() + btn.getWidth() / 2., btn.getY() + btn.getHeight() / 2., new MouseButtonInfo(GLFW.GLFW_MOUSE_BUTTON_LEFT, 0)));
         }
     }
 
     public Component translatableConfig(ModConfig modConfig, String suffix, String fallback) {
+        // Forge Config Api Port: replace mod loader specific method
         return Component.translatable(translationChecker.check(mod + ".configuration.section." + modConfig.getFileName().replaceAll("[^a-zA-Z0-9]+", ".").replaceFirst("^\\.", "").replaceFirst("\\.$", "").toLowerCase(Locale.ENGLISH) + suffix, fallback), FabricLoader.getInstance().getModContainer(mod).map(
                 ModContainer::getMetadata).map(
                 ModMetadata::getName).orElse(mod));
@@ -585,7 +610,7 @@ public final class ConfigurationScreen extends OptionsSubScreen {
         @SuppressWarnings({ "unchecked", "rawtypes" })
         protected ConfigurationSectionScreen rebuild() {
             if (list != null) { // this may be called early, skip and wait for init() then
-                list.children().clear();
+                list.clearEntries();
                 boolean hasUndoableElements = false;
 
                 final List<@Nullable Element> elements = new ArrayList<>();
@@ -626,7 +651,7 @@ public final class ConfigurationScreen extends OptionsSubScreen {
                         if (element.name() == null) {
                             list.addSmall(new StringWidget(Button.DEFAULT_WIDTH, Button.DEFAULT_HEIGHT, Component.empty(), font), element.getWidget(options));
                         } else {
-                            final StringWidget label = new StringWidget(Button.DEFAULT_WIDTH, Button.DEFAULT_HEIGHT, element.name, font).alignLeft();
+                            final StringWidget label = new StringWidget(Button.DEFAULT_WIDTH, Button.DEFAULT_HEIGHT, element.name, font);
                             label.setTooltip(Tooltip.create(element.tooltip));
                             list.addSmall(label, element.getWidget(options));
                         }
@@ -670,7 +695,7 @@ public final class ConfigurationScreen extends OptionsSubScreen {
         protected Element createStringValue(final String key, final Predicate<String> tester, final Supplier<String> source, final Consumer<String> target) {
             if (source.get().length() > 192) {
                 // That's just too much for the UI
-                final StringWidget label = new StringWidget(Button.DEFAULT_WIDTH, Button.DEFAULT_HEIGHT, Component.literal(source.get().substring(0, 128)), font).alignLeft();
+                final StringWidget label = new StringWidget(Button.DEFAULT_WIDTH, Button.DEFAULT_HEIGHT, Component.literal(source.get().substring(0, 128)), font);
                 label.setTooltip(Tooltip.create(LONG_STRING));
                 return new Element(getTranslationComponent(key), getTooltipComponent(key, null), label, false);
             }
@@ -724,7 +749,7 @@ public final class ConfigurationScreen extends OptionsSubScreen {
          */
         @Nullable
         protected Element createOtherValue(final String key, final ConfigValue<?> value) {
-            final StringWidget label = new StringWidget(Button.DEFAULT_WIDTH, Button.DEFAULT_HEIGHT, Component.literal(Objects.toString(value.getRaw())), font).alignLeft();
+            final StringWidget label = new StringWidget(Button.DEFAULT_WIDTH, Button.DEFAULT_HEIGHT, Component.literal(Objects.toString(value.getRaw())), font);
             label.setTooltip(Tooltip.create(UNSUPPORTED_ELEMENT));
             return new Element(getTranslationComponent(key), getTooltipComponent(key, null), label, false);
         }
@@ -733,7 +758,6 @@ public final class ConfigurationScreen extends OptionsSubScreen {
          * A custom variant of OptionsInstance.Enum that doesn't show the key on the button, just the value
          */
         public record Custom<T>(List<T> values) implements OptionInstance.ValueSet<T> {
-
             @Override
             public Function<OptionInstance<T>, AbstractWidget> createButton(OptionInstance.TooltipSupplier<T> tooltip, Options options, int x, int y, int width, Consumer<T> target) {
                 return optionsInstance -> CycleButton.builder(optionsInstance.toString)
@@ -757,6 +781,7 @@ public final class ConfigurationScreen extends OptionsSubScreen {
             public Codec<T> codec() {
                 return null;
             }
+
             public static final Custom<Boolean> BOOLEAN_VALUES_NO_PREFIX = new Custom<>(ImmutableList.of(Boolean.TRUE, Boolean.FALSE));
         }
 
@@ -1139,7 +1164,7 @@ public final class ConfigurationScreen extends OptionsSubScreen {
          */
         @Nullable
         protected Element createOtherValue(final int idx, final T entry) {
-            final StringWidget label = new StringWidget(Button.DEFAULT_WIDTH, Button.DEFAULT_HEIGHT, Component.literal(Objects.toString(entry)), font).alignLeft();
+            final StringWidget label = new StringWidget(Button.DEFAULT_WIDTH, Button.DEFAULT_HEIGHT, Component.literal(Objects.toString(entry)), font);
             label.setTooltip(Tooltip.create(UNSUPPORTED_ELEMENT));
             return new Element(getTranslationComponent(key), getTooltipComponent(key, null), label, false);
         }
@@ -1256,7 +1281,7 @@ public final class ConfigurationScreen extends OptionsSubScreen {
             protected final Button upButton = Button.builder(MOVE_LIST_ELEMENT_UP, this::up).build();
             protected final Button downButton = Button.builder(MOVE_LIST_ELEMENT_DOWN, this::down).build();
             protected final Button delButton = Button.builder(REMOVE_LIST_ELEMENT, this::rem).build();
-            protected final StringWidget label = new StringWidget(0, 0, 0, 0, Component.empty(), font).alignLeft();
+            protected final StringWidget label = new StringWidget(0, 0, 0, 0, Component.empty(), font);
             protected final int idx;
             protected final boolean isFirst;
             protected final boolean isLast;

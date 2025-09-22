@@ -9,7 +9,7 @@ displayName = "${modName}"
 description = "${modDescription}"
 version = "${modVersion}"
 authors = "${modAuthor}"
-logoFile = "mod_banner.png"
+logoFile = "mod_logo.png"
 logoBlur = false
 displayURL = "${modPageUrl}"
 updateJSONURL = "${modUpdateUrl}"
@@ -33,9 +33,6 @@ side = "BOTH"
 modId = "minecraft"
 mandatory = true
 type = "required"
-versionRange = "[${minecraftVersion}]"
+versionRange = "[${gameVersion}]"
 ordering = "NONE"
 side = "BOTH"
-
-[modproperties.${ modId }]
-catalogueImageIcon = "mod_logo.png"
