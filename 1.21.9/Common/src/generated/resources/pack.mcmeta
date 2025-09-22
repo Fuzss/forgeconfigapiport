@@ -1,0 +1,13 @@
+{
+  "pack": {
+    "description": "Resources for Forge Config API Port",
+    "max_format": [
+      87,
+      1
+    ],
+    "min_format": [
+      87,
+      1
+    ]
+  }
+}

@@ -28,8 +28,10 @@ dependencies {
 //    modApi libs.puzzleslib.fabric
 
     // Mod Menu
-    modCompileOnly(libs.modmenu.fabric) { transitive = false }
-    modLocalRuntime(libs.modmenu.fabric) { transitive = false }
+    // TODO remove when properly updated in version catalog
+    modCompileOnly("com.terraformersmc:modmenu:15.0.0") { transitive = false }
+//    modCompileOnly(libs.modmenu.fabric) { transitive = false }
+//    modLocalRuntime(libs.modmenu.fabric) { transitive = false }
 }
 
 shadowJar {

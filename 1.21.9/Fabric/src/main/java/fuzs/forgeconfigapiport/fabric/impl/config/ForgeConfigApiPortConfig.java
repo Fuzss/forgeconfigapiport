@@ -40,11 +40,11 @@ public class ForgeConfigApiPortConfig {
         // NO-OP
     }
 
-    private void loadFrom(final Path configFile) {
+    private void loadFrom(Path configFile) {
         this.configData = CommentedFileConfig.builder(configFile)
                 .sync()
-                .onFileNotFound(FileNotFoundAction.copyData(Objects.requireNonNull(
-                        getClass().getResourceAsStream("/" + ForgeConfigAPIPort.MOD_ID + ".toml"))))
+                .onFileNotFound(FileNotFoundAction.copyData(Objects.requireNonNull(this.getClass()
+                        .getResourceAsStream("/" + ForgeConfigAPIPort.MOD_ID + ".toml"))))
                 .writingMode(WritingMode.REPLACE)
                 .build();
         try {
@@ -52,35 +52,49 @@ public class ForgeConfigApiPortConfig {
         } catch (ParsingException e) {
             throw new RuntimeException("Failed to load FML config from " + configFile, e);
         }
+
         if (!configSpec.isCorrect(this.configData)) {
             ForgeConfigAPIPort.LOGGER.warn("Configuration file {} is not correct. Correcting", configFile);
             configSpec.correct(this.configData,
                     (action, path, incorrectValue, correctedValue) -> ForgeConfigAPIPort.LOGGER.info(
-                            "Incorrect key {} was corrected from {} to {}", path, incorrectValue, correctedValue)
-            );
+                            "Incorrect key {} was corrected from {} to {}",
+                            path,
+                            incorrectValue,
+                            correctedValue));
         }
+
         this.configData.putAllComments(configComments);
         this.configData.save();
     }
 
     public static void load() {
-        final Path configFile = FabricLoader.getInstance().getConfigDir().resolve(ForgeConfigAPIPort.MOD_ID + ".toml");
+        Path configFile = FabricLoader.getInstance().getConfigDir().resolve(ForgeConfigAPIPort.MOD_ID + ".toml");
         INSTANCE.loadFrom(configFile);
-        ForgeConfigAPIPort.LOGGER.trace("Loaded FML config from {}", configFile);
-        for (ModConfigValues cv : ModConfigValues.values()) {
-            ForgeConfigAPIPort.LOGGER.trace("FMLConfig {} is {}", cv.entry, cv.getConfigValue(INSTANCE.configData));
+        ForgeConfigAPIPort.LOGGER.trace("Loaded {} config from {}", ForgeConfigAPIPort.MOD_NAME, configFile);
+        for (ModConfigValues modConfigValues : ModConfigValues.values()) {
+            ForgeConfigAPIPort.LOGGER.trace("{} {} is {}",
+                    ForgeConfigAPIPort.MOD_NAME,
+                    modConfigValues.entry,
+                    modConfigValues.getConfigValue(INSTANCE.configData));
         }
+
         getOrCreateGameRelativePath(Paths.get(getConfigValue(ModConfigValues.DEFAULT_CONFIGS_PATH)));
     }
 
-    public static String getConfigValue(ModConfigValues v) {
-        if (INSTANCE.configData == null) load();
-        return v.getConfigValue(INSTANCE.configData);
+    public static String getConfigValue(ModConfigValues modConfigValues) {
+        if (INSTANCE.configData == null) {
+            load();
+        }
+
+        return modConfigValues.getConfigValue(INSTANCE.configData);
     }
 
-    public static boolean getBoolConfigValue(ModConfigValues v) {
-        if (INSTANCE.configData == null) load();
-        return v.getConfigValue(INSTANCE.configData);
+    public static boolean getBoolConfigValue(ModConfigValues modConfigValues) {
+        if (INSTANCE.configData == null) {
+            load();
+        }
+
+        return modConfigValues.getConfigValue(INSTANCE.configData);
     }
 
     public static Path getDefaultConfigsDirectory() {
@@ -99,6 +113,7 @@ public class ForgeConfigApiPortConfig {
                 throw new RuntimeException(e);
             }
         }
+
         return gameFolderPath;
     }
 }

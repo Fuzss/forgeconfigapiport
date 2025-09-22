@@ -8,20 +8,21 @@ package fuzs.forgeconfigapiport.fabric.impl.config;
 import com.electronwill.nightconfig.core.CommentedConfig;
 import com.electronwill.nightconfig.core.ConfigSpec;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.function.Function;
 
 public enum ModConfigValues {
-    DEFAULT_CONFIGS_PATH("defaultConfigsPath", "defaultconfigs",
-            "Path to load default configs from, intended for setting global server configs for newly created worlds, but also works when recreating client and common configs."
-    ),
-    DISABLE_CONFIG_WATCHER("disableConfigWatcher", Boolean.FALSE,
-            "Disables File Watcher. Used to automatically update config if its file has been modified."
-    ),
-    LOG_UNTRANSLATED_CONFIGURATION_WARNINGS("logUntranslatedConfigurationWarnings", Boolean.TRUE,
-            "A config option mainly for developers. Logs out configuration values that do not have translations when running a client in a development environment."
-    );
+    DEFAULT_CONFIGS_PATH("defaultConfigsPath",
+            "defaultconfigs",
+            "Path to load default configs from, intended for setting global server configs for newly created worlds, but also works when recreating client and common configs."),
+    DISABLE_CONFIG_WATCHER("disableConfigWatcher",
+            Boolean.FALSE,
+            "Disables File Watcher. Used to automatically update config if its file has been modified."),
+    LOG_UNTRANSLATED_CONFIGURATION_WARNINGS("logUntranslatedConfigurationWarnings",
+            Boolean.TRUE,
+            "A config option mainly for developers. Logs out configuration values that do not have translations when running a client in a development environment.");
 
     final String entry;
     final Object defaultValue;
@@ -52,8 +53,8 @@ public enum ModConfigValues {
     }
 
     @SuppressWarnings("unchecked")
-    <T> T getConfigValue(CommentedFileConfig config) {
-        return (T) this.entryFunction.apply(config != null ? config.get(this.entry) : this.defaultValue);
+    <T> T getConfigValue(@Nullable CommentedFileConfig fileConfig) {
+        return (T) this.entryFunction.apply(fileConfig != null ? fileConfig.get(this.entry) : this.defaultValue);
     }
 
     public <T> void updateValue(final CommentedFileConfig configData, final T value) {
