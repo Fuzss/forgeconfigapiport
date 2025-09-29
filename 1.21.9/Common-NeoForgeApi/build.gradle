@@ -37,7 +37,8 @@ remapJar {
     from(shadowJar.archiveFile)
     dependsOn(shadowJar)
     archiveClassifier.set("")
-    atAccessWideners.add("${modId}.accesswidener")
+    // this has to be injected like so and not converted to NeoForge's access transformer
+    injectAccessWidener = true
 }
 
 jar {
