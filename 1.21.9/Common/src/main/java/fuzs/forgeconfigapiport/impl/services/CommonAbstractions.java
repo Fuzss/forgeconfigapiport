@@ -1,7 +1,5 @@
 package fuzs.forgeconfigapiport.impl.services;
 
-import java.util.Optional;
-
 public interface CommonAbstractions {
     CommonAbstractions INSTANCE = ServiceProviderLoader.load(CommonAbstractions.class);
 
@@ -14,6 +12,4 @@ public interface CommonAbstractions {
             return Boolean.getBoolean(modId + ".isDevelopmentEnvironment");
         }
     }
-
-    Optional<String> getDisplayName(String modId);
 }

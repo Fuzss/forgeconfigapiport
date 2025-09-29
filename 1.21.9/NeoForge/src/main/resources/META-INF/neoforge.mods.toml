@@ -16,10 +16,10 @@ updateJSONURL = "${modUpdateUrl}"
 displayTest = "${modForgeDisplayTest}"
 
 [[mixins]]
-config="${modId}.common.mixins.json"
+config = "${modId}.common.mixins.json"
 
 [[mixins]]
-config="${modId}.neoforge.mixins.json"
+config = "${modId}.neoforge.mixins.json"
 
 [[dependencies.${ modId }]]
 modId = "neoforge"
@@ -33,6 +33,6 @@ side = "BOTH"
 modId = "minecraft"
 mandatory = true
 type = "required"
-versionRange = "[${gameVersion}]"
+versionRange = "[${minecraftVersion},${upcomingMinecraftVersion})"
 ordering = "NONE"
 side = "BOTH"
