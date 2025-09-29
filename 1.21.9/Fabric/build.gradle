@@ -34,15 +34,15 @@ dependencies {
 //    modLocalRuntime(libs.modmenu.fabric) { transitive = false }
 }
 
-shadowJar {
+tasks.named("shadowJar") {
     configurations = [project.configurations.shadowCommon, project.configurations.shadowCommonNeoForgeApi, project.configurations.shadowCommonForgeApi]
 }
 
 sourcesJar {
     def commonNeoForgeApiSources = project(":Common-NeoForgeApi").sourcesJar
-    dependsOn commonNeoForgeApiSources
+    dependsOn(commonNeoForgeApiSources)
     from commonNeoForgeApiSources.archiveFile.map { zipTree(it) }
     def commonForgeApiSources = project(":Common-ForgeApi").sourcesJar
-    dependsOn commonForgeApiSources
+    dependsOn(commonForgeApiSources)
     from commonForgeApiSources.archiveFile.map { zipTree(it) }
 }

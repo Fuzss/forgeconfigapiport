@@ -20,12 +20,12 @@ dependencies {
 //    modApi libs.puzzleslib.forge
 }
 
-shadowJar {
+tasks.named("shadowJar") {
     configurations = [project.configurations.shadowCommon, project.configurations.shadowCommonNeoForgeApi]
 }
 
 sourcesJar {
     def commonNeoForgeApiSources = project(":Common-NeoForgeApi").sourcesJar
-    dependsOn commonNeoForgeApiSources
+    dependsOn(commonNeoForgeApiSources)
     from commonNeoForgeApiSources.archiveFile.map { zipTree(it) }
 }

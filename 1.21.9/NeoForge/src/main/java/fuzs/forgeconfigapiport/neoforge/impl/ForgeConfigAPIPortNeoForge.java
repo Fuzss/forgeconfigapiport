@@ -1,10 +1,12 @@
 package fuzs.forgeconfigapiport.neoforge.impl;
 
 import fuzs.forgeconfigapiport.impl.ForgeConfigAPIPort;
-import fuzs.forgeconfigapiport.impl.data.ModPackMetadataProvider;
 import fuzs.forgeconfigapiport.impl.services.CommonAbstractions;
 import fuzs.forgeconfigapiport.neoforge.api.v5.ForgeConfigRegistry;
+import net.minecraft.data.metadata.PackMetadataGenerator;
+import net.minecraft.network.chat.Component;
 import net.minecraftforge.common.ForgeConfigSpec;
+import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
@@ -28,10 +30,15 @@ public class ForgeConfigAPIPortNeoForge {
                             .build(),
                     "forgeconfigapiport-server-forge.toml");
         }
-        modContainer.getEventBus().addListener((final GatherDataEvent.Client evt) -> {
-            evt.getGenerator()
+        registerLoadingHandlers(modContainer.getEventBus());
+    }
+
+    private static void registerLoadingHandlers(IEventBus eventBus) {
+        eventBus.addListener((final GatherDataEvent.Client event) -> {
+            event.getGenerator()
                     .addProvider(true,
-                            new ModPackMetadataProvider(ForgeConfigAPIPort.MOD_ID, evt.getGenerator().getPackOutput()));
+                            PackMetadataGenerator.forFeaturePack(event.getGenerator().getPackOutput(),
+                                    Component.literal(event.getModContainer().getModInfo().getDescription())));
         });
     }
 }

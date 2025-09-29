@@ -1,13 +1,7 @@
 {
   "pack": {
-    "description": "Resources for Forge Config API Port",
-    "max_format": [
-      87,
-      1
-    ],
-    "min_format": [
-      87,
-      1
-    ]
+    "description": "Provides NeoForge's & Forge's config systems to other modding ecosystems. Designed for a multi-loader architecture.",
+    "max_format": 88,
+    "min_format": 88
   }
 }
