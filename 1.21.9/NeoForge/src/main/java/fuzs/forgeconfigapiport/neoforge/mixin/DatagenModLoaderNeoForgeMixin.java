@@ -18,7 +18,7 @@ abstract class DatagenModLoaderNeoForgeMixin {
                     target = "Lnet/neoforged/neoforge/data/event/GatherDataEvent$DataGeneratorConfig;runAll()V"))
     private static void begin(GatherDataEvent.DataGeneratorConfig dataGeneratorConfig, Operation<Void> operation) {
         // Architectury Loom does not exit the data run configuration, this will allow it to do so
-        if (!FMLEnvironment.production && isRunningDataGen()) {
+        if (!FMLEnvironment.isProduction() && isRunningDataGen()) {
             try {
                 operation.call(dataGeneratorConfig);
             } catch (Throwable throwable) {

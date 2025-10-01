@@ -7,6 +7,6 @@ public final class NeoForgeCommonAbstractions implements CommonAbstractions {
 
     @Override
     public boolean isDevelopmentEnvironment() {
-        return !FMLEnvironment.production;
+        return !FMLEnvironment.isProduction();
     }
 }
