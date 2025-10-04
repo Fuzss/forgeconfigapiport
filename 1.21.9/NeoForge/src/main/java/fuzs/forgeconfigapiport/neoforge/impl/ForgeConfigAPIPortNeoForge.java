@@ -17,20 +17,8 @@ import net.neoforged.neoforge.data.event.GatherDataEvent;
 public class ForgeConfigAPIPortNeoForge {
 
     public ForgeConfigAPIPortNeoForge(ModContainer modContainer) {
-        if (CommonAbstractions.INSTANCE.isDevelopmentEnvironment(ForgeConfigAPIPort.MOD_ID)) {
-            modContainer.registerConfig(ModConfig.Type.SERVER,
-                    new ModConfigSpec.Builder().comment("hello world").define("dummy_entry", true).next().build(),
-                    "forgeconfigapiport-server-neoforge.toml");
-            ForgeConfigRegistry.INSTANCE.register(modContainer.getModId(),
-                    ModConfig.Type.SERVER,
-                    new ForgeConfigSpec.Builder().translation("dummy_entry")
-                            .comment("hello world")
-                            .define("dummy_entry", true)
-                            .next()
-                            .build(),
-                    "forgeconfigapiport-server-forge.toml");
-        }
         registerLoadingHandlers(modContainer.getEventBus());
+        setupDevelopmentEnvironment(modContainer);
     }
 
     private static void registerLoadingHandlers(IEventBus eventBus) {
@@ -40,5 +28,23 @@ public class ForgeConfigAPIPortNeoForge {
                             PackMetadataGenerator.forFeaturePack(event.getGenerator().getPackOutput(),
                                     Component.literal(event.getModContainer().getModInfo().getDescription())));
         });
+    }
+
+    private static void setupDevelopmentEnvironment(ModContainer modContainer) {
+        if (!CommonAbstractions.INSTANCE.isDevelopmentEnvironment(ForgeConfigAPIPort.MOD_ID)) {
+            return;
+        }
+
+        modContainer.registerConfig(ModConfig.Type.SERVER,
+                new ModConfigSpec.Builder().comment("hello world").define("dummy_entry", true).next().build(),
+                "forgeconfigapiport-server-neoforge.toml");
+        ForgeConfigRegistry.INSTANCE.register(modContainer.getModId(),
+                ModConfig.Type.SERVER,
+                new ForgeConfigSpec.Builder().translation("dummy_entry")
+                        .comment("hello world")
+                        .define("dummy_entry", true)
+                        .next()
+                        .build(),
+                "forgeconfigapiport-server-forge.toml");
     }
 }

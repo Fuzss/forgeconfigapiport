@@ -13,14 +13,20 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 public class ForgeConfigAPIPortForge {
 
     public ForgeConfigAPIPortForge(FMLJavaModLoadingContext context) {
-        if (CommonAbstractions.INSTANCE.isDevelopmentEnvironment(ForgeConfigAPIPort.MOD_ID)) {
-            NeoForgeConfigRegistry.INSTANCE.register(ForgeConfigAPIPort.MOD_ID,
-                    ModConfig.Type.SERVER,
-                    new ModConfigSpec.Builder().comment("hello world").define("dummy_entry", true).next().build(),
-                    "forgeconfigapiport-server-neoforge.toml");
-            context.registerConfig(ModConfig.Type.SERVER,
-                    new ForgeConfigSpec.Builder().comment("hello world").define("dummy_entry", true).next().build(),
-                    "forgeconfigapiport-server-forge.toml");
+        setupDevelopmentEnvironment(context);
+    }
+
+    private static void setupDevelopmentEnvironment(FMLJavaModLoadingContext context) {
+        if (!CommonAbstractions.INSTANCE.isDevelopmentEnvironment(ForgeConfigAPIPort.MOD_ID)) {
+            return;
         }
+
+        NeoForgeConfigRegistry.INSTANCE.register(ForgeConfigAPIPort.MOD_ID,
+                ModConfig.Type.SERVER,
+                new ModConfigSpec.Builder().comment("hello world").define("dummy_entry", true).next().build(),
+                "forgeconfigapiport-server-neoforge.toml");
+        context.registerConfig(ModConfig.Type.SERVER,
+                new ForgeConfigSpec.Builder().comment("hello world").define("dummy_entry", true).next().build(),
+                "forgeconfigapiport-server-forge.toml");
     }
 }

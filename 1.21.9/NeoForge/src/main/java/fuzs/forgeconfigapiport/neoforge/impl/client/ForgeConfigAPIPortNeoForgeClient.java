@@ -12,8 +12,14 @@ import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 public class ForgeConfigAPIPortNeoForgeClient {
 
     public ForgeConfigAPIPortNeoForgeClient(ModContainer modContainer) {
-        if (CommonAbstractions.INSTANCE.isDevelopmentEnvironment(ForgeConfigAPIPort.MOD_ID)) {
-            modContainer.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
+        setupDevelopmentEnvironment(modContainer);
+    }
+
+    private static void setupDevelopmentEnvironment(ModContainer modContainer) {
+        if (!CommonAbstractions.INSTANCE.isDevelopmentEnvironment(ForgeConfigAPIPort.MOD_ID)) {
+            return;
         }
+
+        modContainer.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
     }
 }
