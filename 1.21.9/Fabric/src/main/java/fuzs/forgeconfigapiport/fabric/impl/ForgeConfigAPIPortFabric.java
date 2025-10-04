@@ -60,15 +60,17 @@ public class ForgeConfigAPIPortFabric implements ModInitializer {
     }
 
     private static void setupDevelopmentEnvironment() {
-        if (CommonAbstractions.INSTANCE.isDevelopmentEnvironment(ForgeConfigAPIPort.MOD_ID)) {
-            ConfigRegistry.INSTANCE.register(ForgeConfigAPIPort.MOD_ID,
-                    ModConfig.Type.SERVER,
-                    new ModConfigSpec.Builder().comment("hello world").define("dummy_entry", true).next().build(),
-                    "forgeconfigapiport-server-neoforge.toml");
-            ConfigRegistry.INSTANCE.register(ForgeConfigAPIPort.MOD_ID,
-                    ModConfig.Type.SERVER,
-                    new ForgeConfigSpec.Builder().comment("hello world").define("dummy_entry", true).next().build(),
-                    "forgeconfigapiport-server-forge.toml");
+        if (!CommonAbstractions.INSTANCE.isDevelopmentEnvironment(ForgeConfigAPIPort.MOD_ID)) {
+            return;
         }
+
+        ConfigRegistry.INSTANCE.register(ForgeConfigAPIPort.MOD_ID,
+                ModConfig.Type.SERVER,
+                new ModConfigSpec.Builder().comment("hello world").define("dummy_entry", true).next().build(),
+                "forgeconfigapiport-server-neoforge.toml");
+        ConfigRegistry.INSTANCE.register(ForgeConfigAPIPort.MOD_ID,
+                ModConfig.Type.SERVER,
+                new ForgeConfigSpec.Builder().comment("hello world").define("dummy_entry", true).next().build(),
+                "forgeconfigapiport-server-forge.toml");
     }
 }

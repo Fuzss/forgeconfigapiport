@@ -3,9 +3,7 @@
   "minVersion": "0.8",
   "compatibilityLevel": "JAVA_17",
   "package": "${modGroup}.neoforge.mixin",
-  "plugin": "${modGroup}.neoforge.mixin.MixinConfigPluginNeoForgeImpl",
   "mixins": [
-    "DatagenModLoaderNeoForgeMixin"
   ],
   "client": [
   ],
