@@ -1,0 +1,58 @@
+apply plugin: "com.gradleup.shadow"
+
+architectury {
+    common rootProject.subprojects.name.collect { it.toLowerCase() }.findAll { !it.contains("common") }
+}
+
+loom {
+    accessWidenerPath = project(":Common").loom.accessWidenerPath
+}
+
+configurations {
+    common
+    shadowCommon
+    compileClasspath.extendsFrom common
+    runtimeClasspath.extendsFrom common
+}
+
+dependencies {
+    // Common Project
+    common(project(path: ":Common", configuration: "namedElements")) { transitive false }
+    shadowCommon(project(path: ":Common", configuration: "namedElements")) { transitive false }
+
+    // Fabric Loader
+    modCompileOnly libs.fabricloader.fabric
+
+    // Night Config
+    api libs.nightconfigcore
+    api libs.nightconfigtoml
+}
+
+tasks.named("shadowJar") {
+    configurations = [project.configurations.shadowCommon]
+    archiveClassifier.set("dev-shadow")
+}
+
+remapJar {
+    dependsOn(shadowJar)
+    inputFile.set(shadowJar.archiveFile)
+    archiveClassifier.set("")
+    // this has to be injected like so and not converted to NeoForge's access transformer
+    injectAccessWidener = true
+}
+
+jar {
+    archiveClassifier.set("dev")
+}
+
+sourcesJar {
+    def commonSources = project(":Common").sourcesJar
+    dependsOn(commonSources)
+    from commonSources.archiveFile.map { zipTree(it) }
+}
+
+tasks.withType(net.fabricmc.loom.task.AbstractRemapJarTask).configureEach {
+    // this must really be named for common to support other projects not using Loom
+    // but using named is currently broken in any other than the main common project
+//    targetNamespace = "named"
+}
