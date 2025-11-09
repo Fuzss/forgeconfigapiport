@@ -5,41 +5,13 @@
 
 package net.neoforged.neoforge.common;
 
-import com.electronwill.nightconfig.core.CommentedConfig;
-import com.electronwill.nightconfig.core.Config;
+import com.electronwill.nightconfig.core.*;
 import com.electronwill.nightconfig.core.ConfigSpec.CorrectionAction;
 import com.electronwill.nightconfig.core.ConfigSpec.CorrectionListener;
-import com.electronwill.nightconfig.core.EnumGetMethod;
-import com.electronwill.nightconfig.core.InMemoryFormat;
-import com.electronwill.nightconfig.core.UnmodifiableCommentedConfig;
-import com.electronwill.nightconfig.core.UnmodifiableConfig;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.BooleanSupplier;
-import java.util.function.Consumer;
-import java.util.function.DoubleSupplier;
-import java.util.function.Function;
-import java.util.function.IntSupplier;
-import java.util.function.LongSupplier;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-
 import fuzs.forgeconfigapiport.impl.services.CommonAbstractions;
 import net.neoforged.fml.config.IConfigSpec;
 import org.apache.commons.lang3.tuple.Pair;
@@ -47,6 +19,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.*;
+import java.util.function.*;
+import java.util.stream.Collectors;
 
 /*
  * Like {@link com.electronwill.nightconfig.core.ConfigSpec} except in builder format, and extended to accept comments, language keys,
@@ -363,9 +339,8 @@ public class ModConfigSpec implements IConfigSpec {
         public <V extends Comparable<? super V>> ConfigValue<V> defineInRange(List<String> path, Supplier<V> defaultSupplier, V min, V max, Class<V> clazz) {
             Range<V> range = new Range<>(clazz, min, max);
             context.setRange(range);
-            comment("Range: " + range.toString());
-            if (min.compareTo(max) > 0)
-                throw new IllegalArgumentException("Range min most be less then max.");
+            comment(" Default: " + defaultSupplier.get());
+            comment(" Range: " + range);
             return define(path, defaultSupplier, range);
         }
 
@@ -387,11 +362,11 @@ public class ModConfigSpec implements IConfigSpec {
 
         /**
          * See {@link #defineList(List, Supplier, Supplier, Predicate)} for details.<p>
-         *
+         * 
          * This variant takes its key as a string and splits it on ".".<br>
          * This variant takes its default value directly and wraps it in a supplier.<br>
          * This variant has no supplier for new elements, so no new elements can be added in the config UI.
-         *
+         * 
          * @deprecated Use {@link #defineList(String, List, Supplier, Predicate)}
          */
         @Deprecated
@@ -401,10 +376,10 @@ public class ModConfigSpec implements IConfigSpec {
 
         /**
          * See {@link #defineList(List, Supplier, Supplier, Predicate)} for details.<p>
-         *
+         * 
          * This variant takes its key as a string and splits it on ".".<br>
          * This variant takes its default value directly and wraps it in a supplier.
-         *
+         * 
          */
         public <T> ConfigValue<List<? extends T>> defineList(String path, List<? extends T> defaultValue, Supplier<T> newElementSupplier, Predicate<Object> elementValidator) {
             return defineList(split(path), defaultValue, newElementSupplier, elementValidator);
@@ -412,10 +387,10 @@ public class ModConfigSpec implements IConfigSpec {
 
         /**
          * See {@link #defineList(List, Supplier, Supplier, Predicate)} for details.<p>
-         *
+         * 
          * This variant takes its key as a string and splits it on ".".<br>
          * This variant has no supplier for new elements, so no new elements can be added in the config UI.
-         *
+         * 
          * @deprecated Use {@link #defineList(String, Supplier, Supplier, Predicate)}
          */
         @Deprecated
@@ -425,9 +400,9 @@ public class ModConfigSpec implements IConfigSpec {
 
         /**
          * See {@link #defineList(List, Supplier, Supplier, Predicate)} for details.<p>
-         *
+         * 
          * This variant takes its key as a string and splits it on ".".
-         *
+         * 
          */
         public <T> ConfigValue<List<? extends T>> defineList(String path, Supplier<List<? extends T>> defaultSupplier, Supplier<T> newElementSupplier, Predicate<Object> elementValidator) {
             return defineList(split(path), defaultSupplier, newElementSupplier, elementValidator);
@@ -435,10 +410,10 @@ public class ModConfigSpec implements IConfigSpec {
 
         /**
          * See {@link #defineList(List, Supplier, Supplier, Predicate)} for details.<p>
-         *
+         * 
          * This variant takes its default value directly and wraps it in a supplier.<br>
          * This variant has no supplier for new elements, so no new elements can be added in the config UI.
-         *
+         * 
          * @deprecated Use {@link #defineList(List, List, Supplier, Predicate)}
          */
         @Deprecated
@@ -448,9 +423,9 @@ public class ModConfigSpec implements IConfigSpec {
 
         /**
          * See {@link #defineList(List, Supplier, Supplier, Predicate)} for details.<p>
-         *
+         * 
          * This variant takes its default value directly and wraps it in a supplier.
-         *
+         * 
          */
         public <T> ConfigValue<List<? extends T>> defineList(List<String> path, List<? extends T> defaultValue, Supplier<T> newElementSupplier, Predicate<Object> elementValidator) {
             return defineList(path, () -> defaultValue, newElementSupplier, elementValidator);
@@ -458,9 +433,9 @@ public class ModConfigSpec implements IConfigSpec {
 
         /**
          * See {@link #defineList(List, Supplier, Supplier, Predicate)} for details.<p>
-         *
+         * 
          * This variant has no supplier for new elements, so no new elements can be added in the config UI.
-         *
+         * 
          * @deprecated Use {@link #defineList(List, Supplier, Supplier, Predicate)}
          */
         @Deprecated
@@ -470,9 +445,9 @@ public class ModConfigSpec implements IConfigSpec {
 
         /**
          * Build a new config value that holds a {@link List}.<p>
-         *
+         * 
          * This list cannot be empty. See also {@link #defineList(List, Supplier, Supplier, Predicate, Range)} for more control over the list size.
-         *
+         * 
          * @param <T>                The class of element of the list. Directly supported are {@link String}, {@link Boolean}, {@link Integer}, {@link Long} and {@link Double}.
          *                           Other classes will be saved using their string representation and will be read back from the config file as strings.
          * @param path               The key for the config value in list form, i.e. pre-split into section and key.
@@ -486,16 +461,16 @@ public class ModConfigSpec implements IConfigSpec {
          *         was updated or the config UI was used.
          */
         public <T> ConfigValue<List<? extends T>> defineList(List<String> path, Supplier<List<? extends T>> defaultSupplier, Supplier<T> newElementSupplier, Predicate<Object> elementValidator) {
-            return defineList(path, defaultSupplier, newElementSupplier, elementValidator, new Range<Integer>(Integer.class, 1, Integer.MAX_VALUE));
+            return defineList(path, defaultSupplier, newElementSupplier, elementValidator, ListValueSpec.NON_EMPTY);
         }
 
         /**
          * See {@link #defineListAllowEmpty(List, Supplier, Supplier, Predicate)} for details.<p>
-         *
+         * 
          * This variant takes its key as a string and splits it on ".".<br>
          * This variant takes its default value directly and wraps it in a supplier.<br>
          * This variant has no supplier for new elements, so no new elements can be added in the config UI.
-         *
+         * 
          * @deprecated Use {@link #defineListAllowEmpty(String, List, Supplier, Predicate)}
          */
         @Deprecated
@@ -505,10 +480,10 @@ public class ModConfigSpec implements IConfigSpec {
 
         /**
          * See {@link #defineListAllowEmpty(List, Supplier, Supplier, Predicate)} for details.<p>
-         *
+         * 
          * This variant takes its key as a string and splits it on ".".<br>
          * This variant takes its default value directly and wraps it in a supplier.
-         *
+         * 
          */
         public <T> ConfigValue<List<? extends T>> defineListAllowEmpty(String path, List<? extends T> defaultValue, Supplier<T> newElementSupplier, Predicate<Object> elementValidator) {
             return defineListAllowEmpty(split(path), defaultValue, newElementSupplier, elementValidator);
@@ -516,10 +491,10 @@ public class ModConfigSpec implements IConfigSpec {
 
         /**
          * See {@link #defineListAllowEmpty(List, Supplier, Supplier, Predicate)} for details.<p>
-         *
+         * 
          * This variant takes its key as a string and splits it on ".".<br>
          * This variant has no supplier for new elements, so no new elements can be added in the config UI.
-         *
+         * 
          * @deprecated Use {@link #defineListAllowEmpty(String, Supplier, Supplier, Predicate)}
          */
         @Deprecated
@@ -529,9 +504,9 @@ public class ModConfigSpec implements IConfigSpec {
 
         /**
          * See {@link #defineListAllowEmpty(List, Supplier, Supplier, Predicate)} for details.<p>
-         *
+         * 
          * This variant takes its key as a string and splits it on ".".
-         *
+         * 
          */
         public <T> ConfigValue<List<? extends T>> defineListAllowEmpty(String path, Supplier<List<? extends T>> defaultSupplier, Supplier<T> newElementSupplier, Predicate<Object> elementValidator) {
             return defineListAllowEmpty(split(path), defaultSupplier, newElementSupplier, elementValidator);
@@ -539,10 +514,10 @@ public class ModConfigSpec implements IConfigSpec {
 
         /**
          * See {@link #defineListAllowEmpty(List, Supplier, Supplier, Predicate)} for details.<p>
-         *
+         * 
          * This variant takes its default value directly and wraps it in a supplier.<br>
          * This variant has no supplier for new elements, so no new elements can be added in the config UI.
-         *
+         * 
          * @deprecated Use {@link #defineListAllowEmpty(List, List, Supplier, Predicate)}
          */
         @Deprecated
@@ -552,9 +527,9 @@ public class ModConfigSpec implements IConfigSpec {
 
         /**
          * See {@link #defineListAllowEmpty(List, Supplier, Supplier, Predicate)} for details.<p>
-         *
+         * 
          * This variant takes its default value directly and wraps it in a supplier.
-         *
+         * 
          */
         public <T> ConfigValue<List<? extends T>> defineListAllowEmpty(List<String> path, List<? extends T> defaultValue, Supplier<T> newElementSupplier, Predicate<Object> elementValidator) {
             return defineListAllowEmpty(path, () -> defaultValue, newElementSupplier, elementValidator);
@@ -562,9 +537,9 @@ public class ModConfigSpec implements IConfigSpec {
 
         /**
          * See {@link #defineListAllowEmpty(List, Supplier, Supplier, Predicate)} for details.<p>
-         *
+         * 
          * This variant has no supplier for new elements, so no new elements can be added in the config UI.
-         *
+         * 
          * @deprecated Use {@link #defineListAllowEmpty(List, Supplier, Supplier, Predicate)}
          */
         @Deprecated
@@ -574,9 +549,9 @@ public class ModConfigSpec implements IConfigSpec {
 
         /**
          * Build a new config value that holds a {@link List}.<p>
-         *
+         * 
          * This list can be empty. See also {@link #defineList(List, Supplier, Supplier, Predicate, Range)} for more control over the list size.
-         *
+         * 
          * @param <T>                The class of element of the list. Directly supported are {@link String}, {@link Boolean}, {@link Integer}, {@link Long} and {@link Double}.
          *                           Other classes will be saved using their string representation and will be read back from the config file as strings.
          * @param path               The key for the config value in list form, i.e. pre-split into section and key.
@@ -595,7 +570,7 @@ public class ModConfigSpec implements IConfigSpec {
 
         /**
          * Build a new config value that holds a {@link List}.<p>
-         *
+         * 
          * @param <T>                The class of element of the list. Directly supported are {@link String}, {@link Boolean}, {@link Integer}, {@link Long} and {@link Double}.
          *                           Other classes will be saved using their string representation and will be read back from the config file as strings.
          * @param path               The key for the config value in list form, i.e. pre-split into section and key.
@@ -606,11 +581,11 @@ public class ModConfigSpec implements IConfigSpec {
          * @param elementValidator   A {@link Predicate} to verify if a list element is valid. Elements that are read from the config file are removed from the list if the
          *                           validator rejects them.
          * @param sizeRange          A {@link Range} defining the valid length of the list. Lists read from the config file that don't validate with this Range will be replaced
-         *                           with the default.
+         *                           with the default. When <code>null</code>, the list size is unbounded.
          * @return A {@link ConfigValue} object that can be used to access the config value and that will live-update if the value changed, i.e. because the config file
          *         was updated or the config UI was used.
          */
-        public <T> ConfigValue<List<? extends T>> defineList(List<String> path, Supplier<List<? extends T>> defaultSupplier, @Nullable Supplier<T> newElementSupplier, Predicate<Object> elementValidator, Range<Integer> sizeRange) {
+        public <T> ConfigValue<List<? extends T>> defineList(List<String> path, Supplier<List<? extends T>> defaultSupplier, @Nullable Supplier<T> newElementSupplier, Predicate<Object> elementValidator, @Nullable Range<Integer> sizeRange) {
             context.setClazz(List.class);
             return define(path, new ListValueSpec(defaultSupplier, newElementSupplier, x -> x instanceof List && ((List<?>) x).stream().allMatch(elementValidator), elementValidator, context, path, sizeRange) {
                 @Override
@@ -999,6 +974,13 @@ public class ModConfigSpec implements IConfigSpec {
             this.clazz = clazz;
             this.min = min;
             this.max = max;
+            if (min.compareTo(max) > 0) {
+                throw new IllegalArgumentException("Range min must be less then max.");
+            }
+        }
+
+        public static Range<Integer> of(int min, int max) {
+            return new Range<>(Integer.class, min, max);
         }
 
         public Class<? extends V> getClazz() {
@@ -1125,7 +1107,8 @@ public class ModConfigSpec implements IConfigSpec {
     }
 
     public static class ListValueSpec extends ValueSpec {
-        private static final Range<Integer> MAX_ELEMENTS = new Range<>(Integer.class, 0, Integer.MAX_VALUE);
+        private static final Range<Integer> MAX_ELEMENTS = Range.of(0, Integer.MAX_VALUE);
+        private static final Range<Integer> NON_EMPTY = Range.of(1, Integer.MAX_VALUE);
 
         @Nullable
         private final Supplier<?> newElementSupplier;
@@ -1144,9 +1127,9 @@ public class ModConfigSpec implements IConfigSpec {
 
         /**
          * Creates a new empty element that can be added to the end of the list or null if the list doesn't support adding elements.<p>
-         *
+         * 
          * The element does not need to validate with either {@link #test(Object)} or {@link #testElement(Object)}, but it should give the user a good starting point for their edit.<p>
-         *
+         * 
          * Only used by the UI!
          */
         @Nullable
@@ -1156,9 +1139,9 @@ public class ModConfigSpec implements IConfigSpec {
 
         /**
          * Determines if a given object can be part of the list.<p>
-         *
+         * 
          * Note that the list-level validator overrules this.<p>
-         *
+         * 
          * Only used by the UI!
          */
         public boolean testElement(Object value) {
@@ -1382,7 +1365,7 @@ public class ModConfigSpec implements IConfigSpec {
         /**
          * Require a game restart.
          * <p>
-         * Cannot be used for {@linkplain ModConfig.Type#SERVER server configs}.
+         * Cannot be used for {@code ModConfig.Type#SERVER server configs}.
          */
         // Forge Config Api Port: remove code accessing unavailable ModConfig class
 //        GAME(ModConfig.Type.SERVER);
