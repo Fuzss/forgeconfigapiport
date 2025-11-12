@@ -27,9 +27,10 @@ public class ForgeConfigApiPortConfig {
     private static final ForgeConfigApiPortConfig INSTANCE;
 
     static {
-        for (ModConfigValues cv : ModConfigValues.values()) {
+        for (ModConfigValues<?> cv : ModConfigValues.VALUES) {
             cv.buildConfigEntry(configSpec, configComments);
         }
+
         INSTANCE = new ForgeConfigApiPortConfig();
     }
 
@@ -49,8 +50,19 @@ public class ForgeConfigApiPortConfig {
                 .build();
         try {
             this.configData.load();
-        } catch (ParsingException e) {
-            throw new RuntimeException("Failed to load FML config from " + configFile, e);
+        } catch (ParsingException exception) {
+            try {
+                Files.delete(this.configData.getNioPath());
+                this.configData.load();
+                ForgeConfigAPIPort.LOGGER.warn("Configuration file {} could not be parsed. Correcting",
+                        this.configData.getNioPath(),
+                        exception);
+            } catch (ParsingException ignored) {
+                // don't let this fail just because some random rarely used config cannot be properly loaded
+            } catch (Throwable throwable) {
+                throw new RuntimeException(
+                        "Failed to load " + ForgeConfigAPIPort.MOD_NAME + " config from " + configFile, throwable);
+            }
         }
 
         if (!configSpec.isCorrect(this.configData)) {
@@ -71,7 +83,7 @@ public class ForgeConfigApiPortConfig {
         Path configFile = FabricLoader.getInstance().getConfigDir().resolve(ForgeConfigAPIPort.MOD_ID + ".toml");
         INSTANCE.loadFrom(configFile);
         ForgeConfigAPIPort.LOGGER.trace("Loaded {} config from {}", ForgeConfigAPIPort.MOD_NAME, configFile);
-        for (ModConfigValues modConfigValues : ModConfigValues.values()) {
+        for (ModConfigValues<?> modConfigValues : ModConfigValues.VALUES) {
             ForgeConfigAPIPort.LOGGER.trace("{} {} is {}",
                     ForgeConfigAPIPort.MOD_NAME,
                     modConfigValues.entry,
@@ -81,15 +93,7 @@ public class ForgeConfigApiPortConfig {
         getOrCreateGameRelativePath(Paths.get(getConfigValue(ModConfigValues.DEFAULT_CONFIGS_PATH)));
     }
 
-    public static String getConfigValue(ModConfigValues modConfigValues) {
-        if (INSTANCE.configData == null) {
-            load();
-        }
-
-        return modConfigValues.getConfigValue(INSTANCE.configData);
-    }
-
-    public static boolean getBoolConfigValue(ModConfigValues modConfigValues) {
+    public static <T> T getConfigValue(ModConfigValues<T> modConfigValues) {
         if (INSTANCE.configData == null) {
             load();
         }

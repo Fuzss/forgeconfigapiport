@@ -165,7 +165,7 @@ public final class ConfigurationScreen extends OptionsSubScreen {
 
         public void finish() {
             // Forge Config Api Port: replace mod loader specific method
-            if (ForgeConfigApiPortConfig.getBoolConfigValue(ModConfigValues.LOG_UNTRANSLATED_CONFIGURATION_WARNINGS) && CommonAbstractions.INSTANCE.isDevelopmentEnvironment() && (!untranslatables.isEmpty() || !untranslatablesWithFallback.isEmpty())) {
+            if (ForgeConfigApiPortConfig.getConfigValue(ModConfigValues.LOG_UNTRANSLATED_CONFIGURATION_WARNINGS) && CommonAbstractions.INSTANCE.isDevelopmentEnvironment() && (!untranslatables.isEmpty() || !untranslatablesWithFallback.isEmpty())) {
                 StringBuilder stringBuilder = new StringBuilder();
                 stringBuilder.append("""
                         \n	Dev warning - Untranslated configuration keys encountered. Please translate your configuration keys so users can properly configure your mod.
