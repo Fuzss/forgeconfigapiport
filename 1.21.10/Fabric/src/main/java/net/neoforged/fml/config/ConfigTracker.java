@@ -166,7 +166,7 @@ public class ConfigTracker {
         LOGGER.debug(CONFIG, "Loaded TOML config file {}", configPath);
 
         // Forge Config Api Port: switch out config access
-        if (!ForgeConfigApiPortConfig.getBoolConfigValue(ModConfigValues.DISABLE_CONFIG_WATCHER)) {
+        if (!ForgeConfigApiPortConfig.getConfigValue(ModConfigValues.DISABLE_CONFIG_WATCHER)) {
             FileWatcher.defaultInstance().addWatch(configPath, new ConfigWatcher(config, configPath, Thread.currentThread().getContextClassLoader()));
             LOGGER.debug(CONFIG, "Watching TOML config file {} for changes", configPath);
         }
@@ -269,7 +269,7 @@ public class ConfigTracker {
 
     private static void unload(Path path) {
         // Forge Config Api Port: switch out config access
-        if (ForgeConfigApiPortConfig.getBoolConfigValue(ModConfigValues.DISABLE_CONFIG_WATCHER))
+        if (ForgeConfigApiPortConfig.getConfigValue(ModConfigValues.DISABLE_CONFIG_WATCHER))
             return;
         try {
             FileWatcher.defaultInstance().removeWatch(path);

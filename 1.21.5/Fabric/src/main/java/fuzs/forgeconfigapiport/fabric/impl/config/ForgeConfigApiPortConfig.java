@@ -49,8 +49,19 @@ public class ForgeConfigApiPortConfig {
                 .build();
         try {
             this.configData.load();
-        } catch (ParsingException e) {
-            throw new RuntimeException("Failed to load FML config from " + configFile, e);
+        } catch (ParsingException exception) {
+            try {
+                Files.delete(this.configData.getNioPath());
+                this.configData.load();
+                ForgeConfigAPIPort.LOGGER.warn("Configuration file {} could not be parsed. Correcting",
+                        this.configData.getNioPath(),
+                        exception);
+            } catch (ParsingException ignored) {
+                // don't let this fail just because some random rarely used config cannot be properly loaded
+            } catch (Throwable throwable) {
+                throw new RuntimeException(
+                        "Failed to load " + ForgeConfigAPIPort.MOD_NAME + " config from " + configFile, throwable);
+            }
         }
         if (!configSpec.isCorrect(this.configData)) {
             ForgeConfigAPIPort.LOGGER.warn("Configuration file {} is not correct. Correcting", configFile);

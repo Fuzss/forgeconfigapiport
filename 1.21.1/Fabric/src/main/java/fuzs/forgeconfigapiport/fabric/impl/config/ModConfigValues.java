@@ -53,7 +53,7 @@ public enum ModConfigValues {
 
     @SuppressWarnings("unchecked")
     <T> T getConfigValue(CommentedFileConfig config) {
-        return (T) this.entryFunction.apply(config != null ? config.get(this.entry) : this.defaultValue);
+        return (T) this.entryFunction.apply(config != null && config.contains(this.entry) ? config.get(this.entry) : this.defaultValue);
     }
 
     public <T> void updateValue(final CommentedFileConfig configData, final T value) {
