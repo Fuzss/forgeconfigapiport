@@ -1,13 +1,16 @@
 package fuzs.forgeconfigapiport.impl.client;
 
 import com.mojang.brigadier.CommandDispatcher;
+import fuzs.forgeconfigapiport.impl.client.commands.ConfigCommand;
 import fuzs.forgeconfigapiport.impl.network.client.config.ConfigSyncClient;
 import fuzs.forgeconfigapiport.impl.network.config.ConfigSync;
-import fuzs.forgeconfigapiport.impl.client.commands.ConfigCommand;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.fabric.api.client.networking.v1.ClientLoginNetworking;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.commands.CommandBuildContext;
 
 public class ForgeConfigAPIPortFabricClient implements ClientModInitializer {
@@ -26,6 +29,12 @@ public class ForgeConfigAPIPortFabricClient implements ClientModInitializer {
     private static void registerHandlers() {
         ClientCommandRegistrationCallback.EVENT.register((CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) -> {
             ConfigCommand.register(dispatcher, FabricClientCommandSource::sendFeedback);
+        });
+        ClientPlayConnectionEvents.DISCONNECT.register((ClientPacketListener handler, Minecraft client) -> {
+            // Unload SERVER configs only when disconnecting from a remote server
+            if (handler.getConnection() != null && !handler.getConnection().isMemoryConnection()) {
+                ConfigSync.unloadSyncedConfig();
+            }
         });
     }
 }

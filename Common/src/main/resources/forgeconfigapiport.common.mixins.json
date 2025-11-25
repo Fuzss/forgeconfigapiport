@@ -8,8 +8,7 @@
     "accessor.LevelResourceAccessor"
   ],
   "client": [
-    "client.ClientHandshakePacketListenerImplMixin",
-    "client.MinecraftMixin"
+    "client.ClientHandshakePacketListenerImplMixin"
   ],
   "injectors": {
     "defaultRequire": 1

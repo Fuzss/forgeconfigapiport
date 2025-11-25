@@ -11,6 +11,7 @@ import com.electronwill.nightconfig.toml.TomlFormat;
 import fuzs.forgeconfigapiport.impl.core.CommonAbstractions;
 import net.minecraft.util.StringRepresentable;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.ByteArrayInputStream;
 import java.nio.file.Path;
@@ -92,7 +93,7 @@ public class ModConfig {
         return ((CommentedFileConfig) this.configData).getNioPath();
     }
 
-    public void acceptSyncedConfig(byte[] bytes) {
+    public void acceptSyncedConfig(@Nullable byte[] bytes) {
         if (bytes != null)
         {
             setConfigData(TomlFormat.instance().createParser().parse(new ByteArrayInputStream(bytes)));
