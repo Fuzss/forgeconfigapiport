@@ -1,6 +1,6 @@
 package fuzs.forgeconfigapiport.impl;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,7 +9,7 @@ public class ForgeConfigAPIPort {
     public static final String MOD_NAME = "Forge Config API Port";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_NAME);
 
-    public static ResourceLocation id(String key) {
-        return ResourceLocation.fromNamespaceAndPath(MOD_ID, key);
+    public static Identifier id(String key) {
+        return Identifier.fromNamespaceAndPath(MOD_ID, key);
     }
 }
