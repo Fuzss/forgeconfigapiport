@@ -6,7 +6,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.storage.LevelResource;
 import net.neoforged.fml.config.ConfigTracker;
@@ -18,8 +18,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class ServerLifecycleHandler {
-    public static final ResourceLocation BEFORE_PHASE = ForgeConfigAPIPort.id("before");
-    public static final ResourceLocation AFTER_PHASE = ForgeConfigAPIPort.id("after");
+    public static final Identifier BEFORE_PHASE = ForgeConfigAPIPort.id("before");
+    public static final Identifier AFTER_PHASE = ForgeConfigAPIPort.id("after");
     private static final LevelResource SERVER_CONFIG_LEVEL_RESOURCE = new LevelResource("serverconfig");
 
     public static void registerEventHandlers() {
