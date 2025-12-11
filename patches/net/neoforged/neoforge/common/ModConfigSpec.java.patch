@@ -1,0 +1,124 @@
+--- a/net/neoforged/neoforge/common/ModConfigSpec.java
++++ b/net/neoforged/neoforge/common/ModConfigSpec.java
+@@ -115,25 +90,26 @@
+         if (config != null && !isCorrect(config.config())) {
+             // Correct in case the config did not get corrected before this function was called.
+             // This should not happen under normal circumstances, hence the warning.
+-            LOGGER.warn(Logging.CORE, "Configuration {} is not correct. Correcting", config);
++            LOGGER.warn("Configuration {} is not correct. Correcting", config);
+             correct(config.config(),
+-                    (action, path, incorrectValue, correctedValue) -> LOGGER.warn(Logging.CORE, "Incorrect key {} was corrected from {} to its default, {}. {}", DOT_JOINER.join(path), incorrectValue, correctedValue, incorrectValue == correctedValue ? "This seems to be an error." : ""),
+-                    (action, path, incorrectValue, correctedValue) -> LOGGER.debug(Logging.CORE, "The comment on key {} does not match the spec. This may create a backup.", DOT_JOINER.join(path)));
++                    (action, path, incorrectValue, correctedValue) -> LOGGER.warn("Incorrect key {} was corrected from {} to its default, {}. {}", DOT_JOINER.join(path), incorrectValue, correctedValue, incorrectValue == correctedValue ? "This seems to be an error." : ""),
++                    (action, path, incorrectValue, correctedValue) -> LOGGER.debug("The comment on key {} does not match the spec. This may create a backup.", DOT_JOINER.join(path)));
+ 
+             config.save();
+         }
+         this.afterReload();
+     }
+ 
+-    @Override
+-    public void validateSpec(ModConfig config) {
+-        forEachValue(getValues().valueMap().values(), configValue -> {
+-            if (!configValue.getSpec().restartType().isValid(config.getType())) {
+-                throw new IllegalArgumentException("Configuration value " + String.join(".", configValue.getPath())
+-                        + " defined in config " + config.getFileName() + " has restart of type " + configValue.getSpec().restartType() + " which cannot be used for configs of type " + config.getType());
+-            }
+-        });
+-    }
++    // Forge Config Api Port: remove code accessing unavailable ModConfig class
++//    @Override
++//    public void validateSpec(ModConfig config) {
++//        forEachValue(getValues().valueMap().values(), configValue -> {
++//            if (!configValue.getSpec().restartType().isValid(config.getType())) {
++//                throw new IllegalArgumentException("Configuration value " + String.join(".", configValue.getPath())
++//                        + " defined in config " + config.getFileName() + " has restart of type " + configValue.getSpec().restartType() + " which cannot be used for configs of type " + config.getType());
++//            }
++//        });
++//    }
+ 
+     public boolean isLoaded() {
+         return loadedConfig != null;
+@@ -615,13 +591,13 @@
+                 @Override
+                 public Object correct(Object value) {
+                     if (!(value instanceof List) || (getSizeRange() != null && !getSizeRange().test(((List<?>) value).size()))) {
+-                        LOGGER.debug(Logging.CORE, "List on key {} is deemed to need correction, as it is null, not a list, or the wrong size.", path.getLast());
++                        LOGGER.debug("List on key {} is deemed to need correction, as it is null, not a list, or the wrong size.", path.getLast());
+                         return getDefault();
+                     }
+                     List<?> list = Lists.newArrayList((List<?>) value);
+                     list.removeIf(elementValidator.negate());
+                     if (list.isEmpty()) {
+-                        LOGGER.debug(Logging.CORE, "List on key {} is deemed to need correction. It failed validation.", path.getLast());
++                        LOGGER.debug("List on key {} is deemed to need correction. It failed validation.", path.getLast());
+                         return getDefault();
+                     }
+                     return list;
+@@ -916,8 +892,9 @@
+ 
+         public String buildComment(final List<String> path) {
+             if (comment.stream().allMatch(String::isBlank)) {
+-                if (FMLEnvironment.isProduction())
+-                    LOGGER.warn(Logging.CORE, "Detected a comment that is all whitespace for config option {}, which causes obscure bugs in NeoForge's config system and will cause a crash in the future. Please report this to the mod author.",
++                // Forge Config Api Port: replace mod loader specific method
++                if (!CommonAbstractions.INSTANCE.isDevelopmentEnvironment())
++                    LOGGER.warn("Detected a comment that is all whitespace for config option {}, which causes obscure bugs in NeoForge's config system and will cause a crash in the future. Please report this to the mod author.",
+                             DOT_JOINER.join(path));
+                 else
+                     throw new IllegalStateException("Can not build comment for config option " + DOT_JOINER.join(path) + " as it comprises entirely of blank lines/whitespace. This is not allowed as it causes a \"constantly correcting config\" bug with NightConfig in NeoForge's config system.");
+@@ -1028,7 +1005,7 @@
+                 Number n = (Number) t;
+                 boolean result = ((Number) min).doubleValue() <= n.doubleValue() && n.doubleValue() <= ((Number) max).doubleValue();
+                 if (!result) {
+-                    LOGGER.debug(Logging.CORE, "Range value {} is not within its bounds {}-{}", n.doubleValue(), ((Number) min).doubleValue(), ((Number) max).doubleValue());
++                    LOGGER.debug("Range value {} is not within its bounds {}-{}", n.doubleValue(), ((Number) min).doubleValue(), ((Number) max).doubleValue());
+                 }
+                 return result;
+             }
+@@ -1037,7 +1014,7 @@
+ 
+             boolean result = c.compareTo(min) >= 0 && c.compareTo(max) <= 0;
+             if (!result) {
+-                LOGGER.debug(Logging.CORE, "Range value {} is not within its bounds {}-{}", c, min, max);
++                LOGGER.debug("Range value {} is not within its bounds {}-{}", c, min, max);
+             }
+             return result;
+         }
+@@ -1388,21 +1365,24 @@
+         /**
+          * Require a game restart.
+          * <p>
+-         * Cannot be used for {@linkplain ModConfig.Type#SERVER server configs}.
++         * Cannot be used for {@code ModConfig.Type#SERVER server configs}.
+          */
+-        GAME(ModConfig.Type.SERVER);
++        // Forge Config Api Port: remove code accessing unavailable ModConfig class
++//        GAME(ModConfig.Type.SERVER);
++        GAME;
+ 
+-        private final Set<ModConfig.Type> invalidTypes;
++        // Forge Config Api Port: remove code accessing unavailable ModConfig class
++//        private final Set<ModConfig.Type> invalidTypes;
++//
++//        RestartType(ModConfig.Type... invalidTypes) {
++//            this.invalidTypes = EnumSet.noneOf(ModConfig.Type.class);
++//            this.invalidTypes.addAll(Arrays.asList(invalidTypes));
++//        }
++//
++//        private boolean isValid(ModConfig.Type type) {
++//            return !invalidTypes.contains(type);
++//        }
+ 
+-        RestartType(ModConfig.Type... invalidTypes) {
+-            this.invalidTypes = EnumSet.noneOf(ModConfig.Type.class);
+-            this.invalidTypes.addAll(Arrays.asList(invalidTypes));
+-        }
+-
+-        private boolean isValid(ModConfig.Type type) {
+-            return !invalidTypes.contains(type);
+-        }
+-
+         public RestartType with(RestartType other) {
+             return other == NONE ? this : (other == GAME || this == GAME) ? GAME : WORLD;
+         }
