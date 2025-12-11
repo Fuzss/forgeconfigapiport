@@ -1,0 +1,54 @@
+{
+    "mod": {
+        "id": "forgeconfigapiport",
+        "group": "fuzs.forgeconfigapiport",
+        "name": "Forge Config API Port",
+        "version": "21.10.0",
+        "authors": [
+            "Fuzs"
+        ],
+        "description": "Provides NeoForge's & Forge's config systems to other modding ecosystems. Designed for a multi-loader architecture.",
+        "license": "MPL-2.0"
+    },
+    "dependencies": [
+        {
+            "name": "modmenu",
+            "type": "optional",
+            "platforms": [
+                "fabric"
+            ]
+        },
+        {
+            "name": "fabricapi",
+            "type": "required",
+            "platforms": [
+                "fabric"
+            ]
+        }
+    ],
+    "links": [
+        {
+            "name": "curseforge",
+            "slug": "forge-config-api-port",
+            "id": "547434"
+        },
+        {
+            "name": "github",
+            "slug": "forgeconfigapiport"
+        },
+        {
+            "name": "modrinth",
+            "slug": "forge-config-api-port",
+            "id": "ohNO6lps"
+        }
+    ],
+    "environments": {
+        "client": "required",
+        "server": "required"
+    },
+    "platforms": [
+        "fabric",
+        "forge",
+        "neoforge"
+    ]
+}
