@@ -1,0 +1,10 @@
+{
+  "pack": {
+    "description": "Provides NeoForge's & Forge's config systems to other modding ecosystems. Designed for a multi-loader architecture.",
+    "max_format": 94,
+    "min_format": [
+      94,
+      1
+    ]
+  }
+}
