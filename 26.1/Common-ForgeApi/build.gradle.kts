@@ -3,13 +3,21 @@ import org.gradle.api.internal.tasks.JvmConstants
 
 plugins {
     id("fuzs.multiloader.multiloader-convention-plugins-core")
+    id("net.neoforged.moddev")
 }
 
 project.expectPlatform(ModLoaderProvider.COMMON)
 
-loom {
-    accessWidenerPath.set(project.commonProject.loom.accessWidenerPath)
+neoForge {
+    enable {
+        neoFormVersion = versionCatalog.findVersion("neoform").get().requiredVersion
+        isDisableRecompilation = true
+    }
 }
+
+//loom {
+//    accessWidenerPath.set(project.commonProject.loom.accessWidenerPath)
+//}
 
 configurations {
     named("commonJava") {
@@ -24,8 +32,8 @@ dependencies {
     compileOnly(project(project.commonProject.path)) { isTransitive = false }
     add("commonJava", project(mapOf("path" to project.commonProject.path, "configuration" to "commonJava")))
     add("commonResources", project(mapOf("path" to project.commonProject.path, "configuration" to "commonResources")))
-    loaderLibraries(versionCatalog.findLibrary("mixin.common").get())
-    loaderLibraries(versionCatalog.findLibrary("mixinextras.common").get())
+    compileOnly(versionCatalog.findLibrary("mixin.common").get())
+    compileOnly(versionCatalog.findLibrary("mixinextras.common").get())
     compileOnlyApi(libs.nightconfigcore.common)
     compileOnlyApi(libs.nightconfigtoml.common)
 }

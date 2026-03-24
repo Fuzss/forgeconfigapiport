@@ -30,8 +30,10 @@ pluginManagement {
             }
         }
     }
+
+    includeBuild("build-logic")
 }
 
 plugins {
-    id("fuzs.multiloader.multiloader-convention-plugins-settings") version providers.gradleProperty("project.plugins")
+    id("fuzs.multiloader.multiloader-convention-plugins-settings")
 }
