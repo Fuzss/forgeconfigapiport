@@ -72,7 +72,7 @@ public final class ConfigSync {
 
         for (var entry : configData.entrySet()) {
             // Forge Config API Port: update for Fabric
-            ((ServerCommonPacketListenerImpl) listener).send(ServerConfigurationNetworking.createS2CPacket(new ConfigFilePayload(
+            ((ServerCommonPacketListenerImpl) listener).send(ServerConfigurationNetworking.createClientboundPacket(new ConfigFilePayload(
                     entry.getKey(),
                     entry.getValue())));
         }
@@ -137,7 +137,8 @@ public final class ConfigSync {
                 }
                 toSync.forEach((fileName, data) -> {
                     // Forge Config API Port: update for Fabric
-                    player.connection.send(ServerPlayNetworking.createS2CPacket(new ConfigFilePayload(fileName, data)));
+                    player.connection.send(ServerPlayNetworking.createClientboundPacket(new ConfigFilePayload(fileName,
+                            data)));
                 });
                 toSync.clear();
             }

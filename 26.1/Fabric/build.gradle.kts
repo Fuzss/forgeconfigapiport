@@ -5,6 +5,7 @@ plugins {
 dependencies {
     listOf(project(":Common-ForgeApi"), project(":Common-NeoForgeApi")).forEach {
         compileOnly(project(it.path)) { isTransitive = false }
+
         add("commonJava", project(mapOf("path" to it.path, "configuration" to "commonJava")))
         add("commonResources", project(mapOf("path" to it.path, "configuration" to "commonResources")))
     }

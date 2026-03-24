@@ -49,10 +49,10 @@ public class ForgeConfigAPIPortFabric implements ModInitializer {
     }
 
     private static void registerMessages() {
-        PayloadTypeRegistry.configurationS2C().register(ConfigFilePayload.TYPE, ConfigFilePayload.STREAM_CODEC);
-        PayloadTypeRegistry.playS2C().register(ConfigFilePayload.TYPE, ConfigFilePayload.STREAM_CODEC);
+        PayloadTypeRegistry.clientboundConfiguration().register(ConfigFilePayload.TYPE, ConfigFilePayload.STREAM_CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(ConfigFilePayload.TYPE, ConfigFilePayload.STREAM_CODEC);
         // marker for catching up missing server configs if necessary
-        PayloadTypeRegistry.configurationC2S().register(ConfigFilePayload.TYPE, ConfigFilePayload.STREAM_CODEC);
+        PayloadTypeRegistry.serverboundConfiguration().register(ConfigFilePayload.TYPE, ConfigFilePayload.STREAM_CODEC);
         ServerConfigurationNetworking.registerGlobalReceiver(ConfigFilePayload.TYPE,
                 (ConfigFilePayload payload, ServerConfigurationNetworking.Context context) -> {
                     // NO-OP
