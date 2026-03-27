@@ -45,7 +45,7 @@ neoForge {
         configureEach {
             ideName = "${project.name} ${this.name.replaceFirstChar { it.titlecase() }} ${
                 versionCatalog.findVersion("minecraft").get()
-            }"
+            }  (${project.path})"
             gameDirectory = rootProject.file("run")
             jvmArguments.addAll(
                 "-Xms1G",

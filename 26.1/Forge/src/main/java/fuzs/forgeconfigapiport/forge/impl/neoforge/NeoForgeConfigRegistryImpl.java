@@ -56,8 +56,7 @@ public final class NeoForgeConfigRegistryImpl implements NeoForgeConfigRegistry 
     }
 
     private ModContainer getModContainer(String modId) {
-        return ModList.get()
-                .getModContainerById(modId)
+        return ModList.getModContainerById(modId)
                 .orElseThrow(() -> new IllegalStateException("Invalid mod id '%s'".formatted(modId)));
     }
 }

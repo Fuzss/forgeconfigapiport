@@ -49,6 +49,13 @@ private fun VersionCatalogBuilder.overrideKeys(
                 val name = key.removePrefix("$prefix.libraries.").replace(".", "-")
                 library(name, value.toString())
             }
+
+            key.startsWith("$prefix.plugins.") -> {
+                val name = key.removePrefix("$prefix.plugins.").replace(".", "-")
+                val plugin = value.toString().split(":")
+                check(plugin.size == 2)
+                plugin(name, plugin[0]).version(plugin[1])
+            }
         }
     }
 }
