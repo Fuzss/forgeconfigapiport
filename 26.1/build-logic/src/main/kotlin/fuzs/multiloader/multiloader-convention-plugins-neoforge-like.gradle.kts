@@ -1,13 +1,7 @@
 package fuzs.multiloader
 
-import fuzs.multiloader.classtweaker.TRANSITIVE_CLASS_TWEAKER_ACCESS_LEVELS
-import fuzs.multiloader.classtweaker.classTweakerFile
-import fuzs.multiloader.classtweaker.generateAccessTransformerFile
-import fuzs.multiloader.classtweaker.generatedAccessTransformerFile
-import fuzs.multiloader.classtweaker.generatedTransitiveAccessTransformerFile
-import fuzs.multiloader.extension.versionCatalog
-import gradle.kotlin.dsl.accessors._67ac5cfd97f494774d312633a4de8939.neoForge
-import org.gradle.kotlin.dsl.assign
+import fuzs.multiloader.classtweaker.*
+import net.neoforged.moddevgradle.boot.ModDevPlugin
 
 plugins {
     id("fuzs.multiloader.multiloader-convention-plugins-core")
@@ -19,6 +13,17 @@ generateAccessTransformerFile(
     classTweakerFile, generatedTransitiveAccessTransformerFile,
     TRANSITIVE_CLASS_TWEAKER_ACCESS_LEVELS
 )
+
+tasks.withType<Jar>().configureEach {
+    manifest {
+        attributes(
+            mapOf(
+                "Build-Tool-Name" to "ModDevGradle",
+                "Build-Tool-Version" to (ModDevPlugin::class.java.`package`.implementationVersion ?: "unknown")
+            )
+        )
+    }
+}
 
 configurations {
     named("modApi") {

@@ -4,7 +4,6 @@ import fuzs.multiloader.extension.*
 import fuzs.multiloader.metadata.LinkProvider
 import fuzs.multiloader.mixin.MixinConfigJsonTask
 import fuzs.multiloader.task.IncrementBuildNumber
-import net.fabricmc.loom.LoomGradlePlugin
 import org.gradle.api.internal.tasks.JvmConstants
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -191,8 +190,6 @@ tasks.withType<Jar>().configureEach {
 
         attributes(
             mapOf(
-                "Build-Tool-Name" to "Architectury Loom",
-                "Build-Tool-Version" to (LoomGradlePlugin::class.java.getPackage().implementationVersion ?: "unknown"),
                 "Build-Jdk-Name" to System.getProperty("java.vm.name"),
                 "Build-Jdk-Version" to System.getProperty("java.vm.version"),
                 "Build-Jdk-Vendor" to System.getProperty("java.vm.vendor"),

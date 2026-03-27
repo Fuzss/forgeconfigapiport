@@ -7,7 +7,6 @@ import org.gradle.api.artifacts.VersionCatalog
 import org.gradle.api.artifacts.VersionCatalogsExtension
 import org.gradle.kotlin.dsl.extra
 import org.gradle.kotlin.dsl.getByType
-import java.lang.module.ModuleDescriptor
 
 // Expose the libs version catalog
 val Project.versionCatalog: VersionCatalog
@@ -17,9 +16,10 @@ val Project.versionCatalog: VersionCatalog
 val Project.externalMods: ExternalMods
     get() {
         if (project == rootProject) {
-            return extensions.findByType(ExternalMods::class.java) ?: ExternalMods(ExternalMods.BY_ID.toMutableMap()).also {
-                extensions.add(ExternalMods::class.java, "externalMods", it)
-            }
+            return extensions.findByType(ExternalMods::class.java)
+                ?: ExternalMods(ExternalMods.BY_ID.toMutableMap()).also {
+                    extensions.add(ExternalMods::class.java, "externalMods", it)
+                }
         } else {
             throw GradleException("External mod metadata is only available for the root project")
         }
@@ -53,13 +53,3 @@ val Project.commonProject: Project
 // Get the platform projects from the Loom property
 val Project.platformProjects: List<Project>
     get() = rootProject.subprojects.filter { it.projectPlatform.platform }
-
-// Load the fabric.loom.dontRemap Loom property that disables remapping outputs (useful for the common subproject)
-val Project.dontRemap: Boolean
-    get() = extra.has("fabric.loom.dontRemap") && (extra["fabric.loom.dontRemap"] as? String)?.toBoolean() == true
-
-// In Minecraft 1.21.5 data generation was split into client & server components, older versions still use the unified configuration
-val Project.hasLegacyDataConfiguration: Boolean
-    get() = ModuleDescriptor.Version.parse(
-        versionCatalog.findVersion("minecraft").get().requiredVersion
-    ) < ModuleDescriptor.Version.parse("1.21.5")
