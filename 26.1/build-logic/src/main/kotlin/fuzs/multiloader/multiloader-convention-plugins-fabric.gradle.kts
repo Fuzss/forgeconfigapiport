@@ -8,7 +8,6 @@ import fuzs.multiloader.extension.mod
 import fuzs.multiloader.extension.versionCatalog
 import fuzs.multiloader.fabric.setupModJsonTask
 import fuzs.multiloader.metadata.ModLoaderProvider
-import net.fabricmc.loom.LoomGradlePlugin
 import net.fabricmc.loom.task.FabricModJsonV1Task
 import org.gradle.api.internal.tasks.JvmConstants
 
@@ -19,17 +18,6 @@ plugins {
 
 project.expectPlatform(ModLoaderProvider.FABRIC)
 generateClassTweakerFile(classTweakerFile, generatedClassTweakerFile)
-
-tasks.withType<Jar>().configureEach {
-    manifest {
-        attributes(
-            mapOf(
-                "Build-Tool-Name" to "Fabric Loom",
-                "Build-Tool-Version" to (LoomGradlePlugin::class.java.`package`.implementationVersion ?: "unknown")
-            )
-        )
-    }
-}
 
 configurations {
     create("modLocalRuntime") {

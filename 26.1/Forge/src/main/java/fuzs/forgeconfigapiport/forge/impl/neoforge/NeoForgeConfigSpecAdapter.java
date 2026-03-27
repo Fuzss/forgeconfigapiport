@@ -39,7 +39,7 @@ public final class NeoForgeConfigSpecAdapter extends UnmodifiableConfigWrapper<U
     void registerEventHandlers() {
         ServerStoppingEvent.BUS.addListener((final ServerStoppingEvent evt) -> {
             // Reset WORLD type config caches
-            ConfigTracker.INSTANCE.fileMap().values().forEach(config -> {
+            ConfigTracker.fileMap().values().forEach(config -> {
                 if (config.getSpec() == this) {
                     this.spec.resetCaches(ModConfigSpec.RestartType.WORLD);
                 }
@@ -48,7 +48,7 @@ public final class NeoForgeConfigSpecAdapter extends UnmodifiableConfigWrapper<U
         if (FMLEnvironment.dist.isClient()) {
             ClientPlayerNetworkEvent.LoggingOut.BUS.addListener((final ClientPlayerNetworkEvent.LoggingOut event) -> {
                 // Reset WORLD type config caches
-                ConfigTracker.INSTANCE.fileMap().values().forEach(config -> {
+                ConfigTracker.fileMap().values().forEach(config -> {
                     if (config.getSpec() == this) {
                         this.spec.resetCaches(ModConfigSpec.RestartType.WORLD);
                     }
@@ -56,7 +56,7 @@ public final class NeoForgeConfigSpecAdapter extends UnmodifiableConfigWrapper<U
 
                 // Unload SERVER configs only when disconnecting from a remote server
                 if (event.getConnection() != null && !event.getConnection().isMemoryConnection()) {
-                    ConfigTracker.INSTANCE.unloadConfigs(ModConfig.Type.SERVER, FMLPaths.CONFIGDIR.get());
+                    ConfigTracker.unloadConfigs(ModConfig.Type.SERVER, FMLPaths.CONFIGDIR.get());
                 }
             });
         }

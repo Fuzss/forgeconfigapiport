@@ -10,11 +10,11 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 
 plugins {
-    `java`
+    java
     `java-library`
     `maven-publish`
-    `signing`
-    `idea`
+    signing
+    idea
     id("me.modmuss50.mod-publish-plugin")
     id("com.diffplug.spotless")
 }
