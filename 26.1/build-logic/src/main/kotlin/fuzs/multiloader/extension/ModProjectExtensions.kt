@@ -1,3 +1,5 @@
+package fuzs.multiloader.extension
+
 import fuzs.multiloader.metadata.*
 import org.gradle.api.GradleException
 import org.gradle.api.Project

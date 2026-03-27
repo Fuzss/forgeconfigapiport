@@ -1,10 +1,10 @@
 package fuzs.multiloader.metadata
 
+import fuzs.multiloader.extension.platformProjects
+import fuzs.multiloader.extension.projectPlatform
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.gradle.api.Project
-import platformProjects
-import projectPlatform
 
 @Serializable
 data class ModMetadata(

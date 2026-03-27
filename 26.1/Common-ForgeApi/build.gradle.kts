@@ -1,9 +1,12 @@
+import fuzs.multiloader.extension.commonProject
+import fuzs.multiloader.extension.expectPlatform
+import fuzs.multiloader.extension.mod
+import fuzs.multiloader.extension.versionCatalog
 import fuzs.multiloader.metadata.ModLoaderProvider
 import org.gradle.api.internal.tasks.JvmConstants
 
 plugins {
-    id("fuzs.multiloader.multiloader-convention-plugins-core")
-    id("net.neoforged.moddev")
+    id("fuzs.multiloader.multiloader-convention-plugins-neoforge-like")
 }
 
 project.expectPlatform(ModLoaderProvider.COMMON)
@@ -15,10 +18,6 @@ neoForge {
     }
 }
 
-//loom {
-//    accessWidenerPath.set(project.commonProject.loom.accessWidenerPath)
-//}
-
 configurations {
     named("commonJava") {
         isCanBeResolved = true
@@ -29,9 +28,11 @@ configurations {
 }
 
 dependencies {
-    compileOnly(project(project.commonProject.path)) { isTransitive = false }
     add("commonJava", project(mapOf("path" to project.commonProject.path, "configuration" to "commonJava")))
     add("commonResources", project(mapOf("path" to project.commonProject.path, "configuration" to "commonResources")))
+    // This is only required for the IDE to see the common classes.
+    compileOnly(project(project.commonProject.path)) { isTransitive = false }
+
     compileOnly(versionCatalog.findLibrary("mixin.common").get())
     compileOnly(versionCatalog.findLibrary("mixinextras.common").get())
     compileOnlyApi(libs.nightconfigcore.common)
@@ -45,7 +46,10 @@ tasks.named<JavaCompile>(JvmConstants.COMPILE_JAVA_TASK_NAME) {
 
 tasks.named<ProcessResources>(JvmConstants.PROCESS_RESOURCES_TASK_NAME) {
     dependsOn(configurations.named("commonResources"))
-    from(configurations.named("commonResources"))
+    from(configurations.named("commonResources")) {
+        exclude("${mod.id}.classtweaker")
+    }
+
     dependsOn(project.commonProject.tasks.named<ProcessResources>("processResources"))
     from(project.commonProject.layout.buildDirectory.dir("generated/resources"))
 }
@@ -53,6 +57,7 @@ tasks.named<ProcessResources>(JvmConstants.PROCESS_RESOURCES_TASK_NAME) {
 tasks.named<Jar>("sourcesJar") {
     dependsOn(configurations.named("commonJava"))
     from(configurations.named("commonJava"))
+
     dependsOn(configurations.named("commonResources"))
     from(configurations.named("commonResources"))
 }

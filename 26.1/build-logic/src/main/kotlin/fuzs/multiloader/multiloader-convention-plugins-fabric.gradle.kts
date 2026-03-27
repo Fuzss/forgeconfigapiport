@@ -1,14 +1,16 @@
 package fuzs.multiloader
 
-import commonProject
-import expectPlatform
+import fuzs.multiloader.classtweaker.classTweakerFile
+import fuzs.multiloader.classtweaker.generateClassTweakerFile
+import fuzs.multiloader.classtweaker.generatedClassTweakerFile
+import fuzs.multiloader.extension.expectPlatform
+import fuzs.multiloader.extension.mod
+import fuzs.multiloader.extension.versionCatalog
 import fuzs.multiloader.fabric.setupModJsonTask
 import fuzs.multiloader.metadata.ModLoaderProvider
-import mod
 import net.fabricmc.loom.task.FabricModJsonV1Task
 import org.gradle.api.internal.tasks.JvmConstants
 import org.gradle.internal.extensions.stdlib.capitalized
-import versionCatalog
 
 plugins {
     id("fuzs.multiloader.multiloader-convention-plugins-platform")
@@ -16,6 +18,7 @@ plugins {
 }
 
 project.expectPlatform(ModLoaderProvider.FABRIC)
+generateClassTweakerFile(classTweakerFile, generatedClassTweakerFile)
 
 configurations {
     create("modLocalRuntime") {
@@ -26,7 +29,7 @@ configurations {
 }
 
 loom {
-    accessWidenerPath.set(project.commonProject.file("src/main/resources/${mod.id}.accesswidener"))
+    accessWidenerPath.set(project.generatedClassTweakerFile)
 
     decompilers {
         get("vineflower").apply {
@@ -64,6 +67,7 @@ loom {
 
         named("server") {
             server()
+            programArgs("--nogui")
             vmArgs(
                 "-Dfabric-tag-conventions-v2.missingTagTranslationWarning=silenced",
                 "-Dfabric-tag-conventions-v1.legacyTagWarning=silenced"
@@ -104,4 +108,18 @@ val generateModJson = tasks.register<FabricModJsonV1Task>("generateModJson") {
 
 tasks.named<ProcessResources>(JvmConstants.PROCESS_RESOURCES_TASK_NAME) {
     dependsOn(generateModJson)
+}
+
+tasks.register("${project.name.lowercase()}-sources") {
+    group = "multiloader/sources"
+    val task = tasks.named("genSourcesWithVineflower")
+    description = task.get().description
+    dependsOn(task)
+}
+
+tasks.register("${project.name.lowercase()}-validate") {
+    group = "multiloader/sources"
+    val task = tasks.named("validateAccessWidener")
+    description = task.get().description
+    dependsOn(task)
 }

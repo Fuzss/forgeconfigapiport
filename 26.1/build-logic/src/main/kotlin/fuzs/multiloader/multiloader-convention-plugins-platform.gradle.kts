@@ -1,17 +1,12 @@
 package fuzs.multiloader
 
-import commonProject
-import externalMods
 import fuzs.multiloader.discord.changelogVersion
 import fuzs.multiloader.discord.verifyChangelogVersion
+import fuzs.multiloader.extension.*
 import fuzs.multiloader.metadata.DependencyType
 import fuzs.multiloader.metadata.LinkProvider
 import me.modmuss50.mpp.PublishModTask
-import metadata
-import mod
 import org.gradle.api.internal.tasks.JvmConstants
-import projectPlatform
-import versionCatalog
 
 plugins {
     id("fuzs.multiloader.multiloader-convention-plugins-core")
@@ -25,44 +20,13 @@ configurations {
     named("commonResources") {
         isCanBeResolved = true
     }
-
-    create("modApi") {
-        this@configurations.named("api") {
-            extendsFrom(this@create)
-        }
-    }
-
-    create("modImplementation") {
-        this@configurations.named("implementation") {
-            extendsFrom(this@create)
-        }
-    }
-
-    create("modCompileOnly") {
-        this@configurations.named("compileOnly") {
-            extendsFrom(this@create)
-        }
-    }
-
-    create("modCompileOnlyApi") {
-        this@configurations.named("compileOnlyApi") {
-            extendsFrom(this@create)
-        }
-    }
-
-    create("modRuntimeOnly") {
-        this@configurations.named("runtimeOnly") {
-            extendsFrom(this@create)
-        }
-    }
 }
 
 dependencies {
-    // This is only required for the IDE to see the common classes.
-    compileOnly(project(project.commonProject.path)) { isTransitive = false }
-
     "commonJava"(project(mapOf("path" to project.commonProject.path, "configuration" to "commonJava")))
     "commonResources"(project(mapOf("path" to project.commonProject.path, "configuration" to "commonResources")))
+    // This is only required for the IDE to see the common classes.
+    compileOnly(project(project.commonProject.path)) { isTransitive = false }
 }
 
 tasks.named<JavaCompile>(JvmConstants.COMPILE_JAVA_TASK_NAME) {
@@ -72,7 +36,10 @@ tasks.named<JavaCompile>(JvmConstants.COMPILE_JAVA_TASK_NAME) {
 
 tasks.named<ProcessResources>(JvmConstants.PROCESS_RESOURCES_TASK_NAME) {
     dependsOn(configurations.named("commonResources"))
-    from(configurations.named("commonResources"))
+    from(configurations.named("commonResources")) {
+        exclude("${mod.id}.classtweaker")
+    }
+
     dependsOn(project.commonProject.tasks.named<ProcessResources>("processResources"))
     from(project.commonProject.layout.buildDirectory.dir("generated/resources"))
 }
@@ -80,6 +47,7 @@ tasks.named<ProcessResources>(JvmConstants.PROCESS_RESOURCES_TASK_NAME) {
 tasks.named<Jar>("sourcesJar") {
     dependsOn(configurations.named("commonJava"))
     from(configurations.named("commonJava"))
+
     dependsOn(configurations.named("commonResources"))
     from(configurations.named("commonResources"))
 }
