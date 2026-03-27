@@ -1,15 +1,11 @@
 package fuzs.multiloader
 
-import fuzs.multiloader.extension.MultiLoaderExtension
+import fuzs.multiloader.extension.*
 import fuzs.multiloader.metadata.LinkProvider
 import fuzs.multiloader.mixin.MixinConfigJsonTask
 import fuzs.multiloader.task.IncrementBuildNumber
-import metadata
-import mod
 import net.fabricmc.loom.LoomGradlePlugin
 import org.gradle.api.internal.tasks.JvmConstants
-import projectPlatform
-import versionCatalog
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -188,9 +184,11 @@ tasks.withType<Jar>().configureEach {
                     .format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"))
             )
         )
+
         metadata.links.firstOrNull { it.name == LinkProvider.GITHUB }
             ?.url()
             ?.let { attributes["Implementation-URL"] = it }
+
         attributes(
             mapOf(
                 "Build-Tool-Name" to "Architectury Loom",
@@ -265,6 +263,36 @@ configurations {
     create("commonResources") {
         isCanBeResolved = false
         isCanBeConsumed = true
+    }
+
+    create("modApi") {
+        this@configurations.named("api") {
+            extendsFrom(this@create)
+        }
+    }
+
+    create("modImplementation") {
+        this@configurations.named("implementation") {
+            extendsFrom(this@create)
+        }
+    }
+
+    create("modCompileOnly") {
+        this@configurations.named("compileOnly") {
+            extendsFrom(this@create)
+        }
+    }
+
+    create("modCompileOnlyApi") {
+        this@configurations.named("compileOnlyApi") {
+            extendsFrom(this@create)
+        }
+    }
+
+    create("modRuntimeOnly") {
+        this@configurations.named("runtimeOnly") {
+            extendsFrom(this@create)
+        }
     }
 }
 
@@ -555,20 +583,6 @@ tasks.register("${project.name.lowercase()}-clean") {
 tasks.register("${project.name.lowercase()}-publish") {
     group = "multiloader/publish"
     val task = tasks.named("publishMavenJavaPublicationToFuzsModResourcesRepository")
-    description = task.get().description
-    dependsOn(task)
-}
-
-tasks.register("${project.name.lowercase()}-sources") {
-    group = "multiloader/sources"
-    val task = tasks.named("genSourcesWithVineflower")
-    description = task.get().description
-    dependsOn(task)
-}
-
-tasks.register("${project.name.lowercase()}-validate") {
-    group = "multiloader/sources"
-    val task = tasks.named("validateAccessWidener")
     description = task.get().description
     dependsOn(task)
 }

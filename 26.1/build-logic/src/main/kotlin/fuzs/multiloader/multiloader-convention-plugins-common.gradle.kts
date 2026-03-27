@@ -1,12 +1,11 @@
 package fuzs.multiloader
 
-import expectPlatform
+import fuzs.multiloader.extension.expectPlatform
+import fuzs.multiloader.extension.versionCatalog
 import fuzs.multiloader.metadata.ModLoaderProvider
-import versionCatalog
 
 plugins {
-    id("fuzs.multiloader.multiloader-convention-plugins-core")
-    id("net.neoforged.moddev")
+    id("fuzs.multiloader.multiloader-convention-plugins-neoforge-like")
 }
 
 project.expectPlatform(ModLoaderProvider.COMMON)
@@ -16,9 +15,6 @@ neoForge {
         neoFormVersion = versionCatalog.findVersion("neoform").get().requiredVersion
         isDisableRecompilation = true
     }
-
-    validateAccessTransformers = true
-    // TODO add access transformer
 }
 
 dependencies {
@@ -28,6 +24,6 @@ dependencies {
     if (!providers.gradleProperty("project.isolated").orNull.toBoolean()) {
         versionCatalog.findLibrary("multiloaderaccesswideners.common")
             .orElse(null)
-            ?.let { compileOnly(it) { isTransitive = false } }
+            ?.let { accessTransformers(it) { isTransitive = false } }
     }
 }

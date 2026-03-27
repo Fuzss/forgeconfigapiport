@@ -1,15 +1,16 @@
 package fuzs.multiloader.fabric
 
-import commonProject
-import externalMods
+import fuzs.multiloader.classtweaker.generatedClassTweakerFile
 import fuzs.multiloader.extension.MultiLoaderExtension
+import fuzs.multiloader.extension.commonProject
+import fuzs.multiloader.extension.externalMods
+import fuzs.multiloader.extension.metadata
+import fuzs.multiloader.extension.mod
+import fuzs.multiloader.extension.versionCatalog
 import fuzs.multiloader.metadata.LinkProvider
 import fuzs.multiloader.metadata.ModLoaderProvider
-import metadata
-import mod
 import net.fabricmc.loom.task.FabricModJsonV1Task
 import org.gradle.api.plugins.BasePluginExtension
-import versionCatalog
 import kotlin.jvm.optionals.getOrNull
 
 fun FabricModJsonV1Task.setupModJsonTask() {
@@ -39,6 +40,7 @@ fun FabricModJsonV1Task.setupModJsonTask() {
         }
 
         addDependencies()
+        accessWidener.set(project.generatedClassTweakerFile.name)
 
         if (multiLoaderExtension.modFile.orNull?.library?.orNull == true) {
             customData.put("modmenu", mapOf("badges" to listOf("library")))

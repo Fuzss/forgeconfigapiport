@@ -1,14 +1,14 @@
 package fuzs.multiloader
 
 import fuzs.multiloader.discord.*
+import fuzs.multiloader.extension.metadata
+import fuzs.multiloader.extension.mod
+import fuzs.multiloader.extension.platformProjects
+import fuzs.multiloader.extension.versionCatalog
 import fuzs.multiloader.metadata.LinkProvider
 import fuzs.multiloader.metadata.loadMetadata
 import fuzs.multiloader.task.IncrementBuildNumber
 import kotlinx.serialization.json.Json
-import metadata
-import mod
-import platformProjects
-import versionCatalog
 import java.time.Instant
 
 afterEvaluate {
@@ -171,20 +171,6 @@ if (metadata.links.isNotEmpty() && project.platformProjects.isNotEmpty()) {
         group = "multiloader/remote"
         dependsOn(project.platformProjects.map { it.tasks.named("publishMods") })
         dependsOn(tasks.named("sendDiscordWebhook"))
-    }
-}
-
-if (project.subprojects.isNotEmpty()) {
-    tasks.register("all-sources") {
-        group = "multiloader/sources"
-        dependsOn(project.subprojects.map { it.tasks.named("genSourcesWithVineflower") })
-    }
-}
-
-if (project.subprojects.isNotEmpty()) {
-    tasks.register("all-validate") {
-        group = "multiloader/sources"
-        dependsOn(project.subprojects.map { it.tasks.named("validateAccessWidener") })
     }
 }
 

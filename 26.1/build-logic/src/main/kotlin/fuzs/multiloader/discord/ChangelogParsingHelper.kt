@@ -1,13 +1,13 @@
 package fuzs.multiloader.discord
 
-import mod
+import fuzs.multiloader.extension.mod
+import fuzs.multiloader.extension.versionCatalog
 import org.gradle.api.Project
-import versionCatalog
 import java.io.File
 import java.io.FileNotFoundException
 
 val Project.changelogVersion: String
-    get() = "v${project.mod.version}-${project.versionCatalog.findVersion("minecraft").get()}"
+    get() = "v${project.mod.version}-mc${project.versionCatalog.findVersion("minecraft").get()}"
 
 fun verifyChangelogVersion(changelogFile: File, versionString: String) {
     if (!changelogFile.canRead()) {

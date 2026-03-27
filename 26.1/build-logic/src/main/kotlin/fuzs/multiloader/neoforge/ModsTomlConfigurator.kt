@@ -1,15 +1,15 @@
 package fuzs.multiloader.neoforge
 
-import commonProject
-import externalMods
 import fuzs.multiloader.extension.MultiLoaderExtension
+import fuzs.multiloader.extension.commonProject
+import fuzs.multiloader.extension.externalMods
+import fuzs.multiloader.extension.metadata
+import fuzs.multiloader.extension.mod
+import fuzs.multiloader.extension.versionCatalog
 import fuzs.multiloader.metadata.LinkProvider
 import fuzs.multiloader.metadata.ModLoaderProvider
 import fuzs.multiloader.neoforge.toml.NeoForgeModsTomlSpec
 import fuzs.multiloader.neoforge.toml.NeoForgeModsTomlTask
-import metadata
-import mod
-import versionCatalog
 import kotlin.jvm.optionals.getOrNull
 
 fun NeoForgeModsTomlTask.setupModsTomlTask() {

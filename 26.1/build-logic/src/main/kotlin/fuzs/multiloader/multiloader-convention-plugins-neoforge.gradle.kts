@@ -1,19 +1,15 @@
 package fuzs.multiloader
 
-import commonProject
-import expectPlatform
+import fuzs.multiloader.extension.*
 import fuzs.multiloader.metadata.ModLoaderProvider
 import fuzs.multiloader.neoforge.setupModsTomlTask
 import fuzs.multiloader.neoforge.toml.NeoForgeModsTomlTask
-import hasLegacyDataConfiguration
-import mod
 import org.gradle.api.internal.tasks.JvmConstants
 import org.gradle.internal.extensions.stdlib.capitalized
-import versionCatalog
 
 plugins {
     id("fuzs.multiloader.multiloader-convention-plugins-platform")
-    id("net.neoforged.moddev")
+    id("fuzs.multiloader.multiloader-convention-plugins-neoforge-like")
 }
 
 project.expectPlatform(ModLoaderProvider.NEOFORGE)
@@ -42,8 +38,6 @@ neoForge {
     enable {
         version = versionCatalog.findVersion("neoforge.version").get().requiredVersion
     }
-
-    validateAccessTransformers = true
 
     runs {
         configureEach {
@@ -90,6 +84,7 @@ neoForge {
 
         register("server") {
             server()
+            programArguments.addAll("--nogui")
         }
 
         register("data") {
