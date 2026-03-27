@@ -48,6 +48,7 @@
     },
     "platforms": [
         "fabric",
+        "forge",
         "neoforge"
     ]
 }

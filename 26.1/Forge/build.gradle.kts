@@ -1,36 +1,80 @@
+import fuzs.multiloader.classtweaker.classTweakerFile
+import fuzs.multiloader.classtweaker.generateAccessTransformerFile
+import fuzs.multiloader.classtweaker.generatedAccessTransformerFile
+import fuzs.multiloader.extension.expectPlatform
+import fuzs.multiloader.extension.mod
+import fuzs.multiloader.extension.versionCatalog
 import fuzs.multiloader.metadata.ModLoaderProvider
 import fuzs.multiloader.neoforge.setupModsTomlTask
 import fuzs.multiloader.neoforge.toml.NeoForgeModsTomlSpec
 import fuzs.multiloader.neoforge.toml.NeoForgeModsTomlTask
-import net.fabricmc.loom.task.RemapJarTask
+import net.fabricmc.loom.LoomGradlePlugin
 import org.gradle.api.internal.tasks.JvmConstants
 import kotlin.jvm.optionals.getOrNull
 
 plugins {
     id("fuzs.multiloader.multiloader-convention-plugins-platform")
+    id("dev.architectury.loom-no-remap") version "1.14-SNAPSHOT"
 }
 
 project.expectPlatform(ModLoaderProvider.FORGE)
+generateAccessTransformerFile(classTweakerFile, generatedAccessTransformerFile)
+
+tasks.withType<Jar>().configureEach {
+    manifest {
+        attributes(
+            mapOf(
+                "Build-Tool-Name" to "Architectury Loom",
+                "Build-Tool-Version" to (LoomGradlePlugin::class.java.`package`.implementationVersion ?: "unknown")
+            )
+        )
+    }
+}
 
 loom {
-    forge {
-        convertAccessWideners = true
-        extraAccessWideners.add(accessWidenerPath.asFile.get().name)
-        listOf(project.commonProject, project).forEach {
-            mixinConfig("${it.mod.id}.${it.name.lowercase()}.mixins.json")
+//    forge {
+//        listOf(project.commonProject, project).forEach {
+//            mixinConfig("${it.mod.id}.${it.name.lowercase()}.mixins.json")
+//        }
+//    }
+
+    decompilers {
+        get("vineflower").apply {
+            // Shows the method name of lambdas in a comment.
+            options.put("mark-corresponding-synthetics", "1")
         }
     }
 
     runs {
+        configureEach {
+            name(
+                "${project.name} ${this.name.replaceFirstChar { it.titlecase() }} ${
+                    versionCatalog.findVersion("minecraft").get()
+                }"
+            )
+
+            runDir("../run")
+            ideConfigGenerated(true)
+            startFirstThread()
+            vmArgs(
+                "-Xms1G",
+                "-Xmx4G",
+                "-Dmixin.debug.export=true",
+                "-Dlog4j2.configurationFile=${
+                    this@configureEach.javaClass.classLoader.getResource("log4j.xml")
+                        ?: throw IllegalStateException("log4j.xml not found in plugin resources")
+                }"
+            )
+        }
+
         named("client") {
             client()
-            name("${project.name} Client ${versionCatalog.findVersion("minecraft").get()}")
             programArgs("--username", "Player####")
         }
 
         named("server") {
             server()
-            name("${project.name} Server ${versionCatalog.findVersion("minecraft").get()}")
+            programArgs("--nogui")
         }
     }
 }
@@ -43,14 +87,13 @@ repositories {
 }
 
 dependencies {
-    compileOnly(project(":Common-NeoForgeApi")) { isTransitive = false }
     add("commonJava", project(mapOf("path" to ":Common-NeoForgeApi", "configuration" to "commonJava")))
     add("commonResources", project(mapOf("path" to ":Common-NeoForgeApi", "configuration" to "commonResources")))
-    "forge"(versionCatalog.findLibrary("minecraftforge.forge").get())
-}
+    // This is only required for the IDE to see the common classes.
+    compileOnly(project(":Common-NeoForgeApi")) { isTransitive = false }
 
-tasks.named<RemapJarTask>("remapJar") {
-    atAccessWideners.add(project.commonProject.loom.accessWidenerPath.map { it.asFile.name })
+    minecraft("com.mojang:minecraft:${versionCatalog.findVersion("game").get()}")
+//    "forge"("net.minecraftforge:forge:1.21.11-62.0.3")
 }
 
 val generateModsToml = tasks.register<NeoForgeModsTomlTask>("generateModsToml") {

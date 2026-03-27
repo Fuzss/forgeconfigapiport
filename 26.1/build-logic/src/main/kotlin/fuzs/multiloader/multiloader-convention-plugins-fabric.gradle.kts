@@ -8,9 +8,9 @@ import fuzs.multiloader.extension.mod
 import fuzs.multiloader.extension.versionCatalog
 import fuzs.multiloader.fabric.setupModJsonTask
 import fuzs.multiloader.metadata.ModLoaderProvider
+import net.fabricmc.loom.LoomGradlePlugin
 import net.fabricmc.loom.task.FabricModJsonV1Task
 import org.gradle.api.internal.tasks.JvmConstants
-import org.gradle.internal.extensions.stdlib.capitalized
 
 plugins {
     id("fuzs.multiloader.multiloader-convention-plugins-platform")
@@ -19,6 +19,17 @@ plugins {
 
 project.expectPlatform(ModLoaderProvider.FABRIC)
 generateClassTweakerFile(classTweakerFile, generatedClassTweakerFile)
+
+tasks.withType<Jar>().configureEach {
+    manifest {
+        attributes(
+            mapOf(
+                "Build-Tool-Name" to "Fabric Loom",
+                "Build-Tool-Version" to (LoomGradlePlugin::class.java.`package`.implementationVersion ?: "unknown")
+            )
+        )
+    }
+}
 
 configurations {
     create("modLocalRuntime") {
@@ -40,7 +51,11 @@ loom {
 
     runs {
         configureEach {
-            name("${project.name} ${this.name.capitalized()} ${versionCatalog.findVersion("minecraft").get()}")
+            name(
+                "${project.name} ${this.name.replaceFirstChar { it.titlecase() }} ${
+                    versionCatalog.findVersion("minecraft").get()
+                }"
+            )
             runDir("../run")
             ideConfigGenerated(true)
             startFirstThread()
@@ -52,6 +67,8 @@ loom {
                     this@configureEach.javaClass.classLoader.getResource("log4j.xml")
                         ?: throw IllegalStateException("log4j.xml not found in plugin resources")
                 }",
+                "-Dfabric-tag-conventions-v2.missingTagTranslationWarning=silenced",
+                "-Dfabric-tag-conventions-v1.legacyTagWarning=silenced",
                 "-Dpuzzleslib.isDevelopmentEnvironment=true",
                 "-D${mod.id}.isDevelopmentEnvironment=true"
             )
@@ -59,19 +76,11 @@ loom {
 
         named("client") {
             client()
-            vmArgs(
-                "-Dfabric-tag-conventions-v2.missingTagTranslationWarning=silenced",
-                "-Dfabric-tag-conventions-v1.legacyTagWarning=silenced"
-            )
         }
 
         named("server") {
             server()
             programArgs("--nogui")
-            vmArgs(
-                "-Dfabric-tag-conventions-v2.missingTagTranslationWarning=silenced",
-                "-Dfabric-tag-conventions-v1.legacyTagWarning=silenced"
-            )
         }
     }
 }

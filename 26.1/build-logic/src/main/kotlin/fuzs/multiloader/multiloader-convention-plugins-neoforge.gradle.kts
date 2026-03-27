@@ -1,15 +1,17 @@
 package fuzs.multiloader
 
-import fuzs.multiloader.extension.*
+import fuzs.multiloader.extension.commonProject
+import fuzs.multiloader.extension.expectPlatform
+import fuzs.multiloader.extension.mod
+import fuzs.multiloader.extension.versionCatalog
 import fuzs.multiloader.metadata.ModLoaderProvider
 import fuzs.multiloader.neoforge.setupModsTomlTask
 import fuzs.multiloader.neoforge.toml.NeoForgeModsTomlTask
 import org.gradle.api.internal.tasks.JvmConstants
-import org.gradle.internal.extensions.stdlib.capitalized
 
 plugins {
-    id("fuzs.multiloader.multiloader-convention-plugins-platform")
     id("fuzs.multiloader.multiloader-convention-plugins-neoforge-like")
+    id("fuzs.multiloader.multiloader-convention-plugins-platform")
 }
 
 project.expectPlatform(ModLoaderProvider.NEOFORGE)
@@ -41,9 +43,9 @@ neoForge {
 
     runs {
         configureEach {
-            ideName = "${project.name} ${name.capitalized()} ${
+            ideName = "${project.name} ${this.name.replaceFirstChar { it.titlecase() }} ${
                 versionCatalog.findVersion("minecraft").get()
-            } (${project.path})"
+            }"
             gameDirectory = rootProject.file("run")
             jvmArguments.addAll(
                 "-Xms1G",
@@ -88,12 +90,7 @@ neoForge {
         }
 
         register("data") {
-            if (hasLegacyDataConfiguration) {
-                data()
-            } else {
-                clientData()
-            }
-
+            clientData()
             programArguments.addAll(
                 "--all",
                 "--mod",
