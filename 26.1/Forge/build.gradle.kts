@@ -46,6 +46,11 @@ dependencies {
     implementation(minecraft.dependency(libs.minecraftforge.forge))
 }
 
+tasks.withType<Jar>().configureEach {
+    from(rootProject.file("../LICENSE-FORGE.md"))
+    from(rootProject.file("../LICENSING.md"))
+}
+
 val generateModsToml = tasks.register<NeoForgeModsTomlTask>("generateModsToml") {
     setupModsTomlTask()
     outputFile.set(project.layout.buildDirectory.file("generated/resources/META-INF/mods.toml"))

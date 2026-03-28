@@ -19,6 +19,12 @@ dependencies {
     modLocalRuntime(sharedLibs.modmenu.fabric) { isTransitive = false }
 }
 
+tasks.withType<Jar>().configureEach {
+    from(rootProject.file("../LICENSE-FORGE.md"))
+    from(rootProject.file("../LICENSE-NIGHT-CONFIG.md"))
+    from(rootProject.file("../LICENSING.md"))
+}
+
 multiloader {
     modFile {
         packagePrefix.set("impl")
