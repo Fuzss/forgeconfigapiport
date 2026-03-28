@@ -1,11 +1,6 @@
 package fuzs.multiloader.neoforge
 
-import fuzs.multiloader.extension.MultiLoaderExtension
-import fuzs.multiloader.extension.commonProject
-import fuzs.multiloader.extension.externalMods
-import fuzs.multiloader.extension.metadata
-import fuzs.multiloader.extension.mod
-import fuzs.multiloader.extension.versionCatalog
+import fuzs.multiloader.extension.*
 import fuzs.multiloader.metadata.LinkProvider
 import fuzs.multiloader.metadata.ModLoaderProvider
 import fuzs.multiloader.neoforge.toml.NeoForgeModsTomlSpec
@@ -29,7 +24,7 @@ fun NeoForgeModsTomlTask.setupModsTomlTask() {
             description.set(project.mod.description)
             version.set(project.mod.version)
             authors.set(project.mod.authors.joinToString(", "))
-            logoFile.set("mod_logo.png")
+            logoFile.set("pack.png")
 
             project.metadata.links
                 .minByOrNull { it.name.index }

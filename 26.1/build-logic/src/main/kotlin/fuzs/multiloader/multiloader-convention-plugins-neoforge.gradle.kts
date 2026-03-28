@@ -8,6 +8,7 @@ import fuzs.multiloader.metadata.ModLoaderProvider
 import fuzs.multiloader.neoforge.setupModsTomlTask
 import fuzs.multiloader.neoforge.toml.NeoForgeModsTomlTask
 import org.gradle.api.internal.tasks.JvmConstants
+import kotlin.jvm.optionals.getOrNull
 
 plugins {
     id("fuzs.multiloader.multiloader-convention-plugins-neoforge-like")
@@ -122,7 +123,7 @@ repositories {
 dependencies {
     if (!providers.gradleProperty("project.isolated").orNull.toBoolean()) {
         versionCatalog.findLibrary("bettermodsbutton.neoforge")
-            .orElse(null)
+            .getOrNull()
             ?.let { testRuntimeOnly(it) { isTransitive = false } }
     }
 }

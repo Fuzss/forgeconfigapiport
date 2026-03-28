@@ -25,7 +25,7 @@ class SettingsConventionPlugin : Plugin<Settings> {
             }
 
             versionCatalogs {
-                create("libs") {
+                create("sharedLibs") {
                     from("fuzs.sharedcatalogs:sharedcatalogs:$projectLibs")
                     overrideKeys("project.libs", settings)
                 }

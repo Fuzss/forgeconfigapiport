@@ -3,6 +3,6 @@ plugins {
 }
 
 dependencies {
-    compileOnlyApi(libs.nightconfigcore.common)
-    compileOnlyApi(libs.nightconfigtoml.common)
+    compileOnlyApi(sharedLibs.nightconfigcore.common)
+    compileOnlyApi(sharedLibs.nightconfigtoml.common)
 }

@@ -3,6 +3,9 @@ package fuzs.multiloader.classtweaker
 import fuzs.multiloader.extension.commonProject
 import fuzs.multiloader.extension.mod
 import org.gradle.api.Project
+import org.gradle.api.file.RegularFile
+import org.gradle.api.provider.Provider
+import org.gradle.api.tasks.SourceSet
 import java.io.File
 
 val TRANSITIVE_CLASS_TWEAKER_ACCESS_LEVELS: Map<String, String> = mapOf(
@@ -21,36 +24,24 @@ private val CLASS_TWEAKER_HEADER: String = listOf("classTweaker", "v1", "officia
 val Project.classTweakerFile: File
     get() = project.commonProject.file("src/main/resources/${mod.id}.classtweaker")
 
-val Project.generatedClassTweakerFile: File
-    get() = project.layout.buildDirectory.file("generated/resources/${mod.id}.classtweaker").get().asFile
+val Project.generatedClassTweakerFile: Provider<RegularFile>
+    get() = project.layout.buildDirectory.file("generated/resources/${mod.id}.classtweaker")
 
-val Project.generatedAccessTransformerFile: File
-    get() = project.layout.buildDirectory.file("generated/resources/META-INF/accesstransformer.cfg").get().asFile
+val Project.generatedAccessTransformerFile: Provider<RegularFile>
+    get() = project.layout.buildDirectory.file("generated/resources/META-INF/accesstransformer.cfg")
 
-val Project.generatedTransitiveAccessTransformerFile: File
-    get() = project.layout.buildDirectory.file("generated/resources/META-INF/transitive-accesstransformer.cfg").get().asFile
+val Project.generatedTransitiveAccessTransformerFile: Provider<RegularFile>
+    get() = project.layout.buildDirectory.file("generated/accesstransformers/${SourceSet.MAIN_SOURCE_SET_NAME}/accesstransformer.cfg")
 
 fun generateClassTweakerFile(inputFile: File, outputFile: File) {
-    val lines = inputFile.readLines()
-        .asSequence()
-        .map { line ->
-            val index = line.indexOf('#')
-            if (index != -1) line.substring(0, index) else line
-        }
-        .map(String::trim)
-        .filter(String::isNotEmpty)
-        .filter { line ->
-            CLASS_TWEAKER_ACCESS_LEVELS.keys.any(line::startsWith)
-        }
-        .map { line ->
+    generateClassTweakerFile(inputFile, outputFile) { lines ->
+        lines.map { line ->
             line.replace(Regex("\\s+"), COLUMN_SEPARATOR)
         }
-        .toMutableList().also { lines ->
-            lines.addFirst(CLASS_TWEAKER_HEADER)
-        }
-
-    outputFile.parentFile.mkdirs()
-    outputFile.writeText(lines.joinToString("\n"))
+            .toMutableList().also { lines ->
+                lines.addFirst(CLASS_TWEAKER_HEADER)
+            }
+    }
 }
 
 fun generateAccessTransformerFile(
@@ -58,18 +49,8 @@ fun generateAccessTransformerFile(
     outputFile: File,
     accessLevels: Map<String, String> = CLASS_TWEAKER_ACCESS_LEVELS
 ) {
-    val lines = inputFile.readLines()
-        .asSequence()
-        .map { line ->
-            val index = line.indexOf('#')
-            if (index != -1) line.substring(0, index) else line
-        }
-        .map(String::trim)
-        .filter(String::isNotEmpty)
-        .filter { line ->
-            accessLevels.keys.any(line::startsWith)
-        }
-        .map { line ->
+    generateClassTweakerFile(inputFile, outputFile, accessLevels) { lines ->
+        lines.map { line ->
             val entry = line.split(Regex("\\s+"))
 
             if (entry.size < 3) error("Invalid entry: $line")
@@ -104,11 +85,32 @@ fun generateAccessTransformerFile(
                 }
             }
         }
-        .map { lines ->
-            lines.joinToString(COLUMN_SEPARATOR)
-        }
-        .toList()
+            .map { lines ->
+                lines.joinToString(COLUMN_SEPARATOR)
+            }
+            .toList()
+    }
+}
 
+private fun generateClassTweakerFile(
+    inputFile: File,
+    outputFile: File,
+    accessLevels: Map<String, String> = CLASS_TWEAKER_ACCESS_LEVELS,
+    transformer: (Sequence<String>) -> List<String>
+) {
+    val lines = inputFile.readLines()
+        .asSequence()
+        .map { line ->
+            val index = line.indexOf('#')
+            if (index != -1) line.substring(0, index) else line
+        }
+        .map(String::trim)
+        .filter(String::isNotEmpty)
+        .filter { line ->
+            accessLevels.keys.any(line::startsWith)
+        }
+
+    val text = transformer.invoke(lines).joinToString("\n")
     outputFile.parentFile.mkdirs()
-    outputFile.writeText(lines.joinToString("\n"))
+    outputFile.writeText(text)
 }

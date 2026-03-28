@@ -3,6 +3,8 @@ package fuzs.multiloader
 import fuzs.multiloader.extension.expectPlatform
 import fuzs.multiloader.extension.versionCatalog
 import fuzs.multiloader.metadata.ModLoaderProvider
+import org.gradle.api.internal.tasks.JvmConstants
+import kotlin.jvm.optionals.getOrNull
 
 plugins {
     id("fuzs.multiloader.multiloader-convention-plugins-neoforge-like")
@@ -23,7 +25,7 @@ dependencies {
 
     if (!providers.gradleProperty("project.isolated").orNull.toBoolean()) {
         versionCatalog.findLibrary("multiloaderaccesswideners.common")
-            .orElse(null)
+            .getOrNull()
             ?.let { accessTransformers(it) { isTransitive = false } }
     }
 }
