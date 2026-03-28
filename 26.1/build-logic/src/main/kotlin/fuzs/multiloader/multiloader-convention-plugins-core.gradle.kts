@@ -247,7 +247,7 @@ idea {
 
 sourceSets.named(SourceSet.MAIN_SOURCE_SET_NAME) {
     resources {
-        srcDir(layout.projectDirectory.dir("src/generated/resources"))
+        srcDir(project.layout.projectDirectory.dir("src/generated/resources"))
     }
 }
 
@@ -370,7 +370,7 @@ signing {
 
 val generateMixinConfig = tasks.register<MixinConfigJsonTask>("generateMixinConfig") {
     val multiLoaderExtension = project.extensions.getByType(MultiLoaderExtension::class.java)
-    outputFile.set(layout.buildDirectory.file("generated/resources/${mod.id}.${project.name.lowercase()}.mixins.json"))
+    outputFile.set(project.layout.buildDirectory.file("generated/resources/${mod.id}.${project.name.lowercase()}.mixins.json"))
 
     json {
         val platform = project.projectPlatform.takeIf { it.platform }
