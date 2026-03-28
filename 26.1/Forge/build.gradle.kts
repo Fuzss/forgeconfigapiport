@@ -5,6 +5,7 @@ import fuzs.multiloader.extension.commonProject
 import fuzs.multiloader.extension.expectPlatform
 import fuzs.multiloader.extension.mod
 import fuzs.multiloader.metadata.ModLoaderProvider
+import fuzs.multiloader.mixin.MixinConfigJsonTask
 import fuzs.multiloader.neoforge.setupModsTomlTask
 import fuzs.multiloader.neoforge.toml.NeoForgeModsTomlSpec
 import fuzs.multiloader.neoforge.toml.NeoForgeModsTomlTask
@@ -66,4 +67,12 @@ val generateModsToml = tasks.register<NeoForgeModsTomlTask>("generateModsToml") 
 
 tasks.named<ProcessResources>(JvmConstants.PROCESS_RESOURCES_TASK_NAME) {
     dependsOn(generateModsToml)
+}
+
+listOf(project.commonProject, project).forEach { project ->
+    project.tasks.named<MixinConfigJsonTask>("generateMixinConfig") {
+        json {
+            compatibilityLevel.set("JAVA_21")
+        }
+    }
 }
