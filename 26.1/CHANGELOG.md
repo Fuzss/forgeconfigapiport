@@ -24,4 +24,4 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Update to Minecraft 26.1
 - Note for developers: This project is no longer built using Architectury Loom, having migrated to Fabric Loom and Mod
   Dev Gradle. Please report any issues particularly regarding the `Common` distribution that may arise from that
-  migration.
+  migration
