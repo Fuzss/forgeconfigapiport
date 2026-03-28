@@ -25,7 +25,7 @@ fun FabricModJsonV1Task.setupModJsonTask() {
         description.set(project.mod.description)
         addDistributions()
         licenses.add(project.mod.license)
-        icon("mod_logo.png")
+        icon("pack.png")
         if (project.metadata.environments.clientOnly()) {
             client()
         } else {
@@ -40,7 +40,7 @@ fun FabricModJsonV1Task.setupModJsonTask() {
         }
 
         addDependencies()
-        accessWidener.set(project.generatedClassTweakerFile.name)
+        accessWidener.set(project.generatedClassTweakerFile.get().asFile.name)
 
         if (multiLoaderExtension.modFile.orNull?.library?.orNull == true) {
             customData.put("modmenu", mapOf("badges" to listOf("library")))

@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [v26.1.0.2-mc26.1] - 2026-03-28
+
+### Changed
+
+- Enable support for Minecraft Forge
+
 ## [v26.1.0.1-mc26.1] - 2026-03-24
 
 ### Fixed

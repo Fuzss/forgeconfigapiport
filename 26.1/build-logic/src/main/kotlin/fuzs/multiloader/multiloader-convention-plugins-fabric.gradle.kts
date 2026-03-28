@@ -10,6 +10,7 @@ import fuzs.multiloader.fabric.setupModJsonTask
 import fuzs.multiloader.metadata.ModLoaderProvider
 import net.fabricmc.loom.task.FabricModJsonV1Task
 import org.gradle.api.internal.tasks.JvmConstants
+import kotlin.jvm.optionals.getOrNull
 
 plugins {
     id("fuzs.multiloader.multiloader-convention-plugins-platform")
@@ -17,7 +18,7 @@ plugins {
 }
 
 project.expectPlatform(ModLoaderProvider.FABRIC)
-generateClassTweakerFile(classTweakerFile, generatedClassTweakerFile)
+generateClassTweakerFile(classTweakerFile, generatedClassTweakerFile.get().asFile)
 
 configurations {
     create("modLocalRuntime") {
@@ -90,11 +91,11 @@ repositories {
 
 dependencies {
     minecraft("com.mojang:minecraft:${versionCatalog.findVersion("game").get()}")
-    api(versionCatalog.findLibrary("fabricloader.fabric").get())
+    implementation(versionCatalog.findLibrary("fabricloader.fabric").get())
 
     if (!providers.gradleProperty("project.isolated").orNull.toBoolean()) {
         versionCatalog.findLibrary("modmenu.fabric")
-            .orElse(null)
+            .getOrNull()
             ?.let { localRuntime(it) { isTransitive = false } }
     }
 }

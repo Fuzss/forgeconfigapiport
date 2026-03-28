@@ -1,7 +1,6 @@
 import fuzs.multiloader.extension.commonProject
 import fuzs.multiloader.extension.expectPlatform
 import fuzs.multiloader.extension.mod
-import fuzs.multiloader.extension.versionCatalog
 import fuzs.multiloader.metadata.ModLoaderProvider
 import org.gradle.api.internal.tasks.JvmConstants
 
@@ -13,7 +12,7 @@ project.expectPlatform(ModLoaderProvider.COMMON)
 
 neoForge {
     enable {
-        neoFormVersion = versionCatalog.findVersion("neoform").get().requiredVersion
+        neoFormVersion = sharedLibs.versions.neoform.get()
         isDisableRecompilation = true
     }
 }
@@ -33,10 +32,10 @@ dependencies {
     // This is only required for the IDE to see the common classes.
     compileOnly(project(project.commonProject.path)) { isTransitive = false }
 
-    compileOnly(versionCatalog.findLibrary("mixin.common").get())
-    compileOnly(versionCatalog.findLibrary("mixinextras.common").get())
-    compileOnlyApi(libs.nightconfigcore.common)
-    compileOnlyApi(libs.nightconfigtoml.common)
+    compileOnly(sharedLibs.mixin.common)
+    compileOnly(sharedLibs.mixinextras.common)
+    compileOnlyApi(sharedLibs.nightconfigcore.common)
+    compileOnlyApi(sharedLibs.nightconfigtoml.common)
 }
 
 tasks.named<JavaCompile>(JvmConstants.COMPILE_JAVA_TASK_NAME) {

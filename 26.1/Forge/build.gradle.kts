@@ -4,21 +4,19 @@ import fuzs.multiloader.classtweaker.generatedAccessTransformerFile
 import fuzs.multiloader.extension.commonProject
 import fuzs.multiloader.extension.expectPlatform
 import fuzs.multiloader.extension.mod
-import fuzs.multiloader.extension.versionCatalog
 import fuzs.multiloader.metadata.ModLoaderProvider
 import fuzs.multiloader.neoforge.setupModsTomlTask
 import fuzs.multiloader.neoforge.toml.NeoForgeModsTomlSpec
 import fuzs.multiloader.neoforge.toml.NeoForgeModsTomlTask
 import org.gradle.api.internal.tasks.JvmConstants
-import kotlin.jvm.optionals.getOrNull
 
 plugins {
     id("fuzs.multiloader.multiloader-convention-plugins-platform")
-    alias(project.versionCatalog.findPlugin("forge.gradle").get())
+    alias(libs.plugins.forge.gradle)
 }
 
 project.expectPlatform(ModLoaderProvider.FORGE)
-generateAccessTransformerFile(classTweakerFile, generatedAccessTransformerFile)
+generateAccessTransformerFile(classTweakerFile, generatedAccessTransformerFile.get().asFile)
 
 tasks.withType<Jar>().configureEach {
     manifest {
@@ -44,13 +42,10 @@ dependencies {
     // This is only required for the IDE to see the common classes.
     compileOnly(project(":Common-NeoForgeApi")) { isTransitive = false }
 
-    api(minecraft.dependency(versionCatalog.findLibrary("minecraftforge.forge").get()))
+    implementation(minecraft.dependency(libs.minecraftforge.forge))
 }
 
 val generateModsToml = tasks.register<NeoForgeModsTomlTask>("generateModsToml") {
-    fun version(alias: String): String? =
-        project.versionCatalog.findVersion(alias).getOrNull()?.requiredVersion?.let { "[${it},)" }
-
     setupModsTomlTask()
     outputFile.set(project.layout.buildDirectory.file("generated/resources/META-INF/mods.toml"))
 
@@ -64,7 +59,7 @@ val generateModsToml = tasks.register<NeoForgeModsTomlTask>("generateModsToml") 
         dependency(project.mod.id) {
             modId.set("forge")
             type.set(NeoForgeModsTomlSpec.DependencySpec.Type.REQUIRED)
-            version("minecraftforge.min")?.let { versionRange.set(it) }
+            versionRange.set("[${libs.versions.minecraftforge.min.get()},)")
         }
     }
 }

@@ -10,13 +10,13 @@ dependencies {
         compileOnly(project(it.path)) { isTransitive = false }
     }
 
-    modApi(libs.fabricapi.fabric)
-    api(libs.nightconfigcore.common)
-    include(libs.nightconfigcore.common)
-    api(libs.nightconfigtoml.common)
-    include(libs.nightconfigtoml.common)
-    modCompileOnly(libs.modmenu.fabric) { isTransitive = false }
-    modLocalRuntime(libs.modmenu.fabric) { isTransitive = false }
+    modApi(sharedLibs.fabricapi.fabric)
+    api(sharedLibs.nightconfigcore.common)
+    include(sharedLibs.nightconfigcore.common)
+    api(sharedLibs.nightconfigtoml.common)
+    include(sharedLibs.nightconfigtoml.common)
+    modCompileOnly(sharedLibs.modmenu.fabric) { isTransitive = false }
+    modLocalRuntime(sharedLibs.modmenu.fabric) { isTransitive = false }
 }
 
 multiloader {

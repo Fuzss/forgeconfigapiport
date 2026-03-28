@@ -8,9 +8,9 @@ import org.gradle.api.artifacts.VersionCatalogsExtension
 import org.gradle.kotlin.dsl.extra
 import org.gradle.kotlin.dsl.getByType
 
-// Expose the libs version catalog
+// Expose our shared version catalog
 val Project.versionCatalog: VersionCatalog
-    get() = extensions.getByType<VersionCatalogsExtension>().named("libs")
+    get() = extensions.getByType<VersionCatalogsExtension>().named("sharedLibs")
 
 // Load external mods once per project
 val Project.externalMods: ExternalMods
