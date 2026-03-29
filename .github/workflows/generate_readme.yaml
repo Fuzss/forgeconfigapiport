@@ -1,0 +1,35 @@
+name: Generate README
+
+on:
+  push:
+  workflow_dispatch: {}
+  create:
+  delete:
+  repository_dispatch:
+    types: [branch-renamed]
+
+jobs:
+  generate-readme:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # needed to see all branches
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Run README generator
+        run: python3 .github/scripts/generate_readme.py
+
+      - name: Commit README changes
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add README.md
+          git diff-index --quiet HEAD || git commit -m "Auto-update README.md [skip ci]"
+          git push
+          
