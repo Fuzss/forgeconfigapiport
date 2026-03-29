@@ -103,22 +103,27 @@ def load_support_data():
 
 def get_all_branches():
     """
-    Collect all version branches matching X.Y.Z.
-
-    Returns:
-        list[str]: sorted branch names
+    Collect all remote branches matching X.Y.Z.
+    Works in GitHub Actions where only remote refs exist.
     """
     result = subprocess.run(
-        ["git", "for-each-ref", "--format=%(refname:short)"],
+        ["git", "branch", "-r", "--format=%(refname:short)"],
         capture_output=True,
         text=True
     )
 
-    return sorted(
-        [b.strip() for b in result.stdout.splitlines()
-         if BRANCH_PATTERN.fullmatch(b.strip())],
-        reverse=True
-    )
+    branches = []
+
+    for line in result.stdout.splitlines():
+        branch = line.strip()
+
+        if branch.startswith("origin/"):
+            branch = branch[len("origin/"):]
+
+        if BRANCH_PATTERN.fullmatch(branch):
+            branches.append(branch)
+
+    return sorted(branches, reverse=True)
 
 
 def group_branches_by_mc_version(branches):
@@ -142,31 +147,30 @@ def group_branches_by_mc_version(branches):
 
 def collect_table_loaders(branch_list):
     """
-    Detect loaders present in metadata.json for a table.
+    Detect loaders present in metadata.json for a table without checking out branches.
 
     Returns:
-        tuple[list[str], dict]:
-            loaders present
-            metadata per branch
+        tuple[list[str], dict]: loaders present, metadata per branch
     """
     loaders_present = set()
     branch_metadata = {}
 
     for branch in branch_list:
-        metadata_path = Path(f"{branch}/metadata.json")
+        try:
+            metadata_json_str = subprocess.run(
+                ["git", "show", f"origin/{branch}:metadata.json"],
+                capture_output=True,
+                text=True,
+                check=True
+            ).stdout
+        except subprocess.CalledProcessError:
+            continue
 
-        if metadata_path.exists():
-            with open(metadata_path) as f:
-                metadata = json.load(f)
+        metadata = json.loads(metadata_json_str)
+        loaders = metadata.get("platforms", [])
 
-            loaders = metadata.get("platforms", [])
-
-            branch_metadata[branch] = {
-                "metadata": metadata,
-                "loaders": loaders
-            }
-
-            loaders_present.update(loaders)
+        branch_metadata[branch] = {"metadata": metadata, "loaders": loaders}
+        loaders_present.update(loaders)
 
     return sorted(loaders_present), branch_metadata
 
