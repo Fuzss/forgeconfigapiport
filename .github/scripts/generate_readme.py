@@ -45,7 +45,7 @@ DEFAULT_DOWNLOADS = (
 )
 
 README_FILE = Path("README.md")
-VERSIONS_FILE = Path("versions.json")
+VERSIONS_FILE = Path(".github/data/versions.properties")
 BRANCH_PATTERN = re.compile(r"\d+\.\d+\.\d+")
 
 
@@ -75,15 +75,30 @@ def get_repo_url():
 
 def load_support_data():
     """
-    Load versions.json support mapping.
+    Load versions.properties support mapping.
+
+    File format:
+        branch=supported|limited|archived
 
     Returns:
         dict[str, str]: branch -> support type
     """
-    if VERSIONS_FILE.exists():
-        with open(VERSIONS_FILE) as f:
-            return json.load(f)
-    return {}
+    support_data = {}
+
+    if not VERSIONS_FILE.exists():
+        return support_data
+
+    with open(VERSIONS_FILE) as f:
+        for line in f:
+            line = line.strip()
+
+            if not line or line.startswith("#"):
+                continue
+
+            key, value = line.split("=", 1)
+            support_data[key.strip()] = value.strip()
+
+    return support_data
 
 
 def get_all_branches():
