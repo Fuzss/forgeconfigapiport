@@ -22,6 +22,9 @@ jobs:
         with:
           python-version: '3.x'
 
+      - name: Fetch all branches
+        run: git fetch --all --prune
+
       - name: Run README generator
         run: python3 .github/scripts/generate_readme.py
 
