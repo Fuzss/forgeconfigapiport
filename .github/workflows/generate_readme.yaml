@@ -8,6 +8,9 @@ on:
   repository_dispatch:
     types: [branch-renamed]
 
+permissions:
+  contents: write
+
 jobs:
   generate-readme:
     runs-on: ubuntu-latest
