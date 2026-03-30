@@ -33,10 +33,10 @@ SUPPORT_TYPES = {
     "archived": DEFAULT_SUPPORT_TYPE
 }
 
-CURSEFORGE_GAME_ID = {
-    "fabric": 4,
-    "forge": 1,
-    "neoforge": 6
+MOD_LOADERS = {
+    "fabric": ("Fabric", 4),
+    "forge": ("Forge", 1),
+    "neoforge": ("NeoForge", 6)
 }
 
 DEFAULT_DOWNLOADS = (
@@ -46,6 +46,7 @@ DEFAULT_DOWNLOADS = (
     '[Modrinth](https://modrinth.com/user/Fuzs)'
 )
 
+MAVEN_BASE_URL = "https://github.com/Fuzss/modresources/tree/main/maven/"
 README_FILE = Path("README.md")
 VERSIONS_FILE = Path(".github/scripts/versions.json")
 BRANCH_PATTERN = re.compile(r"\d+\.\d+\.\d+")
@@ -88,6 +89,11 @@ def load_support_data():
     return {}
 
 
+def semver_key(branch: str):
+    """Convert branch 'X.Y.Z' into tuple (X,Y,Z) for proper numeric sorting."""
+    return tuple(int(x) for x in branch.split("."))
+
+
 def get_all_branches():
     """
     Collect all remote branches matching X.Y.Z.
@@ -110,7 +116,7 @@ def get_all_branches():
         if BRANCH_PATTERN.fullmatch(branch):
             branches.append(branch)
 
-    return sorted(branches, reverse=True)
+    return sorted(branches, key=semver_key, reverse=True)
 
 
 def group_branches_by_mc_version(branches):
@@ -174,7 +180,7 @@ def link_url(repo_url, links, name, branch, platform=None):
             slug = l.get("slug")
 
             if name.lower() == "curseforge":
-                game_id = CURSEFORGE_GAME_ID.get(platform, 0)
+                game_id = MOD_LOADERS.get(platform, ["", 0])[1]
                 return (
                     "https://www.curseforge.com/minecraft/mc-mods/"
                     f"{slug}/files/all?version={branch}&gameVersionTypeId={game_id}"
@@ -204,6 +210,12 @@ def platform_links(repo_url, links, branch, loader, branch_loaders):
     return "n/a"
 
 
+def maven_artifact(group, id, loader, version):
+    display_artifact = f"{group}:{id}-{loader.lower()}:{version}"
+    url_artifact = f"{group.replace(".", "/")}/{id}-{loader.lower()}/{version}"
+    return f"[`{display_artifact}`]({MAVEN_BASE_URL}{url_artifact})"
+
+
 def generate_table_row(repo_url, branch, display_status, changelog_url, metadata_info, loader_columns):
     """
     Generate a single markdown table row.
@@ -212,30 +224,28 @@ def generate_table_row(repo_url, branch, display_status, changelog_url, metadata
         metadata = metadata_info["metadata"]
         links = metadata.get("links", [])
         branch_loaders = metadata_info["loaders"]
+        id = metadata["mod"]["id"]
         version = metadata["mod"]["version"]
+        group = metadata["mod"]["group"]
 
         row = [
             f"[{branch}]({repo_url}/tree/{branch})",
             display_status,
-            f"[CHANGELOG.md]({changelog_url})",
-            version
+            f"[CHANGELOG.md]({changelog_url})"
         ]
 
         row += [
             platform_links(repo_url, links, branch, loader, branch_loaders)
-            for loader in loader_columns if loader != "Maven"
+            for loader in loader_columns
         ]
 
-        # Append Maven coordinates at the end
-        if metadata_info:
-            mod_info = metadata_info["metadata"]["mod"]
-            maven_entries = [f'{mod_info["group"]}:{mod_info["id"]}:common:{mod_info["version"]}']
+        maven_entries = [maven_artifact(group, id, "common", version)]
 
-            for loader in metadata_info["loaders"]:
-                maven_entry = f'{mod_info["group"]}:{mod_info["id"]}-{loader}:{mod_info["version"]}'
-                maven_entries.append(maven_entry)
+        for loader in metadata_info["loaders"]:
+            maven_entry = maven_artifact(group, id, loader, version)
+            maven_entries.append(maven_entry)
 
-            row.append("<br />".join(maven_entries))
+        row.append("<br />".join(maven_entries))
 
     else:
         row = [
@@ -272,7 +282,12 @@ def main():
         base_columns = ["Branch", "Status", "Changelog"]
 
         if loaders_present:
-            table_header = base_columns + loaders_present + ["Maven"]
+            loader_names = [
+                MOD_LOADERS.get(loader, (loader.capitalize(), 0))[0] 
+                for loader in loaders_present
+            ]
+
+            table_header = base_columns + loader_names + ["Maven"]
         else:
             table_header = base_columns + ["Downloads"]
 
