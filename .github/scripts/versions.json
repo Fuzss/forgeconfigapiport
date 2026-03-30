@@ -1,0 +1,14 @@
+{
+  "published": true,
+  "versions": {
+    "26.1.0": "primary",
+    "1.21.11": "fixes",
+    "1.21.10": "fixes",
+    "1.21.8": "fixes",
+    "1.21.5": "fixes",
+    "1.21.4": "fixes",
+    "1.21.3": "fixes",
+    "1.21.1": "fixes",
+    "1.20.1": "fixes"
+  }
+}
