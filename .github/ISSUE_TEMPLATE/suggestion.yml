@@ -21,7 +21,6 @@ body:
         - "Fabric"
         - "NeoForge"
         - "Forge"
-        - "Quilt"
     validations:
       required: true
   - type: input
@@ -29,13 +28,13 @@ body:
     attributes:
       label: Minecraft Version(s) (Optional)
       description: What Minecraft version(s) are you using the play the mod?
-      placeholder: ex. 1.20.1
+      placeholder: ex. 26.1
   - type: input
     id: version
     attributes:
       label: Mod Version(s) (Optional)
       description: What mod version(s) are you using to play?
-      placeholder: ex. v8.0.0
+      placeholder: ex. v26.1.0.0
   - type: textarea
     id: suggestion
     attributes:
