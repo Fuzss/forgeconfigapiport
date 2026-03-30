@@ -34,3 +34,13 @@
 | Branch | Status | Changelog | Downloads |
 | --- | --- | --- | --- |
 | [1.16.5](https://github.com/Fuzss/forgeconfigapiport/tree/1.16.5) | ❌ Archived | [CHANGELOG.md](https://github.com/Fuzss/forgeconfigapiport/blob/1.16.5/CHANGELOG.md) | <img src="https://cdn.simpleicons.org/curseforge" width="14" /> [CurseForge](https://www.curseforge.com/members/fuzs_/projects) <br /> <img src="https://cdn.simpleicons.org/modrinth" width="14" /> [Modrinth](https://modrinth.com/user/Fuzs) |
+
+---
+
+**✅ Primary** — Latest version with active development and new features
+
+**✅ Maintained** — Receives backports and selected new features
+
+**⚠️ Bugfixes only** — Critical fixes and crash fixes only
+
+**❌ Archived** — No longer updated
