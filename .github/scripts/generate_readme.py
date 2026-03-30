@@ -25,10 +25,12 @@ import sys
 from pathlib import Path
 
 
+DEFAULT_SUPPORT_TYPE = ("❌ Archived", "No longer updated")
 SUPPORT_TYPES = {
-    "supported": "✅ Supported",
-    "limited": "⚠️ Bugfixes only",
-    "archived": "❌ Archived"
+    "primary": ("✅ Primary", "Latest version with active development and new features"),
+    "maintained": ("✅ Maintained", "Receives backports and selected new features"),
+    "fixes": ("⚠️ Bugfixes only", "Critical fixes and crash fixes only"),
+    "archived": DEFAULT_SUPPORT_TYPE
 }
 
 CURSEFORGE_GAME_ID = {
@@ -45,7 +47,7 @@ DEFAULT_DOWNLOADS = (
 )
 
 README_FILE = Path("README.md")
-VERSIONS_FILE = Path(".github/data/versions.properties")
+VERSIONS_FILE = Path(".github/scripts/versions.json")
 BRANCH_PATTERN = re.compile(r"\d+\.\d+\.\d+")
 
 
@@ -75,30 +77,15 @@ def get_repo_url():
 
 def load_support_data():
     """
-    Load versions.properties support mapping.
-
-    File format:
-        branch=supported|limited|archived
+    Load versions.json support mapping.
 
     Returns:
         dict[str, str]: branch -> support type
     """
-    support_data = {}
-
-    if not VERSIONS_FILE.exists():
-        return support_data
-
-    with open(VERSIONS_FILE) as f:
-        for line in f:
-            line = line.strip()
-
-            if not line or line.startswith("#"):
-                continue
-
-            key, value = line.split("=", 1)
-            support_data[key.strip()] = value.strip()
-
-    return support_data
+    if VERSIONS_FILE.exists():
+        with open(VERSIONS_FILE) as f:
+            return json.load(f)["versions"]
+    return {}
 
 
 def get_all_branches():
@@ -236,8 +223,19 @@ def generate_table_row(repo_url, branch, display_status, changelog_url, metadata
 
         row += [
             platform_links(repo_url, links, branch, loader, branch_loaders)
-            for loader in loader_columns
+            for loader in loader_columns if loader != "Maven"
         ]
+
+        # Append Maven coordinates at the end
+        if metadata_info:
+            mod_info = metadata_info["metadata"]["mod"]
+            maven_entries = [f'{mod_info["group"]}:{mod_info["id"]}:common:{mod_info["version"]}']
+
+            for loader in metadata_info["loaders"]:
+                maven_entry = f'{mod_info["group"]}:{mod_info["id"]}-{loader}:{mod_info["version"]}'
+                maven_entries.append(maven_entry)
+
+            row.append("<br />".join(maven_entries))
 
     else:
         row = [
@@ -274,7 +272,7 @@ def main():
         base_columns = ["Branch", "Status", "Changelog"]
 
         if loaders_present:
-            table_header = base_columns + ["Latest"] + loaders_present
+            table_header = base_columns + loaders_present + ["Maven"]
         else:
             table_header = base_columns + ["Downloads"]
 
@@ -283,7 +281,7 @@ def main():
 
         for branch in branch_list:
             raw_status = support_data.get(branch, "archived").lower()
-            display_status = SUPPORT_TYPES.get(raw_status, "❌ Archived")
+            display_status = SUPPORT_TYPES.get(raw_status, DEFAULT_SUPPORT_TYPE)[0]
 
             changelog_url = f"{repo_url}/blob/{branch}/CHANGELOG.md"
             metadata_info = branch_metadata.get(branch)
@@ -298,6 +296,12 @@ def main():
             )
 
             readme_lines.append(row)
+
+    readme_lines.append(f"\n---\n")
+    readme_lines.extend(
+        f"**{name}** — {description}\n"
+        for name, description in SUPPORT_TYPES.values()
+    )
 
     write_readme(readme_lines)
 
