@@ -1,10 +1,9 @@
-name: Sync license files to version branches
+name: Sync LICENSE.md files
 
 on:
   push:
-    branches: ['**']
     paths:
-      - "LICENSE*.md"
+      - "LICENS*.md"
   create:
     branches: ['**']
   workflow_dispatch:
@@ -27,7 +26,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Sync LICENSE files to version branches
+      - name: Sync LICENSE.md files
         run: |
           # Fetch all branches
           git fetch --all
@@ -44,11 +43,11 @@ jobs:
               # Switch to version branch, create local branch if needed
               git checkout -B "$name" "origin/$name"
 
-              # Copy all LICENSE*.md files from main into this branch
-              git checkout main -- LICENSE*.md
+              # Copy all LICENS*.md files from main into this branch
+              git checkout main -- LICENS*.md
 
               # Stage and commit changes only if there are any
-              git add -A LICENSE*.md
+              git add -A LICENS*.md
               git diff-index --quiet HEAD || {
                 git commit -m "Sync license files from main [skip ci]"
                 git push origin "$name"

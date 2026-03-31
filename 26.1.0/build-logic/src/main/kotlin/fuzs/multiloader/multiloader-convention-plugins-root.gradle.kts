@@ -12,6 +12,7 @@ import kotlinx.serialization.json.Json
 import java.time.Instant
 
 afterEvaluate {
+    project.layout.buildDirectory.dir("run/server").get().asFile.mkdirs()
     val metadata = loadMetadata()
     val json = Json { prettyPrint = true }
     val output = project.layout.projectDirectory.file("metadata.json").asFile

@@ -47,8 +47,8 @@ dependencies {
 }
 
 tasks.withType<Jar>().configureEach {
-    from(rootProject.file("../LICENSE-FORGE.md"))
-    from(rootProject.file("../LICENSING.md"))
+    from(rootProject.file("LICENSE-FORGE.md"))
+    from(rootProject.file("LICENSING.md"))
 }
 
 val generateModsToml = tasks.register<NeoForgeModsTomlTask>("generateModsToml") {

@@ -39,8 +39,8 @@ dependencies {
 }
 
 tasks.withType<Jar>().configureEach {
-    from(rootProject.file("../LICENSE-FORGE.md"))
-    from(rootProject.file("../LICENSING.md"))
+    from(rootProject.file("LICENSE-FORGE.md"))
+    from(rootProject.file("LICENSING.md"))
 }
 
 tasks.named<JavaCompile>(JvmConstants.COMPILE_JAVA_TASK_NAME) {

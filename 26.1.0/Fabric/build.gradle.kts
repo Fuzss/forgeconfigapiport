@@ -20,9 +20,9 @@ dependencies {
 }
 
 tasks.withType<Jar>().configureEach {
-    from(rootProject.file("../LICENSE-FORGE.md"))
-    from(rootProject.file("../LICENSE-NIGHT-CONFIG.md"))
-    from(rootProject.file("../LICENSING.md"))
+    from(rootProject.file("LICENSE-FORGE.md"))
+    from(rootProject.file("LICENSE-NIGHT-CONFIG.md"))
+    from(rootProject.file("LICENSING.md"))
 }
 
 multiloader {

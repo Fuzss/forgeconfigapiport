@@ -69,6 +69,7 @@ loom {
 
         named("server") {
             server()
+            runDir("../run/server")
             programArgs("--nogui")
         }
     }
