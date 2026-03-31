@@ -166,8 +166,8 @@ java {
 tasks.withType<Jar>().configureEach {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
-    from(rootProject.file("../LICENSE.md"))
-    from(rootProject.file("../LICENSE-ASSETS.md"))
+    from(rootProject.file("LICENSE.md"))
+    from(rootProject.file("LICENSE-ASSETS.md"))
     from(rootProject.file("CHANGELOG.md"))
 
     manifest {

@@ -87,6 +87,7 @@ neoForge {
 
         register("server") {
             server()
+            gameDirectory = rootProject.file("run/server")
             programArguments.addAll("--nogui")
         }
 
@@ -101,6 +102,12 @@ neoForge {
                 "--output",
                 project.commonProject.file("src/generated/resources").absolutePath
             )
+        }
+
+        mods {
+            create(mod.id) {
+                sourceSet(sourceSets.main.get())
+            }
         }
     }
 }
