@@ -33,6 +33,7 @@ SUPPORT_TYPES = {
     "archived": DEFAULT_SUPPORT_TYPE
 }
 
+DEFAULT_MOD_LOADER = ("", 0)
 MOD_LOADERS = {
     "fabric": ("Fabric", 4),
     "forge": ("Forge", 1),
@@ -76,6 +77,25 @@ def get_repo_url():
         sys.exit(0)
 
     return f"https://github.com/{repo}"
+
+
+def format_repo_title(repo_name: str) -> str:
+    """
+    Convert kebab case repository names to a human readable title.
+
+    New format
+    forge-config-api-port -> Forge Config Api Port
+
+    Old format
+    forgeconfigapiport -> unchanged
+
+    Only transform when hyphens are present to avoid modifying legacy names.
+    """
+    if "-" not in repo_name:
+        return repo_name
+
+    parts = repo_name.split("-")
+    return " ".join(part.capitalize() for part in parts)
 
 
 def load_support_data():
@@ -181,7 +201,7 @@ def build_table_header(loaders_present, include_maven):
 
     if loaders_present:
         loader_names = [
-            MOD_LOADERS.get(loader, (loader.capitalize(), 0))[0]
+            MOD_LOADERS.get(loader, (loader.capitalize(), DEFAULT_MOD_LOADER[1]))[0]
             for loader in loaders_present
         ]
 
@@ -207,7 +227,7 @@ def link_url(repo_url, links, name, branch, platform=None):
             slug = l.get("slug")
 
             if name.lower() == "curseforge":
-                game_id = MOD_LOADERS.get(platform, ["", 0])[1]
+                game_id = MOD_LOADERS.get(platform, DEFAULT_MOD_LOADER)[1]
                 return (
                     "https://www.curseforge.com/minecraft/mc-mods/"
                     f"{slug}/files/all?version={branch}&gameVersionTypeId={game_id}"
@@ -315,7 +335,8 @@ def main():
     repo_url = get_repo_url()
     repo_name = repo_url.split("/")[-1]
 
-    readme_lines = [f"# {repo_name}"]
+    repo_title = format_repo_title(repo_name)
+    readme_lines = [f"# {repo_title}"]
 
     support_data, published = load_support_data()
     branches = get_all_branches()

@@ -1,12 +1,16 @@
-name: Generate README
+name: Generate README.md file
 
 on:
   push:
-  workflow_dispatch: {}
+    paths:
+      - metadata.json
   create:
+    branches: ['**']
   delete:
+    branches: ['**']
   repository_dispatch:
     types: [branch-renamed]
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -25,14 +29,13 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Run README generator
+      - name: Run README.md generator
         run: python3 .github/scripts/generate_readme.py
 
-      - name: Commit README changes
+      - name: Commit README.md changes
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           git add README.md
           git diff-index --quiet HEAD || git commit -m "Auto-update README.md [skip ci]"
           git push
-          
