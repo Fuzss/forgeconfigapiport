@@ -49,9 +49,11 @@ data class EnvironmentsEntry(
     val client: DependencyType,
     val server: DependencyType
 ) {
-    fun forBoth() = !client.unsupported && !server.unsupported
-    fun clientOnly() = !client.unsupported && server.unsupported
-    fun serverOnly() = client.unsupported && !server.unsupported
+    fun forClient() = !client.unsupported
+    fun forServer() = !server.unsupported
+    fun forBoth() = forClient() && forServer()
+    fun clientOnly() = forClient() && server.unsupported
+    fun serverOnly() = client.unsupported && forServer()
 }
 
 enum class ModLoaderProvider(val platform: Boolean = true) {

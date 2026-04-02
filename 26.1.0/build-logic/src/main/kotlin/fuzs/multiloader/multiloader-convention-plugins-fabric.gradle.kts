@@ -3,9 +3,7 @@ package fuzs.multiloader
 import fuzs.multiloader.classtweaker.classTweakerFile
 import fuzs.multiloader.classtweaker.generateClassTweakerFile
 import fuzs.multiloader.classtweaker.generatedClassTweakerFile
-import fuzs.multiloader.extension.expectPlatform
-import fuzs.multiloader.extension.mod
-import fuzs.multiloader.extension.versionCatalog
+import fuzs.multiloader.extension.*
 import fuzs.multiloader.fabric.setupModJsonTask
 import fuzs.multiloader.metadata.ModLoaderProvider
 import net.fabricmc.loom.task.FabricModJsonV1Task
@@ -41,9 +39,7 @@ loom {
     runs {
         configureEach {
             name(
-                "${project.name} ${this.name.replaceFirstChar { it.titlecase() }} ${
-                    versionCatalog.findVersion("minecraft").get()
-                }"
+                "${project.name} ${this.name.replaceFirstChar { it.titlecase() }} ${project.minecraftVersion}"
             )
             runDir("../run")
             ideConfigGenerated(true)
@@ -94,7 +90,7 @@ dependencies {
     minecraft("com.mojang:minecraft:${versionCatalog.findVersion("game").get()}")
     implementation(versionCatalog.findLibrary("fabricloader.fabric").get())
 
-    if (!providers.gradleProperty("project.isolated").orNull.toBoolean()) {
+    if (applyDefaultDependencies) {
         versionCatalog.findLibrary("modmenu.fabric")
             .getOrNull()
             ?.let { localRuntime(it) { isTransitive = false } }

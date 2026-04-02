@@ -3,7 +3,7 @@
         "id": "forgeconfigapiport",
         "group": "fuzs.forgeconfigapiport",
         "name": "Forge Config API Port",
-        "version": "26.1.0.2",
+        "version": "26.1.3",
         "authors": [
             "Fuzs"
         ],

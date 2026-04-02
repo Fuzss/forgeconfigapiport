@@ -50,17 +50,6 @@ fun NeoForgeModsTomlTask.setupModsTomlTask() {
 }
 
 private fun NeoForgeModsTomlTask.addDependencies() {
-    fun incrementPatch(version: String): String {
-        val parts = version.split(".").toMutableList()
-        when {
-            parts.size < 2 -> throw IllegalArgumentException("Version must have at least MAJOR.MINOR")
-            parts.size == 2 -> parts.add("0")
-        }
-
-        parts[parts.lastIndex] = (parts.last().toInt() + 1).toString()
-        return parts.joinToString(".")
-    }
-
     fun version(alias: String): String? =
         project.versionCatalog.findVersion(alias).getOrNull()?.requiredVersion?.let { "[${it},)" }
 
@@ -69,8 +58,9 @@ private fun NeoForgeModsTomlTask.addDependencies() {
             modId.set("minecraft")
             type.set(NeoForgeModsTomlSpec.DependencySpec.Type.REQUIRED)
             versionRange.set(
-                project.versionCatalog.findVersion("minecraft").get().requiredVersion
-                    .let { "[${it},${incrementPatch(it)})" }
+                project.versionCatalog.findVersion("minecraft").get().requiredVersion.let { version ->
+                    "[${project.lowerBoundVersion(version)},${project.upperBoundVersion(version)})"
+                }
             )
         }
 

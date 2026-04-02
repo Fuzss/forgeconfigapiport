@@ -1,9 +1,9 @@
 package fuzs.multiloader
 
+import fuzs.multiloader.extension.applyDefaultDependencies
 import fuzs.multiloader.extension.expectPlatform
 import fuzs.multiloader.extension.versionCatalog
 import fuzs.multiloader.metadata.ModLoaderProvider
-import org.gradle.api.internal.tasks.JvmConstants
 import kotlin.jvm.optionals.getOrNull
 
 plugins {
@@ -23,7 +23,7 @@ dependencies {
     compileOnly(versionCatalog.findLibrary("mixin.common").get())
     compileOnly(versionCatalog.findLibrary("mixinextras.common").get())
 
-    if (!providers.gradleProperty("project.isolated").orNull.toBoolean()) {
+    if (applyDefaultDependencies) {
         versionCatalog.findLibrary("multiloaderaccesswideners.common")
             .getOrNull()
             ?.let { accessTransformers(it) { isTransitive = false } }
