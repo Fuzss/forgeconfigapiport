@@ -169,6 +169,7 @@ tasks.withType<Jar>().configureEach {
     from(rootProject.file("LICENSE.md"))
     from(rootProject.file("LICENSE-ASSETS.md"))
     from(rootProject.file("CHANGELOG.md"))
+    from(rootProject.file("metadata.json"))
 
     manifest {
         attributes(

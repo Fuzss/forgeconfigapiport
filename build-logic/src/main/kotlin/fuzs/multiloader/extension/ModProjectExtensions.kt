@@ -15,7 +15,7 @@ val Project.versionCatalog: VersionCatalog
 // Load external mods once per project.
 val Project.externalMods: ExternalMods
     get() {
-        if (project == rootProject) {
+        if (this == rootProject) {
             return extensions.findByType(ExternalMods::class.java)
                 ?: ExternalMods(ExternalMods.BY_ID.toMutableMap()).also {
                     extensions.add(ExternalMods::class.java, "externalMods", it)
@@ -41,8 +41,8 @@ val Project.projectPlatform: ModLoaderProvider
         ?.let { ModLoaderProvider.valueOf(it) } ?: ModLoaderProvider.COMMON
 
 fun Project.expectPlatform(platform: ModLoaderProvider) {
-    if (platform != project.projectPlatform) {
-        throw GradleException("Mismatched platform: ${project.projectPlatform} != ${platform}, define via loom.platform=${platform} in gradle.properties")
+    if (platform != projectPlatform) {
+        throw GradleException("Mismatched platform: $projectPlatform != ${platform}, define via loom.platform=${platform} in gradle.properties")
     }
 }
 
@@ -70,4 +70,4 @@ fun Project.strictVersioning(version: String): Boolean {
 
 // The Minecraft version representing the supported range of versions e.g., 1.21.1, 26.1.x
 val Project.minecraftVersion: String
-    get() = artifactVersion(this.project.versionCatalog.findVersion("minecraft").get().requiredVersion)
+    get() = artifactVersion(versionCatalog.findVersion("minecraft").get().requiredVersion)

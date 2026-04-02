@@ -2,12 +2,14 @@ package fuzs.multiloader.metadata
 
 import fuzs.multiloader.extension.platformProjects
 import fuzs.multiloader.extension.projectPlatform
+import fuzs.multiloader.extension.versionCatalog
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.gradle.api.Project
 
 @Serializable
 data class ModMetadata(
+    val minecraft: String,
     val mod: ModEntry,
     val dependencies: List<DependencyEntry>,
     val links: List<DistributionEntry>,
@@ -120,7 +122,6 @@ enum class LinkProvider(val index: Int, val baseUrl: String) {
 }
 
 fun Project.loadMetadata(): ModMetadata {
-
     val properties: Map<String, String> =
         (rootProject.properties + project.properties).mapValues { it.value.toString() }
 
@@ -133,6 +134,7 @@ fun Project.loadMetadata(): ModMetadata {
     val distributionProperties = collect("distributions.")
     val environmentProperties = collect("environments.")
 
+    val minecraftVersion = versionCatalog.findVersion("minecraft").get().requiredVersion
     val platforms = project.platformProjects.map { it.projectPlatform }.distinct().sortedBy { it.name }
 
     val dependencies = dependencyProperties.entries
@@ -180,6 +182,7 @@ fun Project.loadMetadata(): ModMetadata {
         ?: error("No authors defined")
 
     return ModMetadata(
+        minecraftVersion,
         ModEntry(
             properties["mod.id"]!!,
             properties["mod.group"]!!,
