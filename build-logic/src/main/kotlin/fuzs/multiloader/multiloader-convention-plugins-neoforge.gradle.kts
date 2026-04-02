@@ -1,9 +1,6 @@
 package fuzs.multiloader
 
-import fuzs.multiloader.extension.commonProject
-import fuzs.multiloader.extension.expectPlatform
-import fuzs.multiloader.extension.mod
-import fuzs.multiloader.extension.versionCatalog
+import fuzs.multiloader.extension.*
 import fuzs.multiloader.metadata.ModLoaderProvider
 import fuzs.multiloader.neoforge.setupModsTomlTask
 import fuzs.multiloader.neoforge.toml.NeoForgeModsTomlTask
@@ -44,9 +41,8 @@ neoForge {
 
     runs {
         configureEach {
-            ideName = "${project.name} ${this.name.replaceFirstChar { it.titlecase() }} ${
-                versionCatalog.findVersion("minecraft").get()
-            }  (${project.path})"
+            ideName =
+                "${project.name} ${this.name.replaceFirstChar { it.titlecase() }} ${project.minecraftVersion} (${project.path})"
             gameDirectory = rootProject.file("run")
             jvmArguments.addAll(
                 "-Xms1G",
@@ -128,7 +124,7 @@ repositories {
 }
 
 dependencies {
-    if (!providers.gradleProperty("project.isolated").orNull.toBoolean()) {
+    if (applyDefaultDependencies) {
         versionCatalog.findLibrary("bettermodsbutton.neoforge")
             .getOrNull()
             ?.let { testRuntimeOnly(it) { isTransitive = false } }

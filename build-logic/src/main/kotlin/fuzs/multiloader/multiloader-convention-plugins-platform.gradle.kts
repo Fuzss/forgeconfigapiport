@@ -74,15 +74,13 @@ publishMods {
     val jarTask = tasks.named<AbstractArchiveTask>("jar")
     file.set(jarTask.get().archiveFile)
 
-    val minecraftVersion = versionCatalog.findVersion("minecraft").get().requiredVersion
-    displayName.set("[${name.uppercase()}] [$minecraftVersion] ${base.archivesName.get()} v${mod.version}")
-
+    displayName.set("[${name.uppercase()}] [${minecraftVersion}] ${base.archivesName.get()} v${mod.version}")
     type.set(STABLE)
     version.set(mod.version)
     modLoaders.add(name.lowercase())
+    dryRun.set(debugRemoteUploads)
 
-    val projectDebug = providers.gradleProperty("project.debug")
-    dryRun.set(projectDebug.orNull.toBoolean())
+    val minecraftVersion = versionCatalog.findVersion("minecraft").get().requiredVersion
 
     for (link in metadata.links) {
         val remoteToken =
@@ -94,8 +92,17 @@ publishMods {
                     curseforge {
                         accessToken.set(remoteToken)
                         projectId.set(link.id)
-                        minecraftVersions.add(minecraftVersion)
                         changelog.set(changelogText)
+                        if (strictVersioning(minecraftVersion)) {
+                            minecraftVersions.add(minecraftVersion)
+                        } else {
+                            minecraftVersions.addAll(supportedVersions(minecraftVersion))
+                        }
+
+                        val javaVersion = versionCatalog.findVersion("java").get().requiredVersion
+                        javaVersions.add(JavaVersion.toVersion(javaVersion))
+                        if (metadata.environments.forClient()) clientRequired.set(true)
+                        if (metadata.environments.forServer()) serverRequired.set(true)
 
                         for (entry in metadata.dependencies) {
                             if (entry.platforms.any { it.matches(projectPlatform) }) {
@@ -120,8 +127,12 @@ publishMods {
                     modrinth {
                         accessToken.set(remoteToken)
                         projectId.set(link.id)
-                        minecraftVersions.add(minecraftVersion)
                         changelog.set(changelogText)
+                        if (strictVersioning(minecraftVersion)) {
+                            minecraftVersions.add(minecraftVersion)
+                        } else {
+                            minecraftVersions.addAll(supportedVersions(minecraftVersion))
+                        }
 
                         for (entry in metadata.dependencies) {
                             if (entry.platforms.any { it.matches(projectPlatform) }) {

@@ -22,7 +22,7 @@ plugins {
 extensions.create<MultiLoaderExtension>("multiloader")
 
 base.archivesName = mod.name.replace("[^a-zA-Z]".toRegex(), "")
-version = "v${mod.version}-mc${versionCatalog.findVersion("minecraft").get()}-${project.name}"
+version = "v${mod.version}-mc${minecraftVersion}-${project.name}"
 group = mod.group
 
 repositories {

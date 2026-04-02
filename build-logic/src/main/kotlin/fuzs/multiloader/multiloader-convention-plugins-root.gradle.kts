@@ -1,10 +1,7 @@
 package fuzs.multiloader
 
 import fuzs.multiloader.discord.*
-import fuzs.multiloader.extension.metadata
-import fuzs.multiloader.extension.mod
-import fuzs.multiloader.extension.platformProjects
-import fuzs.multiloader.extension.versionCatalog
+import fuzs.multiloader.extension.*
 import fuzs.multiloader.metadata.LinkProvider
 import fuzs.multiloader.metadata.loadMetadata
 import fuzs.multiloader.task.IncrementBuildNumber
@@ -41,8 +38,6 @@ tasks.register<DiscordWebhookTask>("sendDiscordWebhook") {
     val discordToken = providers.gradleProperty("fuzs.multiloader.remote.discord.token")
     onlyIf { discordChannel.isPresent && discordToken.isPresent }
 
-    val projectDebug = providers.gradleProperty("project.debug")
-    val minecraftVersion = versionCatalog.findVersion("minecraft").get()
     val changelogFile = file("CHANGELOG.md")
 
     payload {
@@ -51,7 +46,7 @@ tasks.register<DiscordWebhookTask>("sendDiscordWebhook") {
         val epochSeconds = System.currentTimeMillis() / 1000
         content.set("<t:$epochSeconds:R>")
         flags.set(MessageFlags.SUPPRESS_NOTIFICATIONS)
-        debug.set(projectDebug.orNull.toBoolean())
+        debug.set(debugRemoteUploads)
 
         embed {
             title.set("[$minecraftVersion] ${mod.name} v${mod.version}")

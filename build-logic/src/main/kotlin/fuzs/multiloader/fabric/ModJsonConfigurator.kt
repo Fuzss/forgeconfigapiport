@@ -1,12 +1,7 @@
 package fuzs.multiloader.fabric
 
 import fuzs.multiloader.classtweaker.generatedClassTweakerFile
-import fuzs.multiloader.extension.MultiLoaderExtension
-import fuzs.multiloader.extension.commonProject
-import fuzs.multiloader.extension.externalMods
-import fuzs.multiloader.extension.metadata
-import fuzs.multiloader.extension.mod
-import fuzs.multiloader.extension.versionCatalog
+import fuzs.multiloader.extension.*
 import fuzs.multiloader.metadata.LinkProvider
 import fuzs.multiloader.metadata.ModLoaderProvider
 import net.fabricmc.loom.task.FabricModJsonV1Task
@@ -101,25 +96,18 @@ private fun FabricModJsonV1Task.addEntrypoints() {
 }
 
 private fun FabricModJsonV1Task.addDependencies() {
-    fun incrementPatch(version: String): String {
-        val parts = version.split(".").toMutableList()
-        when {
-            parts.size < 2 -> throw IllegalArgumentException("Version must have at least MAJOR.MINOR")
-            parts.size == 2 -> parts.add("0")
-        }
-
-        parts[parts.lastIndex] = (parts.last().toInt() + 1).toString()
-        return parts.joinToString(".")
-    }
-
     fun versionOrAny(alias: String) =
         project.versionCatalog.findVersion(alias).getOrNull()?.requiredVersion?.let { ">=${it}" } ?: "*"
 
     json {
         depends(
             "minecraft",
-            project.versionCatalog.findVersion("minecraft").get().requiredVersion.let {
-                ">=${it}- <${incrementPatch(it)}-"
+            project.versionCatalog.findVersion("minecraft").get().requiredVersion.let { version ->
+                if (project.strictVersioning(version)) {
+                    ">=${project.lowerBoundVersion(version)}- <${project.upperBoundVersion(version)}-"
+                } else {
+                    "~${project.lowerBoundVersion(version)}-"
+                }
             }
         )
 
