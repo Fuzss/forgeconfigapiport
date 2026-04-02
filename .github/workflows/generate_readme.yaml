@@ -3,13 +3,11 @@ name: Generate README.md file
 on:
   push:
     paths:
-      - metadata.json
+      - .github/scripts/versions.json
   create:
     branches: ['**']
   delete:
     branches: ['**']
-  repository_dispatch:
-    types: [branch-renamed]
   workflow_dispatch:
 
 permissions:
