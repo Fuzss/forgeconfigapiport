@@ -306,7 +306,7 @@ def generate_table_row(
     """
     if metadata_info:
         metadata = metadata_info["metadata"]
-        minecraft = metadata_info.get("minecraft") or get_mc_version(branch)
+        minecraft = metadata.get("minecraft") or get_mc_version(branch)
         links = metadata.get("links", [])
         branch_loaders = metadata_info["loaders"]
         id = metadata["mod"]["id"]
