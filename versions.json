@@ -1,0 +1,7 @@
+{
+  "branches": {
+    "1.21.11": "primary",
+    "1.21.1": "maintained",
+    "1.20.1": "fixes"
+  }
+}
