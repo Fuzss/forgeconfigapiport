@@ -74,7 +74,7 @@ publishMods {
     val jarTask = tasks.named<AbstractArchiveTask>("jar")
     file.set(jarTask.get().archiveFile)
 
-    displayName.set("[${name.uppercase()}] [${minecraftVersion}] ${base.archivesName.get()} v${mod.version}")
+    displayName.set("[${name.uppercase()}] [${minecraftVersion}] v${mod.version}")
     type.set(STABLE)
     version.set(mod.version)
     modLoaders.add(name.lowercase())

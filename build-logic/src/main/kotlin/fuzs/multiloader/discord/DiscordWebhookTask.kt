@@ -8,6 +8,7 @@ import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.TaskAction
+import org.gradle.work.DisableCachingByDefault
 import org.gradle.workers.WorkAction
 import org.gradle.workers.WorkParameters
 import org.gradle.workers.WorkerExecutor
@@ -17,6 +18,7 @@ import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import javax.inject.Inject
 
+@DisableCachingByDefault(because = "Sends an external webhook and has side effects")
 abstract class DiscordWebhookTask : DefaultTask() {
     @get:Inject
     abstract val objects: ObjectFactory

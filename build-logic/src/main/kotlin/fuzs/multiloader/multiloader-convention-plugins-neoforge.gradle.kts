@@ -16,13 +16,17 @@ project.expectPlatform(ModLoaderProvider.NEOFORGE)
 
 configurations {
     create("localRuntime") {
-        this@configurations.named("testRuntimeOnly") {
+        isCanBeConsumed = false
+        isCanBeResolved = false
+        this@configurations.named("runtimeClasspath") {
             extendsFrom(this@create)
         }
     }
 
     create("modLocalRuntime") {
-        this@configurations.named("testRuntimeOnly") {
+        isCanBeConsumed = false
+        isCanBeResolved = false
+        this@configurations.named("runtimeClasspath") {
             extendsFrom(this@create)
         }
     }
@@ -127,7 +131,7 @@ dependencies {
     if (applyDefaultDependencies) {
         versionCatalog.findLibrary("bettermodsbutton.neoforge")
             .getOrNull()
-            ?.let { testRuntimeOnly(it) { isTransitive = false } }
+            ?.let { "localRuntime"(it) { isTransitive = false } }
     }
 }
 

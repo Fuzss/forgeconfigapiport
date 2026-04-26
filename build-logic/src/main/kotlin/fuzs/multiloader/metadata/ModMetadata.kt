@@ -71,10 +71,7 @@ enum class ModLoaderProvider(val platform: Boolean = true) {
     FORGE,
 
     @SerialName("neoforge")
-    NEOFORGE,
-
-    @SerialName("quilt")
-    QUILT;
+    NEOFORGE;
 
     open fun matches(modLoader: ModLoaderProvider): Boolean = this == modLoader
 }

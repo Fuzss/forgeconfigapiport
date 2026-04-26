@@ -51,11 +51,13 @@ tasks.named<JavaCompile>(JvmConstants.COMPILE_JAVA_TASK_NAME) {
 tasks.named<ProcessResources>(JvmConstants.PROCESS_RESOURCES_TASK_NAME) {
     dependsOn(configurations.named("commonResources"))
     from(configurations.named("commonResources")) {
-        exclude("${mod.id}.classtweaker")
+        exclude("**/*.classtweaker")
     }
 
     dependsOn(project.commonProject.tasks.named<ProcessResources>("processResources"))
-    from(project.commonProject.layout.buildDirectory.dir("generated/resources"))
+    from(project.commonProject.layout.buildDirectory.dir("generated/resources")) {
+        exclude("**/*.cfg")
+    }
 }
 
 tasks.named<Jar>("sourcesJar") {

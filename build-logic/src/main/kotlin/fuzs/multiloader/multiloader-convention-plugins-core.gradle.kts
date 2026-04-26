@@ -231,12 +231,6 @@ tasks.withType<AbstractArchiveTask>().configureEach {
     isReproducibleFileOrder = true
 }
 
-tasks.withType<GenerateModuleMetadata>().configureEach {
-    // Disables Gradle's custom module metadata from being published to maven.
-    // The metadata includes mapped dependencies which are not reasonably consumable by other mod developers.
-    enabled = false
-}
-
 idea {
     module {
         // IDEA no longer automatically downloads Sources / Javadoc jars for dependencies.
@@ -374,8 +368,7 @@ val generateMixinConfig = tasks.register<MixinConfigJsonTask>("generateMixinConf
     outputFile.set(project.layout.buildDirectory.file("generated/resources/${mod.id}.${project.name.lowercase()}.mixins.json"))
 
     json {
-        val platform = project.projectPlatform.takeIf { it.platform }
-        mixinPackage.set("${project.group}.${platform?.let { "${it.name.lowercase()}." }.orEmpty()}mixin")
+        mixinPackage.set("${project.group}.${project.projectPlatform.name.lowercase()}.mixin")
         minVersion.set("0.8.0")
         required.set(true)
         compatibilityLevel.set("JAVA_${versionCatalog.findVersion("java").get().requiredVersion}")
@@ -439,6 +432,22 @@ spotless {
     java {
         endWithNewline()
         removeUnusedImports()
+    }
+
+    format("TinyTakeover") {
+        target("src/main/java/**/*.java")
+
+        replaceRegex(
+            "Change GuiGraphics to GuiGraphicsExtractor",
+            "\\bGuiGraphics\\b",
+            "GuiGraphicsExtractor"
+        )
+
+        replaceRegex(
+            "Update Puzzles Lib common import",
+            "\\bimport\\s+fuzs\\.puzzleslib\\.api\\.",
+            "import fuzs.puzzleslib.common.api."
+        )
     }
 
     format("MountsOfMayhem") {
@@ -595,6 +604,20 @@ tasks.register("${project.name.lowercase()}-java-apply") {
 tasks.register("${project.name.lowercase()}-java-check") {
     group = "multiloader/spotless"
     val task = tasks.named("spotlessJavaCheck")
+    description = task.get().description
+    dependsOn(task)
+}
+
+tasks.register("${project.name.lowercase()}-tinytakeover-apply") {
+    group = "multiloader/spotless"
+    val task = tasks.named("spotlessTinyTakeoverApply")
+    description = task.get().description
+    dependsOn(task)
+}
+
+tasks.register("${project.name.lowercase()}-tinytakeover-check") {
+    group = "multiloader/spotless"
+    val task = tasks.named("spotlessTinyTakeoverCheck")
     description = task.get().description
     dependsOn(task)
 }

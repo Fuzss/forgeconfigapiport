@@ -11,25 +11,19 @@ plugins {
 generateAccessTransformerFile(classTweakerFile, generatedAccessTransformerFile.get().asFile)
 
 configurations {
-    named("modApi") {
-        extendsFrom(this@configurations.named("accessTransformers").get())
-    }
-
-    named("modImplementation") {
-        extendsFrom(this@configurations.named("accessTransformers").get())
-    }
-
-    named("modCompileOnly") {
-        extendsFrom(this@configurations.named("accessTransformers").get())
-    }
-
-    named("modCompileOnlyApi") {
-        extendsFrom(this@configurations.named("accessTransformers").get())
+    named("accessTransformers") {
+        extendsFrom(
+            named("modApi").get(),
+            named("modImplementation").get(),
+            named("modCompileOnly").get(),
+            named("modCompileOnlyApi").get()
+        )
     }
 }
 
 neoForge {
-    validateAccessTransformers = true
+    // This breaks creating game artifacts in the first place which are required for looking up access level changes.
+    validateAccessTransformers = false
     accessTransformers {
         files.setFrom(generatedAccessTransformerFile)
         publish(generatedTransitiveAccessTransformerFile)

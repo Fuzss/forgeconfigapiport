@@ -19,7 +19,7 @@ val CLASS_TWEAKER_ACCESS_LEVELS: Map<String, String> = mapOf(
     "mutable" to "public-f"
 ) + TRANSITIVE_CLASS_TWEAKER_ACCESS_LEVELS
 private const val COLUMN_SEPARATOR: String = " "
-private val CLASS_TWEAKER_HEADER: String = listOf("classTweaker", "v1", "official").joinToString(COLUMN_SEPARATOR)
+private val CLASS_TWEAKER_HEADER: String = listOf("classTweaker", "v2", "official").joinToString(COLUMN_SEPARATOR)
 
 val Project.classTweakerFile: File
     get() = project.commonProject.file("src/main/resources/${mod.id}.classtweaker")

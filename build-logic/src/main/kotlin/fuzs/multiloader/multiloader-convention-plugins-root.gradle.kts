@@ -180,6 +180,16 @@ tasks.register("all-java-check") {
     dependsOn(project.subprojects.map { it.tasks.named("spotlessJavaCheck") })
 }
 
+tasks.register("all-tinytakeover-apply") {
+    group = "multiloader/spotless"
+    dependsOn(project.subprojects.map { it.tasks.named("spotlessTinyTakeoverApply") })
+}
+
+tasks.register("all-tinytakeover-check") {
+    group = "multiloader/spotless"
+    dependsOn(project.subprojects.map { it.tasks.named("spotlessTinyTakeoverCheck") })
+}
+
 tasks.register("all-mountsofmayhem-apply") {
     group = "multiloader/spotless"
     dependsOn(project.subprojects.map { it.tasks.named("spotlessMountsOfMayhemApply") })

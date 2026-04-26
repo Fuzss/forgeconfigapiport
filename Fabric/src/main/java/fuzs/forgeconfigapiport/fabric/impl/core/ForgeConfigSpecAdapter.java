@@ -3,7 +3,6 @@ package fuzs.forgeconfigapiport.fabric.impl.core;
 import com.electronwill.nightconfig.core.CommentedConfig;
 import com.electronwill.nightconfig.core.UnmodifiableCommentedConfig;
 import net.minecraftforge.fml.config.IConfigSpec;
-import net.neoforged.fml.config.ModConfig;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
