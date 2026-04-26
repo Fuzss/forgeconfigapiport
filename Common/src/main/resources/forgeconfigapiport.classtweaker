@@ -1,4 +1,4 @@
-classTweaker    v1  official
+classTweaker    v2  official
 accessible  method  net/minecraft/server/network/ServerConfigurationPacketListenerImpl  finishCurrentTask   (Lnet/minecraft/server/network/ConfigurationTask$Type;)V
 accessible  class   net/minecraft/client/OptionInstance$ValueSet
 accessible  field   net/minecraft/client/OptionInstance toString    Ljava/util/function/Function;

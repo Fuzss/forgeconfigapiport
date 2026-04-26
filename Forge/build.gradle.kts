@@ -43,7 +43,7 @@ dependencies {
     // This is only required for the IDE to see the common classes.
     compileOnly(project(":Common-NeoForgeApi")) { isTransitive = false }
 
-    implementation(minecraft.dependency(libs.minecraftforge.forge))
+    implementation(minecraft.dependency(sharedLibs.minecraftforge.forge))
 }
 
 tasks.withType<Jar>().configureEach {
@@ -65,7 +65,7 @@ val generateModsToml = tasks.register<NeoForgeModsTomlTask>("generateModsToml") 
         dependency(project.mod.id) {
             modId.set("forge")
             type.set(NeoForgeModsTomlSpec.DependencySpec.Type.REQUIRED)
-            versionRange.set("[${libs.versions.minecraftforge.min.get()},)")
+            versionRange.set("[${sharedLibs.versions.minecraftforge.min.get()},)")
         }
     }
 }

@@ -1,12 +1,6 @@
 [versions]
 
 forge-gradle = "7.0.17"
-minecraftforge-version = "26.1.1-63.0.0"
-minecraftforge-min = "62.0.0"
-
-[libraries]
-
-minecraftforge-forge = { module = "net.minecraftforge:forge", version.ref = "minecraftforge-version" }
 
 [plugins]
 
