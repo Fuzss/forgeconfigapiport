@@ -1,7 +1,7 @@
-name: Report A Bug
+name: "🐛 Report a Bug"
 description: >-
-  Only Minecraft versions listed on the main branch are supported. Support may additionally vary based on the severity of an issue.
-title: "[Bug]: "
+  See README.md in the root of the main branch for supported Minecraft versions. Support may vary based on issue severity.
+title: "[🐛 Bug]: "
 labels: ["bug"]
 assignees:
   - Fuzss
@@ -36,7 +36,7 @@ body:
     attributes:
       label: Mod Version(s) (Required)
       description: What mod version(s) are you using to play?
-      placeholder: ex. v26.1.0.0
+      placeholder: ex. v26.1.0
     validations:
       required: true
   - type: textarea

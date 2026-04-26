@@ -1,7 +1,7 @@
-name: Leave A Suggestion
+name: "💡 Leave a Suggestion"
 description: >-
-  Please do not ask for mod updates or ports, they will come when they are ready.
-title: "[Suggestion]: "
+  Please do not ask for mod updates or ports. They will come out when they are ready.
+title: "[💡 Suggestion]: "
 labels: ["enhancement"]
 assignees:
   - Fuzss
@@ -34,7 +34,7 @@ body:
     attributes:
       label: Mod Version(s) (Optional)
       description: What mod version(s) are you using to play?
-      placeholder: ex. v26.1.0.0
+      placeholder: ex. v26.1.0
   - type: textarea
     id: suggestion
     attributes:

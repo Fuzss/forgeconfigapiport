@@ -51,7 +51,7 @@ DEFAULT_DOWNLOADS = (
 
 MAVEN_BASE_URL = "https://github.com/Fuzss/modresources/tree/main/maven/"
 README_FILE = Path("README.md")
-VERSIONS_FILE = Path(".github/scripts/versions.json")
+VERSIONS_FILE = Path("versions.json")
 BRANCH_PATTERN = re.compile(r"\d+\.\d+\.(\d+|x)")
 
 
@@ -164,8 +164,11 @@ def group_branches_by_mc_version(branches):
     return versions
 
 
-def has_metadata(branch_metadata):
-    return any(info for info in branch_metadata.values())
+def has_download_links(links):
+    return any(
+        link.get("name", "").lower() in {"curseforge", "modrinth"}
+        for link in links
+    )
 
 
 def collect_table_loaders(branch_list):
@@ -173,9 +176,8 @@ def collect_table_loaders(branch_list):
     Detect loaders present in metadata.json for a table without checking out branches.
 
     Returns:
-        tuple[list[str], dict]: loaders present, metadata per branch
+        dict: metadata per branch
     """
-    loaders_present = set()
     branch_metadata = {}
 
     for branch in branch_list:
@@ -190,53 +192,30 @@ def collect_table_loaders(branch_list):
             continue
 
         metadata = json.loads(metadata_json_str)
-        loaders = metadata.get("platforms", [])
+        branch_metadata[branch] = metadata
 
-        branch_metadata[branch] = {"metadata": metadata, "loaders": loaders}
-        loaders_present.update(loaders)
-
-    return sorted(loaders_present), branch_metadata
+    return branch_metadata
 
 
-def build_table_header(loaders_present, include_maven):
-    base_columns = ["Branch", "Status", "Changelog"]
+def build_table_header(metadata, published):
+    header_columns = ["Branch", "Status", "Changelog"]
 
-    if loaders_present:
-        loader_names = [
-            MOD_LOADERS.get(loader, (loader.capitalize(), DEFAULT_MOD_LOADER[1]))[0]
-            for loader in loaders_present
-        ]
+    if metadata:
+        if has_download_links(metadata.get("links", [])):
+            loader_names = [
+                MOD_LOADERS.get(loader, (loader.capitalize(), DEFAULT_MOD_LOADER[1]))[0]
+                for loader in metadata.get("platforms", [])
+            ]
 
-        header = base_columns + loader_names
+            header_columns += loader_names
 
-        if include_maven:
-            header.append("Maven")
+        if published:
+            header_columns += ["Maven"]
 
-        return header
-
-    return base_columns + ["Downloads"]
-
-
-def link_url(links, name, mc_version, platform=None):
-    """
-    Build download URL for platform.
-
-    Returns:
-        str: platform URL
-    """
-    for l in links:
-        if l["name"].lower() == name.lower():
-            slug = l.get("slug")
-
-            if name.lower() == "curseforge":
-                game_id = MOD_LOADERS.get(platform, DEFAULT_MOD_LOADER)[1]
-                return (
-                    "https://www.curseforge.com/minecraft/mc-mods/"
-                    f"{slug}/files/all?version={mc_version}&gameVersionTypeId={game_id}"
-                )
-
-            if name.lower() == "modrinth":
-                return f"https://modrinth.com/mod/{slug}/versions?g={mc_version}&l={platform}"
+        return header_columns
+    
+    else:
+        return header_columns + ["Downloads"]
 
 
 def get_mc_version(branch: str) -> str:
@@ -257,31 +236,31 @@ def get_mc_version(branch: str) -> str:
     return ".".join(parts)
 
 
-def platform_links(links, minecraft, loader, branch_loaders):
+def platform_links(links, minecraft, platform):
     """
     Render loader download links for a table cell.
 
     Returns:
         str: markdown cell content
     """
-    if loader not in branch_loaders:
-        return "n/a"
-
     entries = []
 
-    curseforge_url = link_url(links, "curseforge", minecraft, loader)
-    if curseforge_url:
-        entries.append(
-            f'{CURSEFORGE_ICON}'
-            f'[CurseForge]({curseforge_url})'
-        )
+    for link in links:
+        name = link.get("name", "").lower()
+        slug = link.get("slug")
 
-    modrinth_url = link_url(links, "modrinth", minecraft, loader)
-    if modrinth_url:
-        entries.append(
-            f'{MODRINTH_ICON}'
-            f'[Modrinth]({modrinth_url})'
-        )
+        if name == "curseforge":
+            game_id = MOD_LOADERS.get(platform, DEFAULT_MOD_LOADER)[1]
+            entries.append(
+                f"{CURSEFORGE_ICON}"
+                f"[CurseForge](https://www.curseforge.com/minecraft/mc-mods/{slug}/files/all?version={minecraft}&gameVersionTypeId={game_id})"
+            )
+
+        if name == "modrinth":
+            entries.append(
+                f"{MODRINTH_ICON}"
+                f"[Modrinth](https://modrinth.com/mod/{slug}/versions?g={minecraft}&l={platform})"
+            )
 
     return "<br /> ".join(entries) if entries else "n/a"
 
@@ -297,18 +276,16 @@ def generate_table_row(
     branch,
     display_status,
     changelog_url,
-    metadata_info,
-    loader_columns,
-    include_maven=True
+    metadata,
+    published
 ):
     """
     Generate a single markdown table row.
     """
-    if metadata_info:
-        metadata = metadata_info["metadata"]
+    if metadata:
         minecraft = metadata.get("minecraft") or get_mc_version(branch)
         links = metadata.get("links", [])
-        branch_loaders = metadata_info["loaders"]
+        branch_loaders = metadata.get("platforms", [])
         id = metadata["mod"]["id"]
         version = metadata["mod"]["version"]
         group = metadata["mod"]["group"]
@@ -319,15 +296,16 @@ def generate_table_row(
             f"[CHANGELOG.md]({changelog_url})"
         ]
 
-        row += [
-            platform_links(links, minecraft, loader, branch_loaders)
-            for loader in loader_columns
-        ]
+        if has_download_links(links):
+            row += [
+                platform_links(links, minecraft, loader)
+                for loader in branch_loaders
+            ]
 
-        if include_maven:
+        if published:
             maven_entries = [maven_artifact(group, id, "common", version)]
 
-            for loader in metadata_info["loaders"]:
+            for loader in branch_loaders:
                 maven_entry = maven_artifact(group, id, loader, version)
                 maven_entries.append(maven_entry)
 
@@ -364,59 +342,37 @@ def main():
     for mc_version, branch_list in mc_versions.items():
         readme_lines.append(f"\n### Minecraft {mc_version}\n")
 
-        current_group = []
-        current_type = None
-
-        def flush_group(group):
-            if not group:
-                return
-
-            loaders_present, branch_metadata = collect_table_loaders(group)
-            metadata_present = has_metadata(branch_metadata)
-
-            include_maven = metadata_present and published
-
-            table_header = build_table_header(loaders_present, include_maven)
-
-            readme_lines.append("| " + " | ".join(table_header) + " |")
-            readme_lines.append("| " + " | ".join(["---"] * len(table_header)) + " |")
-
-            for branch in group:
-                raw_status = support_data.get(branch, "archived").lower()
-                display_status = SUPPORT_TYPES.get(raw_status, DEFAULT_SUPPORT_TYPE)[0]
-
-                changelog_url = f"{repo_url}/blob/{branch}/CHANGELOG.md"
-                metadata_info = branch_metadata.get(branch)
-
-                row = generate_table_row(
-                    repo_url,
-                    branch,
-                    display_status,
-                    changelog_url,
-                    metadata_info,
-                    loaders_present if metadata_present else [],
-                    include_maven
-                )
-
-                readme_lines.append(row)
-
-            readme_lines.append("")
+        branch_metadata = collect_table_loaders(branch_list)
+        current_table_header = []
 
         for branch in branch_list:
-            _, branch_metadata = collect_table_loaders([branch])
-            branch_has_metadata = has_metadata(branch_metadata)
 
-            if current_type is None:
-                current_type = branch_has_metadata
+            metadata = branch_metadata.get(branch)
+            table_header = build_table_header(metadata, published)
 
-            if branch_has_metadata != current_type:
-                flush_group(current_group)
-                current_group = []
-                current_type = branch_has_metadata
+            if table_header != current_table_header:
+                if current_table_header:
+                    readme_lines.append("")
 
-            current_group.append(branch)
+                readme_lines.append("| " + " | ".join(table_header) + " |")
+                readme_lines.append("| " + " | ".join(["---"] * len(table_header)) + " |")
 
-        flush_group(current_group)
+                current_table_header = table_header
+
+            raw_status = support_data.get(branch, "archived").lower()
+            display_status = SUPPORT_TYPES.get(raw_status, DEFAULT_SUPPORT_TYPE)[0]
+            changelog_url = f"{repo_url}/blob/{branch}/CHANGELOG.md"
+
+            row = generate_table_row(
+                repo_url,
+                branch,
+                display_status,
+                changelog_url,
+                metadata,
+                published
+            )
+
+            readme_lines.append(row)
 
     readme_lines.append(f"\n---\n")
     readme_lines.extend(

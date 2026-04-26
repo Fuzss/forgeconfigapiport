@@ -2,12 +2,12 @@ name: Generate README.md file
 
 on:
   push:
+    branches:
+      - 'main'
     paths:
-      - .github/scripts/versions.json
+      - 'versions.json'
   create:
-    branches: ['**']
   delete:
-    branches: ['**']
   workflow_dispatch:
 
 permissions:
@@ -15,6 +15,7 @@ permissions:
 
 jobs:
   generate-readme:
+    if: startsWith(github.ref, 'refs/heads/')
     runs-on: ubuntu-latest
 
     steps:
